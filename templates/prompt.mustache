@@ -1,0 +1,22 @@
+<div id="edai_course_generator_form" class="container">
+    <form>
+        <div class="form-group position-relative mb-0">
+            <label for="course_description" class="d-none"></label>
+            <textarea id="course_description" name="course_description" class="form-control px-6" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
+            <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white" title="{{#str}} generate_course, block_course_generator {{/str}}">
+                <img src="{{ logourl }}" alt="Logo" width="32px" height="32px">
+            </button>
+            <label for="course_files" class="label_course_files position-absolute">
+                <i class="fa fa-paperclip fa-2x"></i>
+            </label>
+            <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
+        </div>
+        <div id="file_names" class="mt-1"></div>
+    </form>
+
+    <div id="loader" class="d-none justify-content-center align-items-center mt-5">
+        <div class="spinner-border text-primary" role="status"></div>
+        <span class="ml-3">{{#str}} generating_course, block_course_generator {{/str}}</span>
+    </div>
+    <div id="success_message_container" class="d-none justify-content-center align-items-center mt-5"></div>
+</div>

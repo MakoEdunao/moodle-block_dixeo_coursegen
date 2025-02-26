@@ -24,3 +24,25 @@
     margin: auto;
     padding: 0px 30px;
 }
+
+.block_course_generator #course_description {
+    overflow-y: hidden;
+    resize: none;
+}
+
+.block_course_generator #generate_course {
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    padding: 0;
+}
+
+.block_course_generator .label_course_files {
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}

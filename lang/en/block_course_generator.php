@@ -18,3 +18,7 @@ $string['prompt2'] = 'Generate an in-depth course covering the history of ancien
 $string['prompt3'] = 'Design an interactive photography course that teaches basic skills, camera settings, composition techniques, and photo editing tutorials.';
 $string['prompt4'] = 'Build a complete algebra course for high school students with practical examples, step-by-step problem solving, and real-life applications.';
 $string['prompt5'] = 'Generate a Spanish language learning course for beginners focusing on essential vocabulary, conversation practice, and cultural context discussions.';
+
+$string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
+$string['generate_course'] = 'Generate';
+$string['generating_course'] = 'Generating your course, please wait... (~1 minute)';
