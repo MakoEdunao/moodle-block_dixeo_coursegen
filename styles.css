@@ -1,0 +1,26 @@
+.block_course_generator #carouselControls {
+    background: #efeff7;
+    border-radius: 10px;
+    display: flex;
+    min-height: 100px;
+}
+
+.block_course_generator .carousel-control-prev,
+.block_course_generator .carousel-control-next {
+    width: 60px;
+    color: #000091;
+    font-size: 20px;
+}
+
+.block_course_generator .carousel-control-prev:hover,
+.block_course_generator .carousel-control-prev:focus,
+.block_course_generator .carousel-control-next:hover,
+.block_course_generator .carousel-control-next:focus {
+    color: #000091;
+    box-shadow: none;
+}
+
+.block_course_generator .carousel-inner {
+    margin: auto;
+    padding: 0px 30px;
+}
