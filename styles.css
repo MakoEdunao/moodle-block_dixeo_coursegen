@@ -3,6 +3,7 @@
     border-radius: 10px;
     display: flex;
     min-height: 100px;
+    margin: 28px 14px;
 }
 
 .block_course_generator .carousel-control-prev,
@@ -46,3 +47,50 @@
     transform: translateY(-50%);
     cursor: pointer;
 }
+
+.block_course_generator .s-progress {
+    background-color: #babfc5;
+    border-radius: 5px;
+    overflow: hidden;
+    height: 5px;
+}
+
+.block_course_generator .s-progress .s-progress--bar {
+    background-color: #000091;
+    height: 100%;
+}
+
+.block_course_generator .s-progress__segmented {
+    position: relative;
+}
+
+.block_course_generator .s-progress .s-progress--segments {
+    display: flex;
+    height: 100%;
+    justify-content: space-between;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
+.block_course_generator .s-progress .s-progress--segments li {
+    display: block;
+    position: relative;
+}
+
+.block_course_generator .s-progress .s-progress--segments li:not(:first-child):not(:last-child):before {
+    background-color: #FFFFFF;
+    content: "";
+    height: 100%;
+    left: -1px;
+    position: absolute;
+    width: 5px;
+}
+
+.block_course_generator .p64 {
+    padding: 15px 0px;
+}
+
+
+

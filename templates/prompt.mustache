@@ -14,9 +14,20 @@
         <div id="file_names" class="mt-1"></div>
     </form>
 
-    <div id="loader" class="d-none justify-content-center align-items-center mt-5">
-        <div class="spinner-border text-primary" role="status"></div>
-        <span class="ml-3">{{#str}} generating_course, block_course_generator {{/str}}</span>
+    <div id="loader" class="justify-content-center align-items-center">
+        <div class="p64">
+            <div class="s-progress s-progress__segmented">
+                <div class="s-progress--bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75" style="width: 30%;"></div>
+                <ol class="s-progress--segments">
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                    <li></li>
+                </ol>
+            </div>
+        </div>
     </div>
     <div id="success_message_container" class="d-none justify-content-center align-items-center mt-5"></div>
 </div>
