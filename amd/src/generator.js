@@ -16,6 +16,7 @@ define([
             let generatorForm = document.getElementById('edai_course_generator_form');
             let generateCourse = generatorForm.querySelector('#generate_course');
             let loader = generatorForm.querySelector('#loader');
+            let successContainer = generatorForm.querySelector('#success_message_container');
 
             // Prevent default action and start progress.
             generateCourse.addEventListener('click', (event) => {
@@ -27,9 +28,11 @@ define([
                 } else if (this.progress < 100) {
                     // Finish progress.
                     this.setProgress(loader, 100);
+                    successContainer.classList.replace('d-none', 'd-block');
                 } else {
                     // Reset progress.
                     this.setProgress(loader, 0);
+                    successContainer.classList.replace('d-block', 'd-none');
                 }
             });
         },

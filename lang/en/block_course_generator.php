@@ -22,3 +22,4 @@ $string['prompt5'] = 'Generate a Spanish language learning course for beginners 
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
 $string['generate_course'] = 'Generate';
 $string['generating_course'] = 'Generating your course, please wait... (~1 minute)';
+$string['course_generated'] = 'Course generated successfully! <a href="https://123-test.edunao.com/course/view.php?id=992">Click here to view the course</a>';
