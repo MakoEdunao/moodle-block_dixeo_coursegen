@@ -3,7 +3,6 @@
     border-radius: 10px;
     display: flex;
     min-height: 100px;
-    margin: 28px 14px;
 }
 
 .block_course_generator .carousel-control-prev,
@@ -51,13 +50,20 @@
 .block_course_generator .s-progress {
     background-color: #babfc5;
     border-radius: 5px;
-    overflow: hidden;
     height: 5px;
 }
 
 .block_course_generator .s-progress .s-progress--bar {
     background-color: #000091;
     height: 100%;
+    border-radius: 5px;
+    transition: width 1s ease-in-out;
+    max-width: 100% !important;
+}
+
+.block_course_generator .s-progress .s-progress--bar.done {
+    background-color: #009100;
+    transition: width 0.2s ease-in-out;
 }
 
 .block_course_generator .s-progress__segmented {
@@ -77,20 +83,32 @@
 .block_course_generator .s-progress .s-progress--segments li {
     display: block;
     position: relative;
+    padding-top: 10px;
+    font-size: 12px;
+    text-align: center;
+    width: 25%;
+}
+
+.block_course_generator .s-progress .s-progress--segments li:last-child {
+    width: 0;
 }
 
 .block_course_generator .s-progress .s-progress--segments li:not(:first-child):not(:last-child):before {
     background-color: #FFFFFF;
     content: "";
     height: 100%;
+    top: 0;
     left: -1px;
     position: absolute;
     width: 5px;
 }
 
 .block_course_generator .p64 {
-    padding: 15px 0px;
+    padding: 15px 0px 25px 0;
 }
 
-
-
+@media (max-width: 790px) {
+    .block_course_generator .p64 {
+        padding: 15px 0px 40px 0;
+    }
+}
