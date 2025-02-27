@@ -2,24 +2,46 @@ define([
     'jquery',
     'core/ajax',
 ], function($, Ajax) {
+    const generatorForm         = document.getElementById('edai_course_generator_form');
+    const promptContainer       = generatorForm.querySelector('.prompt-container');
+    const generationContainer   = generatorForm.querySelector('.generation-container');
+    const courseDescription     = generatorForm.querySelector('#course_description');
+    const generateCourse        = generatorForm.querySelector('#generate_course');
+    const courseFiles           = generatorForm.querySelector('#course_files');
+    const filesContainer        = generatorForm.querySelector('#file_names');
+    const spinner               = generatorForm.querySelector('#progress-spinner');
+    const loader                = generatorForm.querySelector('#loader');
+    const successContainer      = generatorForm.querySelector('#success_message_container');
+
     return {
         init: function() {
             this.progress = 0;
 
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', this.addInviteListener.bind(this));
-            } else {
-                this.addInviteListener();
-            }
-        },
-        addInviteListener: function() {
-            let generatorForm = document.getElementById('edai_course_generator_form');
-            let promptContainer = generatorForm.querySelector('.prompt-container');
-            let generationContainer = generatorForm.querySelector('.generation-container');
-            let generateCourse = generatorForm.querySelector('#generate_course');
-            let spinner = generatorForm.querySelector('#progress-spinner');
-            let loader = generatorForm.querySelector('#loader');
-            let successContainer = generatorForm.querySelector('#success_message_container');
+            // Adjust course description height.
+            const initialheight = courseDescription.clientHeight;
+            courseDescription.addEventListener('input', function() {
+                const maxlines = 9;
+                const lineheight = parseFloat(getComputedStyle(courseDescription).lineHeight);
+                const lines = courseDescription.value.split('\n').length;
+
+                let newheight;
+                if (lines * lineheight < initialheight) {
+                    newheight = initialheight;
+                } else if (lines <= maxlines) {
+                    newheight = lines * lineheight;
+                    courseDescription.style.overflowY = 'hidden';
+                } else {
+                    newheight = maxlines * lineheight;
+                    courseDescription.style.overflowY = 'scroll';
+                }
+
+                // Additional padding.
+                newheight += newheight > initialheight ? 14 : 0;
+                courseDescription.style.height = newheight + 'px';
+            });
+
+            // User added files to the file input.
+            courseFiles.addEventListener('change', () => this.displayFileNames());
 
             // Prevent default action and start progress.
             generateCourse.addEventListener('click', (event) => {
@@ -81,5 +103,15 @@ define([
             }
             this.progress = progress;
         },
+        displayFileNames: function() {
+            filesContainer.innerHTML = '';
+            for (let i = 0; i < courseFiles.files.length; i++) {
+                const file = courseFiles.files[i];
+                const fileItem = document.createElement('div');
+                fileItem.textContent = file.name;
+                fileItem.style.fontWeight = 'bold';
+                filesContainer.appendChild(fileItem);
+            }
+        }
     };
 });
