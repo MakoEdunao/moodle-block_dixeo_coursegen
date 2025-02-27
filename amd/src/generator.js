@@ -14,6 +14,8 @@ define([
         },
         addInviteListener: function() {
             let generatorForm = document.getElementById('edai_course_generator_form');
+            let promptContainer = generatorForm.querySelector('.prompt-container');
+            let generationContainer = generatorForm.querySelector('.generation-container');
             let generateCourse = generatorForm.querySelector('#generate_course');
             let spinner = generatorForm.querySelector('#progress-spinner');
             let loader = generatorForm.querySelector('#loader');
@@ -27,6 +29,7 @@ define([
                     // Begin progress animation.
                     this.startProgress(loader);
                     spinner.classList.add('spinner-border');
+                    generationContainer.classList.replace('d-none', 'd-block');
                 } else if (this.progress < 100) {
                     // Finish progress.
                     this.setProgress(loader, 100);

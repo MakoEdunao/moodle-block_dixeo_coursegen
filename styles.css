@@ -1,3 +1,7 @@
+.block_course_generator {
+    border: none !important;
+}
+
 .block_course_generator #carouselControls {
     background: #efeff7;
     border-radius: 10px;
