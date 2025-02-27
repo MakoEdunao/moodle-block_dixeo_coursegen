@@ -4,6 +4,7 @@
             <label for="course_description" class="d-none"></label>
             <textarea id="course_description" name="course_description" class="form-control px-6" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
             <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white" title="{{#str}} generate_course, block_course_generator {{/str}}">
+                <div id="progress-spinner" role="status"></div>
                 <img src="{{ logourl }}" alt="Logo" width="32px" height="32px">
             </button>
             <label for="course_files" class="label_course_files position-absolute">

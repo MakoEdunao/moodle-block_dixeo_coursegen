@@ -15,6 +15,7 @@ define([
         addInviteListener: function() {
             let generatorForm = document.getElementById('edai_course_generator_form');
             let generateCourse = generatorForm.querySelector('#generate_course');
+            let spinner = generatorForm.querySelector('#progress-spinner');
             let loader = generatorForm.querySelector('#loader');
             let successContainer = generatorForm.querySelector('#success_message_container');
 
@@ -25,14 +26,17 @@ define([
                 if (this.progress === 0) {
                     // Begin progress animation.
                     this.startProgress(loader);
+                    spinner.classList.add('spinner-border');
                 } else if (this.progress < 100) {
                     // Finish progress.
                     this.setProgress(loader, 100);
                     successContainer.classList.replace('d-none', 'd-block');
+                    spinner.classList.remove('spinner-border');
                 } else {
                     // Reset progress.
                     this.setProgress(loader, 0);
                     successContainer.classList.replace('d-block', 'd-none');
+                    spinner.classList.remove('spinner-border');
                 }
             });
         },

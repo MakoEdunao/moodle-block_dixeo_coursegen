@@ -27,7 +27,8 @@
 
 .block_course_generator #course_description {
     overflow-y: hidden;
-    resize: none;
+    min-height: 60px;
+    max-height: 200px;
 }
 
 .block_course_generator #generate_course {
@@ -38,6 +39,31 @@
     height: 35px;
     border-radius: 50%;
     padding: 0;
+}
+
+.block_course_generator #generate_course:focus,
+.block_course_generator #generate_course.focus {
+    box-shadow: none;
+}
+
+.block_course_generator #generate_course #progress-spinner {
+    color: #000091;
+    width: 2.4rem;
+    margin: -3px;
+    height: 2.4rem;
+    vertical-align: -0.125em;
+    display: inline-block;
+    border: 0.25em solid transparent;
+}
+
+.block_course_generator #generate_course #progress-spinner.spinner-border {
+    border: 0.25em solid #000091;
+    border-right-color: transparent;
+}
+
+.block_course_generator #generate_course img {
+    top: -36px;
+    position: relative;
 }
 
 .block_course_generator .label_course_files {
