@@ -40,6 +40,23 @@ define([
                     this.setProgress(loader, 0);
                     successContainer.classList.replace('d-block', 'd-none');
                     spinner.classList.remove('spinner-border');
+                    generationContainer.classList.replace('d-block', 'd-none');
+                }
+            });
+
+            // Drag over prompt input.
+            dragEnterCounter = 0;
+            $('.prompt-container .form-group').bind({
+                dragenter: function(event) {
+                    dragEnterCounter++;
+                    promptContainer.classList.add('drag-over');
+                    event.preventDefault();
+                },
+                dragleave: function() {
+                    dragEnterCounter--;
+                    if (dragEnterCounter === 0) { 
+                        promptContainer.classList.remove('drag-over');
+                    }
                 }
             });
         },

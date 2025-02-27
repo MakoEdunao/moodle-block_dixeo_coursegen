@@ -3,7 +3,6 @@
     {{> block_course_generator/carousel }}
     <form>
         <div class="form-group position-relative mb-0">
-            <label for="course_description" class="d-none"></label>
             <textarea id="course_description" name="course_description" class="form-control px-6" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
             <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white" title="{{#str}} generate_course, block_course_generator {{/str}}">
                 <div id="progress-spinner" role="status"></div>
@@ -17,6 +16,11 @@
         <div id="file_names" class="mt-1"></div>
     </form>
 </div>
+<style>
+.prompt-container.drag-over .form-group::after {
+    content: "{{#str}} draganddrop, block_course_generator {{/str}}";
+}
+</style>
 
 {{#js}}
 require(['block_course_generator/generator'], function(Generator) {

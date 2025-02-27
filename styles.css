@@ -29,6 +29,21 @@
     padding: 0px 30px;
 }
 
+.prompt-container.drag-over .form-group::after {
+    content: "Drag and drop files to upload";
+    position: absolute;
+    top: 7px;
+    left: 48px;
+    width: calc(100% - 96px);
+    height: calc(100% - 14px);
+    color: #8f959e;
+    border: 2px dashed #bbb;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .block_course_generator #course_description {
     overflow-y: hidden;
     min-height: 60px;
