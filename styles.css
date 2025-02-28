@@ -151,12 +151,42 @@
     width: 5px;
 }
 
+.block_course_generator #file_names .file-item {
+    border-radius: 8px;
+    font-size: 13px;
+    display: inline-block;
+    padding: 10px 18px 10px 10px;
+    margin: 0px 5px 10px 0px;
+    background: #efeff7;
+    position: relative;
+}
+
+.block_course_generator #file_names .file-item:hover {
+    background: #e8e8f5;
+}
+
 .block_course_generator .delete-icon {
-    color: #8f959e;
+    color: #aaa;
+    display: inline-block;
+    position: absolute;
+    background: #ddd;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    top: -4px;
+    right: -4px;
 }
 
 .block_course_generator .delete-icon:hover {
-    color: #910000;
+    color: #333;
+    background: #ccc;
+    cursor: pointer;
+}
+
+.block_course_generator .delete-icon i {
+    position: absolute;
+    top: 1px;
+    right: 3px;
 }
 
 .block_course_generator #file_names ul {

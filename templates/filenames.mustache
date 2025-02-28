@@ -1,10 +1,8 @@
 {{#hasFiles}}
     <p class="total-size">{{#str}} totalsize, block_course_generator, {{ totalSize }} {{/str}}</p>
-    <ul class="pl-4">
-        {{#files}}
-            <li>
-                <span class="mr-1 delete-icon"><i class="fa fa-remove"></i></span> {{ name }} ({{ size }})
-            </li>
-        {{/files}}
-    </ul>
+    {{#files}}
+        <div class="file-item">
+            <span class="mr-1 delete-icon" data-toggle="tooltip" title="{{#str}} removefile, block_course_generator {{/str}}"><i class="fa fa-remove"></i></span> {{ name }} ({{ size }})
+        </div>
+    {{/files}}
 {{/hasFiles}}

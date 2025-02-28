@@ -197,7 +197,9 @@ define([
                         courseFiles.files = dataTransfer.files;
                         
                         // Remove file from display and update total.
-                        this.closest('li').remove();
+                        let toolTipId = deleteIcon.getAttribute('aria-describedby');
+                        document.getElementById(toolTipId).remove();
+                        this.closest('div').remove();
                         that.updateTotalSize();
                     });
                 });
