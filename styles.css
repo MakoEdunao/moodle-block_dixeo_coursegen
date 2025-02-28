@@ -151,6 +151,18 @@
     width: 5px;
 }
 
+.block_course_generator .delete-icon {
+    color: #8f959e;
+}
+
+.block_course_generator .delete-icon:hover {
+    color: #910000;
+}
+
+.block_course_generator #file_names ul {
+    list-style-type: none;
+}
+
 .block_course_generator .p64 {
     padding: 15px 0px 25px 0;
 }

@@ -1,7 +1,8 @@
 define([
     'jquery',
     'core/ajax',
-], function($, Ajax) {
+    'core/templates'
+], function($, Ajax, Template) {
     const generatorForm         = document.getElementById('edai_course_generator_form');
     const promptContainer       = generatorForm.querySelector('.prompt-container');
     const promptForm            = generatorForm.querySelector('#prompt-form');
@@ -153,14 +154,52 @@ define([
             this.progress = progress;
         },
         displayFileNames: function() {
-            filesContainer.innerHTML = '';
+            const fileSize = (size) => {
+                const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+                let unitIndex = 0;
+                while (size >= 1024 && unitIndex < units.length - 1) {
+                    size /= 1024;
+                    unitIndex++;
+                }
+                return `${size.toFixed(1)} ${units[unitIndex]}`;
+            };
+
+            let contextFiles = [];
             for (let i = 0; i < courseFiles.files.length; i++) {
                 const file = courseFiles.files[i];
-                const fileItem = document.createElement('div');
-                fileItem.textContent = file.name;
-                fileItem.style.fontWeight = 'bold';
-                filesContainer.appendChild(fileItem);
+                contextFiles.push({
+                    name: file.name,
+                    size: fileSize(file.size),
+                });
             }
+
+            let hasFiles = contextFiles.length > 0;
+
+            Template.render('block_course_generator/filenames', {hasFiles: hasFiles, files: contextFiles}).then((html) => {
+                filesContainer.innerHTML = html;
+
+                let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
+                deleteIcons.forEach((deleteIcon, index) => {
+                    let toDelete = courseFiles.files[index].name;
+                    deleteIcon.addEventListener('click', function() {
+                        // Remove file from course files.
+                        let dataTransfer = new DataTransfer();
+                        for (let i = 0; i < courseFiles.files.length; i++) {
+                            if (courseFiles.files[i].name !== toDelete) {
+                                dataTransfer.items.add(courseFiles.files[i]);
+                            }
+                        }
+                    
+                        courseFiles.files = dataTransfer.files;
+                        
+                        // Remove file from display.
+                        this.closest('li').remove();
+                    });
+                });
+
+            }).catch((error) => {
+                console.error("Error rendering template: ", error);
+            });
         }
     };
 });
