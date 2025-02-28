@@ -6,6 +6,7 @@ define([
     const generatorForm         = document.getElementById('edai_course_generator_form');
     const promptContainer       = generatorForm.querySelector('.prompt-container');
     const promptForm            = generatorForm.querySelector('#prompt-form');
+    const carousel              = generatorForm.querySelector('#carousel-controls');
     const generationContainer   = generatorForm.querySelector('.generation-container');
     const courseDescription     = generatorForm.querySelector('#course_description');
     const generateCourse        = generatorForm.querySelector('#generate_course');
@@ -24,14 +25,16 @@ define([
             // Add event listener to generate course button.
             generateCourse.addEventListener('click', (event) => {
                 event.preventDefault();
+
                 if (this.progress === 0) {
                     this.startProgress();
-                } else if (this.progress < 100) {
-                    let courseid = 2; // Replace with actual course id.
-                    this.finishProgress(courseid);
-                } else {
-                    this.resetProgress();
                 }
+                
+                // For non-functional demo only. Complete after X seconds.
+                setTimeout(() => {
+                    let courseid = 2;
+                    this.finishProgress(courseid);
+                }, 5000);
             });
         },
         adjustDescriptionHeight: function() {
@@ -132,6 +135,7 @@ define([
         },
         startProgress: function() {
             spinner.classList.add('spinner-border');
+            promptContainer.classList.replace('d-block', 'd-none');
             generationContainer.classList.replace('d-none', 'd-block');
 
             let interval = setInterval(() => {
@@ -149,6 +153,13 @@ define([
             
             Template.render('block_course_generator/success_message', {courseid: courseid}).then((html) => {
                 generationContainer.innerHTML += html;
+
+                let resetLink = generatorForm.querySelector('.reset-prompt');
+                if (resetLink) {
+                    resetLink.addEventListener('click', () => {
+                        this.resetProgress();
+                    });
+                }
             }).catch((error) => {
                 console.error("Error rendering template: ", error);
             });
@@ -157,6 +168,7 @@ define([
         },
         resetProgress: function() {
             spinner.classList.remove('spinner-border');
+            promptContainer.classList.replace('d-none', 'd-block');
             generationContainer.classList.replace('d-block', 'd-none');
 
             let successContainer = generatorForm.querySelector('#success_message_container');
@@ -190,11 +202,18 @@ define([
                     size: this.formatFilesize(file.size),
                 });
             };
+            let hasFiles = contextFiles.length > 0;
             let context = {
-                hasFiles: contextFiles.length > 0,
+                hasFiles: hasFiles,
                 totalSize: this.formatFilesize(totalSize),
                 files: contextFiles
             };
+
+            if (hasFiles) {
+                carousel.classList.add('d-none');
+            } else {
+                carousel.classList.remove('d-none');
+            }
 
             Template.render('block_course_generator/filenames', context).then((html) => {
                 filesContainer.innerHTML = html;

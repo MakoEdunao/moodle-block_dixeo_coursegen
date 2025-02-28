@@ -2,7 +2,7 @@
     border: none !important;
 }
 
-.block_course_generator #carouselControls {
+.block_course_generator #carousel-controls {
     background: #efeff7;
     border-radius: 10px;
     display: flex;
