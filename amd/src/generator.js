@@ -4,9 +4,11 @@ define([
 ], function($, Ajax) {
     const generatorForm         = document.getElementById('edai_course_generator_form');
     const promptContainer       = generatorForm.querySelector('.prompt-container');
+    const promptForm            = generatorForm.querySelector('#prompt-form');
     const generationContainer   = generatorForm.querySelector('.generation-container');
     const courseDescription     = generatorForm.querySelector('#course_description');
     const generateCourse        = generatorForm.querySelector('#generate_course');
+    const tempCourseFiles       = generatorForm.querySelector('#temp_course_files');
     const courseFiles           = generatorForm.querySelector('#course_files');
     const filesContainer        = generatorForm.querySelector('#file_names');
     const spinner               = generatorForm.querySelector('#progress-spinner');
@@ -40,9 +42,6 @@ define([
                 courseDescription.style.height = newheight + 'px';
             });
 
-            // User added files to the file input.
-            courseFiles.addEventListener('change', () => this.displayFileNames());
-
             // Prevent default action and start progress.
             generateCourse.addEventListener('click', (event) => {
                 event.preventDefault();
@@ -68,18 +67,68 @@ define([
 
             // Drag over prompt input.
             dragEnterCounter = 0;
-            $('.prompt-container .form-group').bind({
+            $('#prompt-form').bind({
                 dragenter: function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     dragEnterCounter++;
                     promptContainer.classList.add('drag-over');
-                    event.preventDefault();
                 },
-                dragleave: function() {
+                dragleave: function(event) {
+                    event.preventDefault();
+                    event.stopPropagation();
                     dragEnterCounter--;
                     if (dragEnterCounter === 0) { 
                         promptContainer.classList.remove('drag-over');
                     }
+                },
+            });
+
+            // Apply drop listeners to all child elements of prompt form.
+            this.dropOnChildElements(promptForm);
+            // Move files from temp to course files.
+            tempCourseFiles.addEventListener('change', () => {
+                let newFiles = Array.from(tempCourseFiles.files);
+                this.transferFiles(newFiles);
+            });
+        },
+        transferFiles: function(newFiles) {
+            // Combine existing files with new files.
+            let existingFiles = Array.from(courseFiles.files);
+            for (let file of newFiles) {
+                // Check if file already exists.
+                if (!existingFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
+                    existingFiles.push(file);
                 }
+            }
+
+            // Add all files to DataTransfer
+            let dataTransfer = new DataTransfer();
+            for (let file of existingFiles) {
+                dataTransfer.items.add(file);
+            }
+
+            courseFiles.files = dataTransfer.files;
+            this.displayFileNames();
+        },
+        dropOnChildElements: function(node) {
+            node.childNodes.forEach(child => {
+                this.dropOnChildElements(child);
+
+                child.addEventListener("dragover", (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                });
+
+                child.addEventListener("drop", (event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    promptContainer.classList.remove('drag-over');
+
+                    if (event.dataTransfer.files.length > 0) {
+                        this.transferFiles(event.dataTransfer.files);
+                    }
+                });
             });
         },
         startProgress: function(loader) {

@@ -29,8 +29,7 @@
     padding: 0px 30px;
 }
 
-.prompt-container.drag-over .form-group::after {
-    content: "Drag and drop files to upload";
+.block_course_generator .dropzone-message {
     position: absolute;
     top: 7px;
     left: 48px;
@@ -39,9 +38,13 @@
     color: #8f959e;
     border: 2px dashed #bbb;
     background: #fff;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
+}
+
+.block_course_generator .drag-over .dropzone-message {
+    display: flex;
 }
 
 .block_course_generator #course_description {
