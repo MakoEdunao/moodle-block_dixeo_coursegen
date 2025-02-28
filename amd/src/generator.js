@@ -1,8 +1,9 @@
 define([
     'jquery',
     'core/ajax',
-    'core/templates'
-], function($, Ajax, Template) {
+    'core/templates',
+    'core/str'
+], function($, Ajax, Template, Str) {
     const generatorForm         = document.getElementById('edai_course_generator_form');
     const promptContainer       = generatorForm.querySelector('.prompt-container');
     const promptForm            = generatorForm.querySelector('#prompt-form');
@@ -63,6 +64,7 @@ define([
                     successContainer.classList.replace('d-block', 'd-none');
                     spinner.classList.remove('spinner-border');
                     generationContainer.classList.replace('d-block', 'd-none');
+                    this.clearAllFiles();
                 }
             });
 
@@ -92,6 +94,11 @@ define([
                 let newFiles = Array.from(tempCourseFiles.files);
                 this.transferFiles(newFiles);
             });
+        },
+        clearAllFiles: function() {
+            let dataTransfer = new DataTransfer();
+            courseFiles.files = dataTransfer.files;
+            this.displayFileNames();
         },
         transferFiles: function(newFiles) {
             // Combine existing files with new files.
@@ -154,33 +161,30 @@ define([
             this.progress = progress;
         },
         displayFileNames: function() {
-            const fileSize = (size) => {
-                const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
-                let unitIndex = 0;
-                while (size >= 1024 && unitIndex < units.length - 1) {
-                    size /= 1024;
-                    unitIndex++;
-                }
-                return `${size.toFixed(1)} ${units[unitIndex]}`;
-            };
-
             let contextFiles = [];
+            let totalSize = 0;
             for (let i = 0; i < courseFiles.files.length; i++) {
                 const file = courseFiles.files[i];
+                totalSize += file.size;
                 contextFiles.push({
                     name: file.name,
-                    size: fileSize(file.size),
+                    size: this.formatFilesize(file.size),
                 });
-            }
+            };
+            let context = {
+                hasFiles: contextFiles.length > 0,
+                totalSize: this.formatFilesize(totalSize),
+                files: contextFiles
+            };
 
-            let hasFiles = contextFiles.length > 0;
-
-            Template.render('block_course_generator/filenames', {hasFiles: hasFiles, files: contextFiles}).then((html) => {
+            Template.render('block_course_generator/filenames', context).then((html) => {
                 filesContainer.innerHTML = html;
 
                 let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
                 deleteIcons.forEach((deleteIcon, index) => {
+                    let that = this;
                     let toDelete = courseFiles.files[index].name;
+
                     deleteIcon.addEventListener('click', function() {
                         // Remove file from course files.
                         let dataTransfer = new DataTransfer();
@@ -192,14 +196,41 @@ define([
                     
                         courseFiles.files = dataTransfer.files;
                         
-                        // Remove file from display.
+                        // Remove file from display and update total.
                         this.closest('li').remove();
+                        that.updateTotalSize();
                     });
                 });
 
             }).catch((error) => {
                 console.error("Error rendering template: ", error);
             });
+        },
+        formatFilesize: (size) => {
+            const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
+            let unitIndex = 0;
+            while (size >= 1024 && unitIndex < units.length - 1) {
+                size /= 1024;
+                unitIndex++;
+            }
+            return `${size.toFixed(1)} ${units[unitIndex]}`;
+        },
+        updateTotalSize: function() {
+            let totalSize = 0;
+            for (let i = 0; i < courseFiles.files.length; i++) {
+                const file = courseFiles.files[i];
+                totalSize += file.size;
+            };
+
+            let totalSizeElement = filesContainer.querySelector('.total-size');
+            if (totalSize > 0) {
+                Str.get_string('totalsize', 'block_course_generator', this.formatFilesize(totalSize))
+                .done(function(message) {
+                    totalSizeElement.innerHTML = message;
+                });
+            } else {
+                totalSizeElement.innerHTML = '';
+            }
         }
     };
 });

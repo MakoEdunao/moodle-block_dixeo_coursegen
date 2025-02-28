@@ -24,3 +24,4 @@ $string['generate_course'] = 'Generate';
 $string['generating_course'] = 'Generating your course, please wait... (~1 minute)';
 $string['course_generated'] = 'Course generated successfully! <a href="https://123-test.edunao.com/course/view.php?id=992">Click here to view the course</a>';
 $string['draganddrop'] = 'Drag and drop your files to upload';
+$string['totalsize'] = '<b>Total size:</b> {$a}';
