@@ -24,6 +24,7 @@ $string['heading'] = 'What do you want to teach today?';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
 $string['draganddrop'] = 'Drag and drop your files to upload';
 $string['generate_course'] = 'Generate';
+$string['upload_instructions'] = 'Supported file types: .pptx, .docx, .pdf, .txt. Maximum file size: 20MB. Total size limit: 50MB.';
 $string['totalsize'] = '<b>Total size:</b> {$a}';
 $string['removefile'] = 'Remove file';
 
@@ -38,3 +39,11 @@ $string['step2'] = 'Analyzing subject';
 $string['step3'] = 'Structuring modules';
 $string['step4'] = 'Generating content';
 $string['step5'] = 'Finalizing details';
+
+// File errors
+$string['invalidinput'] = 'Information required.';
+$string['descriptionorfilesrequired'] = 'Please enter a course description or upload files to generate the course.';
+$string['uploaderror'] = 'Error uploading file.';
+$string['filetypeinvalid'] = 'File type of {$a} is not supported. Supported extensions: .pptx, .docx, .pdf, .txt.';
+$string['filetoolarge'] = 'File is too large. Please upload a file smaller than 20MB.';
+$string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload smaller files or remove one to continue.';

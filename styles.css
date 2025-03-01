@@ -88,6 +88,10 @@
     position: relative;
 }
 
+.block_course_generator .upload-instructions {
+    font-size: 12px;
+}
+
 .block_course_generator .label_course_files {
     left: 10px;
     top: 50%;

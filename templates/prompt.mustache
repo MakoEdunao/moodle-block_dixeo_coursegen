@@ -14,7 +14,8 @@
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
-        <div id="file_names" class="mt-3"></div>
+        <span class="upload-instructions text-muted float-right pt-1">{{#str}} upload_instructions, block_course_generator {{/str}}</span>
+        <div id="file_names" class="mt-2"></div>
     </form>
     {{> block_course_generator/carousel }}
 </div>
