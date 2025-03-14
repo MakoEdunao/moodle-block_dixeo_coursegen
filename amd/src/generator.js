@@ -38,7 +38,7 @@ define([
                 }
 
                 // Real implementation. To be tested.
-                // Currently this block is 100% independent. Should it require other plugins? 
+                // Currently this block is 100% independent. Should it require other plugins?
                 /*
                 const formdata = new FormData();
                 formdata.append('description', courseDescription.value);
@@ -67,7 +67,7 @@ define([
                     Notification.alert('', error.message);
                 });
                 */
-                
+
                 // For non-functional demo only. Complete after X seconds.
                 setTimeout(() => {
                     let courseid = 2;
@@ -173,7 +173,7 @@ define([
                     event.preventDefault();
                     event.stopPropagation();
                     dragEnterCounter--;
-                    if (dragEnterCounter === 0) { 
+                    if (dragEnterCounter === 0) {
                         promptContainer.classList.remove('drag-over');
                     }
                 },
@@ -225,7 +225,7 @@ define([
         },
         finishProgress: async function(courseid) {
             spinner.classList.remove('spinner-border');
-            
+
             Template.render('block_course_generator/success_message', {courseid: courseid}).then((html) => {
                 generationContainer.innerHTML += html;
 
@@ -236,7 +236,7 @@ define([
                     });
                 }
             }).catch((error) => {
-                console.error("Error rendering template: ", error);
+                Notification.exception(error);
             });
 
             this.setProgress(100);
@@ -279,7 +279,7 @@ define([
                     name: file.name,
                     size: this.formatFilesize(file.size),
                 });
-            };
+            }
             let hasFiles = contextFiles.length > 0;
             let context = {
                 hasFiles: hasFiles,
@@ -313,14 +313,14 @@ define([
                                 dataTransfer.items.add(courseFiles.files[i]);
                             }
                         }
-                    
+
                         courseFiles.files = dataTransfer.files;
                         that.displayFileNames();
                     });
                 });
 
             }).catch((error) => {
-                console.error("Error rendering template: ", error);
+                Notification.exception(error);
             });
         },
         formatFilesize: (size) => {
