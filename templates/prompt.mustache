@@ -1,6 +1,6 @@
 <div class="prompt-container d-block">
     <h2 class="text-center mb-4">{{#str}} heading, block_course_generator {{/str}}</h2>
-    <form class="py-4">
+    <form class="py-3">
         <div id="prompt-form" class="form-group position-relative mb-0">
             <textarea id="course_description" name="course_description" class="form-control px-6" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
             <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white" title="{{#str}} generate_course, block_course_generator {{/str}}">
@@ -14,7 +14,6 @@
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
-        <span class="upload-instructions text-muted float-right pt-1">{{#str}} upload_instructions, block_course_generator {{/str}}</span>
         <div id="file_names" class="mt-2"></div>
     </form>
     {{> block_course_generator/carousel }}

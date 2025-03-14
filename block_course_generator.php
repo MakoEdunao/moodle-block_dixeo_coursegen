@@ -59,7 +59,8 @@ class block_course_generator extends block_base {
             ['text' => get_string('prompt2', 'block_course_generator')],
             ['text' => get_string('prompt3', 'block_course_generator')],
             ['text' => get_string('prompt4', 'block_course_generator')],
-            ['text' => get_string('prompt5', 'block_course_generator')]
+            ['text' => get_string('prompt5', 'block_course_generator')],
+            ['text' => get_string('prompt6', 'block_course_generator')]
         ];
         $context = [
             'prompts' => $prompts,

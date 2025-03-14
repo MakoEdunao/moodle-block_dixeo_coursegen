@@ -18,13 +18,13 @@ $string['prompt2'] = 'Generate an in-depth course covering the history of ancien
 $string['prompt3'] = 'Design an interactive photography course that teaches basic skills, camera settings, composition techniques, and photo editing tutorials.';
 $string['prompt4'] = 'Build a complete algebra course for high school students with practical examples, step-by-step problem solving, and real-life applications.';
 $string['prompt5'] = 'Generate a Spanish language learning course for beginners focusing on essential vocabulary, conversation practice, and cultural context discussions.';
+$string['prompt6'] = 'Upload your own files to generate a custom course. Supported file types: .pptx, .docx, .pdf, .txt. Maximum file size: 20MB. Total size limit: 50MB.';
 
 // Prompt
 $string['heading'] = 'What do you want to teach today?';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
 $string['draganddrop'] = 'Drag and drop your files to upload';
 $string['generate_course'] = 'Generate';
-$string['upload_instructions'] = 'Supported file types: .pptx, .docx, .pdf, .txt. Maximum file size: 20MB. Total size limit: 50MB.';
 $string['totalsize'] = '<b>Total size:</b> {$a}';
 $string['removefile'] = 'Remove file';
 

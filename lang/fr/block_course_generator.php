@@ -18,13 +18,13 @@ $string['prompt2'] = 'Générer un cours approfondi couvrant l\'histoire des civ
 $string['prompt3'] = 'Concevoir un cours de photographie interactif qui enseigne les compétences de base, les réglages de l\'appareil photo, les techniques de composition et les tutoriels de retouche photo.';
 $string['prompt4'] = 'Construire un cours complet d\'algèbre pour les lycéens avec des exemples pratiques, une résolution de problèmes étape par étape et des applications dans la vie réelle.';
 $string['prompt5'] = 'Générer un cours d\'apprentissage de la langue espagnole pour les débutants en se concentrant sur le vocabulaire essentiel, la pratique de la conversation et les discussions sur le contexte culturel.';
+$string['prompt6'] = 'Téléchargez vos propres fichiers pour générer un cours personnalisé. Types de fichiers pris en charge : .pptx, .docx, .pdf, .txt. Taille maximale du fichier : 20 Mo. Limite de taille totale : 50 Mo.';
 
 // Invite
 $string['heading'] = 'Que voulez-vous enseigner aujourd\'hui ?';
 $string['prompt_placeholder'] = 'Entrez le cours que vous souhaitez générer : sujet, nombre de sections et quiz si nécessaire.';
 $string['draganddrop'] = 'Glissez-déposez vos fichiers pour les télécharger';
 $string['generate_course'] = 'Générer';
-$string['upload_instructions'] = 'Types de fichiers pris en charge : .pptx, .docx, .pdf, .txt. Taille maximale du fichier : 20 Mo. Limite de taille totale : 50 Mo.';
 $string['totalsize'] = '<b>Taille totale :</b> {$a}';
 $string['removefile'] = 'Supprimer le fichier';
 
