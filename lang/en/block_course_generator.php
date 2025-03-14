@@ -30,8 +30,11 @@ $string['removefile'] = 'Remove file';
 
 // Generation
 $string['heading2'] = 'We are building your course!';
+$string['inprogress'] = 'Course generation in progress...';
+$string['dismiss'] = 'Dismiss';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
-$string['course_generated'] = 'Course generated successfully! You can <a href="https://123-test.edunao.com/course/view.php?id={$a}">view the course</a> or <a class="reset-prompt" href="#">generate a new one</a>.';
+$string['course_generated'] = 'Course generated successfully! You can view the course <a href="/course/view.php?id={$a}">here</a>.';
+$string['generate_another'] = 'Or <a class="reset-prompt" href="/my/">generate a new one</a>.';
 
 // Steps
 $string['step1'] = 'Validating input';
