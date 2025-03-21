@@ -11,9 +11,17 @@
 defined('MOODLE_INTERNAL') || die();
 
 function block_course_generator_before_standard_top_of_body_html() {
+    return before_top_of_body();
+}
+
+function before_top_of_body() {
     global $SESSION, $OUTPUT;
 
     $output = '';
+
+    if (!isloggedin()) {
+        return $output;
+    }
 
     if (isset($SESSION->aigeneration)) {
         if ($SESSION->aigeneration == 'inprogress') {
