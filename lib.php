@@ -19,6 +19,11 @@ function before_top_of_body() {
 
     $output = '';
 
+    // Check if the request is being made inside an iframe.
+    if (isset($_GET['component'])) {
+        return $output; // Do not execute the hook inside iframes.
+    }
+
     if (!isloggedin()) {
         return $output;
     }
