@@ -7,14 +7,12 @@ define([
     const generatorForm         = document.getElementById('edai_course_generator_form');
     const promptContainer       = generatorForm.querySelector('.prompt-container');
     const promptForm            = generatorForm.querySelector('#prompt-form');
-    const carousel              = generatorForm.querySelector('#carousel-controls');
     const generationContainer   = generatorForm.querySelector('.generation-container');
     const courseDescription     = generatorForm.querySelector('#course_description');
     const generateCourse        = generatorForm.querySelector('#generate_course');
     const tempCourseFiles       = generatorForm.querySelector('#temp_course_files');
     const courseFiles           = generatorForm.querySelector('#course_files');
     const filesContainer        = generatorForm.querySelector('#file_names');
-    const spinner               = generatorForm.querySelector('#progress-spinner');
 
     return {
         init: function() {
@@ -22,6 +20,14 @@ define([
 
             this.adjustDescriptionHeight();
             this.handleDragAndDrop();
+
+            // Add event listener to trigger generation on pressing Enter in the course description.
+            courseDescription.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    generateCourse.click();
+                }
+            });
 
             // Add event listener to generate course button.
             generateCourse.addEventListener('click', (event) => {
@@ -37,22 +43,20 @@ define([
                     this.startProgress();
                 }
 
-                // Real implementation. To be tested.
-                // Currently this block is 100% independent. Should it require other plugins?
-                /*
                 const formdata = new FormData();
                 formdata.append('description', courseDescription.value);
                 for (let i = 0; i < courseFiles.files.length; i++) {
                     formdata.append('course_files[]', courseFiles.files[i]);
                 }
 
-                fetch(`${M.cfg.wwwroot}/local/edai_course_generator_client/ajax/generate_course.php`, {
+                fetch(`${M.cfg.wwwroot}/local/edai/ajax/generate_course.php`, {
                     method: 'POST',
                     body: formdata
                 })
                 .then(response => {
                     return response.json().then(data => {
                         if (!response.ok) {
+                            this.resetProgress();
                             throw new Error(
                                 response.status === 402 ? data.error : 'Oops, error during course creation. Please try again.'
                             );
@@ -60,44 +64,31 @@ define([
                         return data;
                     });
                 })
-                .then(courseid => {
-                    this.finishProgress(courseid);
+                .then(data => {
+                    const courseid = data.courseid;
+                    const coursename = data.coursename;
+                    this.finishProgress(courseid, coursename);
                 })
                 .catch(error => {
+                    this.resetProgress();
                     Notification.alert('', error.message);
                 });
-                */
-
-                // For non-functional demo only. Complete after X seconds.
-                setTimeout(() => {
-                    let courseid = 2;
-                    this.finishProgress(courseid);
-                }, 5000);
             });
         },
         adjustDescriptionHeight: function() {
             // Adjust course description height.
-            const initialheight = courseDescription.clientHeight;
             courseDescription.addEventListener('input', function() {
-                const maxlines = 9;
-                const lineheight = parseFloat(getComputedStyle(courseDescription).lineHeight);
-                const lines = courseDescription.value.split('\n').length;
+            this.style.height = 'auto'; // Reset height
+            const maxHeight = parseFloat(getComputedStyle(this).lineHeight) * 9; // 9 lines max
+            this.style.overflowY = 'hidden';
 
-                let newheight;
-                if (lines * lineheight < initialheight) {
-                    newheight = initialheight;
-                } else if (lines <= maxlines) {
-                    newheight = lines * lineheight;
-                    courseDescription.style.overflowY = 'hidden';
-                } else {
-                    newheight = maxlines * lineheight;
-                    courseDescription.style.overflowY = 'scroll';
-                }
-
-                // Additional padding.
-                newheight += newheight > initialheight ? 14 : 0;
-                courseDescription.style.height = newheight + 'px';
-            });
+            if (this.scrollHeight > maxHeight) {
+                this.style.height = maxHeight + 'px';
+                this.style.overflowY = 'scroll';
+            } else {
+                this.style.height = this.scrollHeight + 'px';
+            }
+        });
         },
         clearAllFiles: function() {
             let dataTransfer = new DataTransfer();
@@ -108,6 +99,7 @@ define([
             // Validate files.
             const maxfilesize = 20 * 1024 * 1024;  // 20 MB
             const maxtotalsize = 50 * 1024 * 1024; // 50 MB
+            this.maxtotalsize = maxtotalsize;
             const allowedtypes = [
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -209,7 +201,6 @@ define([
         },
         startProgress: function() {
             generateCourse.disabled = true;
-            spinner.classList.add('spinner-border');
             promptContainer.classList.replace('d-block', 'd-none');
             generationContainer.classList.replace('d-none', 'd-block');
 
@@ -223,27 +214,17 @@ define([
                 this.setProgress(this.progress + increment);
             }, 1000);
         },
-        finishProgress: async function(courseid) {
-            spinner.classList.remove('spinner-border');
-
-            Template.render('block_course_generator/success_message', {courseid: courseid}).then((html) => {
-                generationContainer.innerHTML += html;
-
-                let resetLink = generatorForm.querySelector('.reset-prompt');
-                if (resetLink) {
-                    resetLink.addEventListener('click', () => {
-                        this.resetProgress();
-                    });
-                }
+        finishProgress: async function(courseid, coursename) {
+            Template.render('block_course_generator/success_message', {courseid: courseid, coursename: coursename}).then((html) => {
+                this.setProgress(100);
+                generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
+                generationContainer.classList.replace('d-block', 'd-none');
             }).catch((error) => {
                 Notification.exception(error);
             });
-
-            this.setProgress(100);
         },
         resetProgress: function() {
             generateCourse.disabled = false;
-            spinner.classList.remove('spinner-border');
             promptContainer.classList.replace('d-none', 'd-block');
             generationContainer.classList.replace('d-block', 'd-none');
 
@@ -262,11 +243,13 @@ define([
             this.progress = progress;
 
             let progressBar = generatorForm.querySelector('.s-progress--bar');
-            progressBar.style.width = `${progress}%`;
-            if (progress >= 100) {
-                progressBar.classList.add('done');
-            } else {
-                progressBar.classList.remove('done');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+                if (progress >= 100) {
+                    progressBar.classList.add('done');
+                } else {
+                    progressBar.classList.remove('done');
+                }
             }
         },
         displayFileNames: function() {
@@ -284,14 +267,9 @@ define([
             let context = {
                 hasFiles: hasFiles,
                 totalSize: this.formatFilesize(totalSize),
+                maxTotalSize : this.formatFilesize(this.maxtotalsize),
                 files: contextFiles
             };
-
-            if (hasFiles) {
-                carousel.classList.add('d-none');
-            } else {
-                carousel.classList.remove('d-none');
-            }
 
             Template.render('block_course_generator/filenames', context).then((html) => {
                 filesContainer.innerHTML = html;

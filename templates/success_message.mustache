@@ -1,6 +1,14 @@
 <div id="success_message_container" class="justify-content-center align-items-center mt-3">
-    <div class="alert alert-success text-center" role="alert">
-        {{#str}} course_generated, block_course_generator, {{courseid}} {{/str}}
-        {{#str}} generate_another, block_course_generator {{/str}}
+    <div class="alert alert_course_generated text-center" role="alert">
+        {{#str}} course_generated, block_course_generator, {{coursename}} {{/str}}
+        <div class="side-by-side">
+            <a href="/course/view.php?id={{courseid}}" target="_blank" class="btn button_view_course text-white d-flex align-items-center" title="{{#str}} view_course, block_course_generator {{/str}}">
+                <img src="/blocks/course_generator/pix/dixeo-white.svg" alt="Logo" width="25px" height="25px">
+                <span> {{#str}} view_course, block_course_generator {{/str}} </span>
+            </a>
+            <a href="/my/" class="btn button_generate_another d-flex align-items-center" title="{{#str}} generate_another, block_course_generator {{/str}}">
+                <span> {{#str}} generate_another, block_course_generator {{/str}} </span>
+            </a>
+        </div>
     </div>
 </div>

@@ -12,17 +12,10 @@ $string['pluginname'] = 'AI Course Generator';
 $string['blocktitle'] = '';
 $string['activity_chooser:addinstance'] = 'Add an AI Course Generator block';
 
-// Examples carousel
-$string['prompt1'] = 'Create a comprehensive, beginner-friendly course on Python programming, including practical exercises, quizzes, and project-based learning.';
-$string['prompt2'] = 'Generate an in-depth course covering the history of ancient civilizations, exploring key events, cultural practices, and significant contributions.';
-$string['prompt3'] = 'Design an interactive photography course that teaches basic skills, camera settings, composition techniques, and photo editing tutorials.';
-$string['prompt4'] = 'Build a complete algebra course for high school students with practical examples, step-by-step problem solving, and real-life applications.';
-$string['prompt5'] = 'Generate a Spanish language learning course for beginners focusing on essential vocabulary, conversation practice, and cultural context discussions.';
-$string['prompt6'] = 'Upload your own files to generate a custom course. Supported file types: .pptx, .docx, .pdf, .txt. Maximum file size: 20MB. Total size limit: 50MB.';
-
 // Prompt
 $string['heading'] = 'What do you want to teach today?';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
+$string['attachfile'] = 'Attach a source document';
 $string['draganddrop'] = 'Drag and drop your files to upload';
 $string['generate_course'] = 'Generate';
 $string['totalsize'] = '<b>Total size:</b> {$a}';
@@ -33,8 +26,9 @@ $string['heading2'] = 'We are building your course!';
 $string['inprogress'] = 'Course generation in progress...';
 $string['dismiss'] = 'Dismiss';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
-$string['course_generated'] = 'Course generated successfully! You can view the course <a href="/course/view.php?id={$a}">here</a>.';
-$string['generate_another'] = 'Or <a class="reset-prompt" href="/my/">generate a new one</a>.';
+$string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
+$string['view_course'] = 'View your course';
+$string['generate_another'] = 'Generate a new course';
 
 // Steps
 $string['step1'] = 'Validating input';

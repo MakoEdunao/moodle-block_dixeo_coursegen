@@ -1,40 +1,29 @@
-.block_course_generator {
-    border: none !important;
+.block_course_generator.card {
+    background-color: transparent;
 }
 
-.block_course_generator #carousel-controls {
-    background: #efeff7;
-    border-radius: 10px;
-    display: flex;
-    min-height: 100px;
+.block_course_generator h2 {
+    color: #108df0;
 }
 
-.block_course_generator .carousel-control-prev,
-.block_course_generator .carousel-control-next {
-    width: 60px;
-    color: #000091;
-    font-size: 20px;
+.block_course_generator #prompt-form textarea {
+    border: none;
 }
 
-.block_course_generator .carousel-control-prev:hover,
-.block_course_generator .carousel-control-prev:focus,
-.block_course_generator .carousel-control-next:hover,
-.block_course_generator .carousel-control-next:focus {
-    color: #000091;
-    box-shadow: none;
-}
-
-.block_course_generator .carousel-inner {
-    margin: auto;
-    padding: 0px 30px;
+.block_course_generator .generator-form {
+    position: relative;
+    padding: 20px;
+    background-color: #fff;
+    margin-bottom: 1.5rem;
+    border-radius: 1.2rem;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .block_course_generator .dropzone-message {
     position: absolute;
-    top: 7px;
-    left: 48px;
-    width: calc(100% - 96px);
-    height: calc(100% - 14px);
+    top: 0;
+    width: 100%;
+    height: 100%;
     color: #8f959e;
     border: 2px dashed #bbb;
     background: #fff;
@@ -54,13 +43,11 @@
 }
 
 .block_course_generator #generate_course {
-    right: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 35px;
+    right: 3%;
     height: 35px;
-    border-radius: 50%;
-    padding: 0;
+    background-color: #108df0;
+    font-weight: 700;
+    padding: 5px 10px;
 }
 
 .block_course_generator #generate_course:focus,
@@ -68,24 +55,9 @@
     box-shadow: none;
 }
 
-#generate_course #progress-spinner {
-    color: #000091;
-    width: 2.4rem;
-    margin: -3px;
-    height: 2.4rem;
-    vertical-align: -0.125em;
-    display: inline-block;
-    border: 0.25em solid transparent;
-}
-
-#generate_course #progress-spinner.spinner-border {
-    border: 0.25em solid #000091;
-    border-right-color: transparent;
-}
-
 .block_course_generator #generate_course img {
-    top: -36px;
     position: relative;
+    margin-right: 5px;
 }
 
 .block_course_generator .upload-instructions {
@@ -95,26 +67,26 @@
 .block_course_generator .label_course_files {
     left: 10px;
     top: 50%;
-    transform: translateY(-50%);
     cursor: pointer;
+    margin-bottom: 0
 }
 
 .block_course_generator .s-progress {
     background-color: #babfc5;
-    border-radius: 5px;
-    height: 5px;
+    border-radius: 0;
+    height: 12px;
 }
 
 .block_course_generator .s-progress .s-progress--bar {
-    background-color: #000091;
+    background-color: #108df0;
     height: 100%;
-    border-radius: 5px;
+    border-radius: 0;
     transition: width 1s ease-in-out;
     max-width: 100% !important;
 }
 
 .block_course_generator .s-progress .s-progress--bar.done {
-    background-color: #009100;
+    background-color: #108df0;
     transition: width 0.2s ease-in-out;
 }
 
@@ -145,28 +117,38 @@
     width: 0;
 }
 
-.block_course_generator .s-progress .s-progress--segments li:not(:first-child):not(:last-child):before {
+.block_course_generator .s-progress .s-progress--segments li:before {
     background-color: #FFFFFF;
     content: "";
-    height: 100%;
+    height: 101%;
     top: 0;
-    left: -1px;
+    left: -4px;
     position: absolute;
-    width: 5px;
+    width: 12px;
+    clip-path: polygon(40% 0, 100% 50%, 40% 100%, 0% 100%, 60% 50%, 0% 0%);
+}
+
+.block_course_generator .s-progress .s-progress--segments li:first-child:before {
+    clip-path: polygon(40% 0%, 100% 50%, 40% 100%, 0% 100%, 0% 0%);
+}
+
+.block_course_generator .s-progress .s-progress--segments li:last-child:before {
+    clip-path: polygon(100% 0, 100% 100%, 0% 100%, 60% 50%, 0% 0%);
+    left: -8px;
 }
 
 .block_course_generator #file_names .file-item {
     border-radius: 8px;
     font-size: 13px;
     display: inline-block;
-    padding: 10px 18px 10px 10px;
-    margin: 0px 5px 10px 0px;
-    background: #efeff7;
+    padding: 6px 10px;
+    margin: 0 5px 15px 0;
+    background: #108df026;
     position: relative;
 }
 
 .block_course_generator #file_names .file-item:hover {
-    background: #e8e8f5;
+    background: #108df033;
 }
 
 #generation-widget .delete-icon,
@@ -179,7 +161,7 @@
     height: 16px;
     border-radius: 8px;
     top: -4px;
-    right: -4px;
+    right: -8px;
 }
 
 #generation-widget .delete-icon:hover,
@@ -202,6 +184,71 @@
 
 .block_course_generator .p64 {
     padding: 15px 0px 25px 0;
+}
+.block_course_generator .alert_course_generated,
+.block_course_generator #loader {
+    color: #7f7f7f;
+    padding: 40px !important;
+    background-color: #fff;
+    margin-bottom: 1.5rem;
+    border-radius: 1.2rem;
+    box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.block_course_generator #loader {
+    padding-bottom: 60px !important;
+}
+
+.block_course_generator .alert_course_generated .side-by-side {
+    display: flex;
+    align-items: flex-end; /* Aligns children to the bottom */
+    gap: 0.5rem; /* Optional spacing between label and div */
+    padding-top: 0.5rem;
+    justify-content: center;
+}
+
+.block_course_generator .alert_course_generated .button_view_course {
+    background-color: #108df0;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.block_course_generator .alert_course_generated .button_view_course img{
+    margin-right: 0.5rem
+}
+
+.block_course_generator .alert_course_generated .button_generate_another {
+    background-color: #fff;
+    color: #108df0;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-left: 10px;
+    border-color: #108df0;
+    border-width: 1px;
+    font-weight: normal;
+}
+
+.block_course_generator .alert_course_generated .button_generate_another:hover {
+    color: #108df0;
+}
+
+.block_course_generator .side-by-side {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+}
+
+.block_course_generator .generation-step {
+    position: relative;
+    top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: gray;
 }
 
 @media (max-width: 790px) {
@@ -226,4 +273,8 @@
 
 #generation-widget .delete-icon {
     right: -11px;
+}
+
+.block_course_generator #success_message_container .side-by-side {
+    padding-top: 2.0rem;
 }

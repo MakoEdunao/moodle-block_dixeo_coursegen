@@ -53,17 +53,7 @@ class block_course_generator extends block_base {
         $this->content = new stdClass();
         $this->content->footer = '';
 
-        // Example prompts
-        $prompts = [
-            ['text' => get_string('prompt1', 'block_course_generator'), 'active' => true],
-            ['text' => get_string('prompt2', 'block_course_generator')],
-            ['text' => get_string('prompt3', 'block_course_generator')],
-            ['text' => get_string('prompt4', 'block_course_generator')],
-            ['text' => get_string('prompt5', 'block_course_generator')],
-            ['text' => get_string('prompt6', 'block_course_generator')]
-        ];
         $context = [
-            'prompts' => $prompts,
             'logourl' => $OUTPUT->image_url('edunao', 'block_course_generator'),
         ];
         $text = $OUTPUT->render_from_template('block_course_generator/course_generator', $context);

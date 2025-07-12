@@ -1,22 +1,23 @@
 <div class="prompt-container d-block">
     <h2 class="text-center mb-4">{{#str}} heading, block_course_generator {{/str}}</h2>
-    <form class="py-3">
+    <form class="py-3 generator-form">
         <div id="prompt-form" class="form-group position-relative mb-0">
-            <textarea id="course_description" name="course_description" class="form-control px-6" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
-            <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white" title="{{#str}} generate_course, block_course_generator {{/str}}">
-                <div id="progress-spinner" role="status"></div>
-                <img src="{{ logourl }}" alt="Logo" width="32px" height="32px">
-            </button>
-            <label for="temp_course_files" class="label_course_files position-absolute">
-                <i class="fa fa-paperclip fa-2x"></i>
-            </label>
+            <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
             <div class="dropzone-message">{{#str}} draganddrop, block_course_generator {{/str}}</div>
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
-        <div id="file_names" class="mt-2"></div>
+        <div class="side-by-side">
+            <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_course_generator {{/str}}">
+                <i class="fa fa-paperclip fa-2x"></i>
+            </label>
+            <div id="file_names" class="mt-2"></div>
+            <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white d-flex align-items-center" title="{{#str}} generate_course, block_course_generator {{/str}}">
+                <img src="/blocks/course_generator/pix/dixeo-white.svg" alt="Logo" width="25px" height="25px">
+                <span>{{#str}} generate_course, block_course_generator {{/str}}</span>
+            </button>
+        </div>
     </form>
-    {{> block_course_generator/carousel }}
 </div>
 
 {{#js}}

@@ -1,8 +1,8 @@
 {{#hasFiles}}
-    <p class="total-size mb-2">{{#str}} totalsize, block_course_generator, {{ totalSize }} {{/str}}</p>
     {{#files}}
         <div class="file-item">
             <span class="mr-1 delete-icon" data-toggle="tooltip" title="{{#str}} removefile, block_course_generator {{/str}}"><i class="fa fa-remove"></i></span> {{ name }} ({{ size }})
         </div>
     {{/files}}
+    <p class="total-size mb-2">{{#str}} totalsize, block_course_generator, {{ totalSize }}{{/str}} / {{ maxTotalSize }}</p>
 {{/hasFiles}}
