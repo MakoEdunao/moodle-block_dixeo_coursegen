@@ -50,11 +50,14 @@ class block_course_generator extends block_base {
             return $this->content;
         }
 
+        $coursedescription = optional_param('course_description', '', PARAM_TEXT);
+
         $this->content = new stdClass();
         $this->content->footer = '';
 
         $context = [
             'logourl' => $OUTPUT->image_url('edunao', 'block_course_generator'),
+            'course_description' => $coursedescription
         ];
         $text = $OUTPUT->render_from_template('block_course_generator/course_generator', $context);
 

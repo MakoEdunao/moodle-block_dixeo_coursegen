@@ -21,6 +21,13 @@ define([
             this.adjustDescriptionHeight();
             this.handleDragAndDrop();
 
+            // Trigger generation if course description is filled on page load.
+            if (courseDescription.value.trim() !== '') {
+                setTimeout(() => {
+                    generateCourse.click();
+                }, 1000);
+            }
+
             // Add event listener to trigger generation on pressing Enter in the course description.
             courseDescription.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {

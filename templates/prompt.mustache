@@ -2,7 +2,7 @@
     <h2 class="text-center mb-4">{{#str}} heading, block_course_generator {{/str}}</h2>
     <form class="py-3 generator-form">
         <div id="prompt-form" class="form-group position-relative mb-0">
-            <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}" data-initial-value=""></textarea>
+            <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_course_generator {{/str}}">{{course_description}}</textarea>
             <div class="dropzone-message">{{#str}} draganddrop, block_course_generator {{/str}}</div>
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
