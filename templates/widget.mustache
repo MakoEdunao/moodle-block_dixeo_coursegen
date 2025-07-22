@@ -1,8 +1,7 @@
 <div id="generation-widget" class="position-fixed">
-    <button id="generate_course" class="btn btn-secondary btn-circle" disabled title="{{#str}} generating_course, block_course_generator {{/str}}">
+    <button id="generation_progress" class="btn btn-secondary btn-circle" disabled title="{{#str}} generating_course, block_course_generator {{/str}}">
         <span class="mr-1 delete-icon" data-toggle="tooltip" title="{{#str}} dismiss, block_course_generator {{/str}}"><i class="fa fa-remove"></i></span>
-        <div id="progress-spinner" role="status" class="spinner-border position-absolute"></div>
-        <img src="{{ logourl }}" alt="Logo" width="32px" height="32px" class="mr-2">
+        <object type="image/svg+xml" data="/blocks/course_generator/pix/dixeo-animated.svg" width="35" height="35"></object>
         <span class="inprogress d-none d-md-inline-block">{{#str}} inprogress, block_course_generator {{/str}}</span>
     </button>
 </div>

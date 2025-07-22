@@ -15,7 +15,7 @@ function block_course_generator_before_standard_top_of_body_html() {
 }
 
 function before_top_of_body() {
-    global $SESSION, $OUTPUT;
+    global $OUTPUT;
 
     $output = '';
 
@@ -28,18 +28,24 @@ function before_top_of_body() {
         return $output;
     }
 
-    if (isset($SESSION->aigeneration)) {
-        if ($SESSION->aigeneration == 'inprogress') {
-            // Course generation is in progress, display the loading widget
-            $context = [
-                'logourl' => $OUTPUT->image_url('edunao', 'block_course_generator'),
-            ];
-            $output = $OUTPUT->render_from_template('block_course_generator/widget', $context);
+    $generation = get_user_preferences('aigeneration', '');
+    $expires = get_user_preferences('aigeneration_expires', 0);
+
+    if (!empty($generation)) {
+        if ($generation == 'inprogress') {
+            if ($expires < time()) {
+                // Generation should take this long, remove the loading widget after 5 minutes.
+                set_user_preference('aigeneration', null);
+            } else {
+                // Course generation is in progress, display the loading widget
+                $context = ['logourl' => $OUTPUT->image_url('edunao', 'block_course_generator')];
+                $output = $OUTPUT->render_from_template('block_course_generator/widget', $context);
+            }
         } else {
             // If the course generation is complete, display a success message
-            $message = get_string('course_generated', 'block_course_generator', $SESSION->aigeneration);
+            $message = get_string('course_generated', 'block_course_generator', $generation);
             \core\notification::add($message, \core\notification::SUCCESS);
-            unset($SESSION->aigeneration);
+            set_user_preference('aigeneration', null);
         }
     }
 
