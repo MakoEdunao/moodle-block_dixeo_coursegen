@@ -8,9 +8,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
-$string['pluginname'] = 'Générateur de cours IA';
+$string['pluginname'] = 'Générateur de cours Dixeo';
 $string['blocktitle'] = '';
-$string['activity_chooser:addinstance'] = 'Ajouter un bloc Générateur de cours IA';
+$string['activity_chooser:addinstance'] = 'Ajouter un bloc Générateur de cours Dixeo';
 
 // Carrousel d'exemples
 $string['prompt1'] = 'Créer un cours complet et convivial pour les débutants sur la programmation Python, incluant des exercices pratiques, des quiz et un apprentissage basé sur des projets.';

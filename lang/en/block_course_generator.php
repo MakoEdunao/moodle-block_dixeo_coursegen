@@ -8,9 +8,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
-$string['pluginname'] = 'AI Course Generator';
+$string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
-$string['activity_chooser:addinstance'] = 'Add an AI Course Generator block';
+$string['activity_chooser:addinstance'] = 'Add a Dixeo Course Generator block';
 
 // Prompt
 $string['heading'] = 'What do you want to teach today?';
