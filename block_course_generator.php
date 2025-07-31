@@ -55,8 +55,24 @@ class block_course_generator extends block_base {
         $this->content = new stdClass();
         $this->content->footer = '';
 
+        // Check which generator is available
+        $pluginmanager = \core_plugin_manager::instance();
+        $localedai = $pluginmanager->get_plugin_info('local_edai');
+        $localclient = $pluginmanager->get_plugin_info('local_edai_course_generator_client');
+
+        $generationurl = $CFG->wwwroot . '/local/edai/ajax/generate_course.php';
+        if ($localclient && !$localedai) {
+            $generationurl = $CFG->wwwroot . '/local/edai_course_generator_client/ajax/generate_course.php';
+        }
+
+        // Add to config.php to override the generation processor URL.
+        if (!empty($CFG->overridegenerationurl)) {
+            $generationurl = $CFG->overridegenerationurl;
+        }
+
         $context = [
             'logourl' => $OUTPUT->image_url('edunao', 'block_course_generator'),
+            'generationurl' => $generationurl,
             'course_description' => $coursedescription
         ];
         $text = $OUTPUT->render_from_template('block_course_generator/course_generator', $context);

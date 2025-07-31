@@ -15,7 +15,7 @@ define([
     const filesContainer        = generatorForm.querySelector('#file_names');
 
     return {
-        init: function() {
+        init: function(generationURL) {
             this.progress = 0;
 
             this.adjustDescriptionHeight();
@@ -56,7 +56,7 @@ define([
                     formdata.append('course_files[]', courseFiles.files[i]);
                 }
 
-                fetch(`${M.cfg.wwwroot}/local/edai/ajax/generate_course.php`, {
+                fetch(generationURL, {
                     method: 'POST',
                     body: formdata
                 })
