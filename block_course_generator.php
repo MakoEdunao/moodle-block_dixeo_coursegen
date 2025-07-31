@@ -70,6 +70,15 @@ class block_course_generator extends block_base {
             $generationurl = $CFG->overridegenerationurl;
         }
 
+        if (str_contains($generationurl, 'edai_course_generator_client') && 
+            class_exists(\local_edai_course_generator_client\course_generator::class)) {
+            $configerrors = \local_edai_course_generator_client\course_generator::check_configuration();
+            if ($configerrors) {
+                $this->content->text = $OUTPUT->notification($configerrors, 'notifyerror');
+                return $this->content;
+            }
+        }
+
         $context = [
             'logourl' => $OUTPUT->image_url('edunao', 'block_course_generator'),
             'generationurl' => $generationurl,
