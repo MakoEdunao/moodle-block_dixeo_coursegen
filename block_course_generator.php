@@ -29,7 +29,7 @@ class block_course_generator extends block_base {
      * @return bool
      */
     public function has_config() {
-        return false;
+        return true;
     }
 
     function specialization() {
@@ -58,11 +58,10 @@ class block_course_generator extends block_base {
         // Check which generator is available
         $pluginmanager = \core_plugin_manager::instance();
         $localedai = $pluginmanager->get_plugin_info('local_edai');
-        $localclient = $pluginmanager->get_plugin_info('local_edai_course_generator_client');
 
         $generationurl = $CFG->wwwroot . '/local/edai/ajax/generate_course.php';
-        if ($localclient && !$localedai) {
-            $generationurl = $CFG->wwwroot . '/local/edai_course_generator_client/ajax/generate_course.php';
+        if (!$localedai) {
+            $generationurl = $CFG->wwwroot . '/blocks/course_generator/ajax/generate_course.php';
         }
 
         // Add to config.php to override the generation processor URL.
@@ -70,9 +69,8 @@ class block_course_generator extends block_base {
             $generationurl = $CFG->overridegenerationurl;
         }
 
-        if (str_contains($generationurl, 'edai_course_generator_client') && 
-            class_exists(\local_edai_course_generator_client\course_generator::class)) {
-            $configerrors = \local_edai_course_generator_client\course_generator::check_configuration();
+        if (str_contains($generationurl, 'edai_course_generator_client')) {
+            $configerrors = \block_course_generator\course_generator::check_configuration();
             if ($configerrors) {
                 $this->content->text = $OUTPUT->notification($configerrors, 'notifyerror');
                 return $this->content;

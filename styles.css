@@ -1,5 +1,6 @@
 .block_course_generator.card {
     background-color: transparent;
+    border: none;
 }
 
 .block_course_generator h2 {

@@ -8,6 +8,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */
 
+defined('MOODLE_INTERNAL') || die();
+
 $string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
 $string['activity_chooser:addinstance'] = 'Add a Dixeo Course Generator block';
@@ -44,3 +46,32 @@ $string['uploaderror'] = 'Error uploading file.';
 $string['filetypeinvalid'] = 'File type of {$a} is not supported. Supported extensions: .pptx, .docx, .pdf, .txt.';
 $string['filetoolarge'] = 'File is too large. Please upload a file smaller than 20MB.';
 $string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload smaller files or remove one to continue.';
+
+// Settings.
+$string['settings'] = 'Dixeo Course Generator';
+$string['error_generation_failed'] = 'Dixeo course generation failed. 
+Error: {$a}';
+$string['error_lti_disabled'] = "Dixeo course generation requires to enable LTI enrolment on your platform";
+$string['error_platform_not_registered'] = "Your platform is not registered on the Dixeo platform. Please contact your administrator.";
+
+// Platform URL
+$string['platformurl'] = 'Dixeo platform URL';
+$string['platformurl_desc'] = 'Enter the base URL of the Edunao Dixeo platform. The plugin will prepend https:// automatically.';
+$string['default_platformurl'] = 'https://app.dixeo.com';
+
+// API key
+$string['apikey'] = 'Dixeo API key';
+$string['apikey_desc'] = "Enter the API key given by Edunao to activate the course generation.";
+$string['default_apikey'] = 'fa2e6c8adab11e9dcdb171681f11fdc1';
+
+// Default category
+$string['categoryname'] = 'Category for created courses';
+$string['categoryname_desc'] = 'Enter the name of the local category where courses will be created.';
+$string['default_categoryname'] = 'Dixeo courses';
+
+// Registration link and instructions
+$string['register'] = 'Register';
+$string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Enter the URL and API key of the Dixeo platform to register your site.';
+$string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>We couldn\'t register your platform. Please check the URL and API key.';
+$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>You need to register your platform to use the course generator.';
+$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>Your platform is already registered.';

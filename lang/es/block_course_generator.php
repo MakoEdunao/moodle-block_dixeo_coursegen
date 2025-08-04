@@ -50,3 +50,33 @@ $string['uploaderror'] = 'Error al subir el archivo.';
 $string['filetypeinvalid'] = 'El tipo de archivo de {$a} no es soportado. Extensiones soportadas: .pptx, .docx, .pdf, .txt.';
 $string['filetoolarge'] = 'El archivo es demasiado grande. Por favor sube un archivo con un tamaño menor a 20MB.';
 $string['totaltoolarge'] = 'El tamaño total de los archivos excede el límite de 50MB. Sube archivos más pequeños o elimina uno de ellos para continuar.';
+
+// Configuración.
+$string['settings'] = 'Generador de Cursos Dixeo';
+$string['error_generation_failed'] = 'La generación del curso Dixeo falló. 
+Error: {$a}';
+$string['error_lti_disabled'] = "La generación de cursos Dixeo requiere habilitar la auto-matriculación LTI en tu plataforma";
+$string['error_platform_not_registered'] = "Tu plataforma no está registrada en la plataforma Dixeo. Por favor contacta a tu administrador.";
+
+// URL de la plataforma
+$string['platformurl'] = 'URL de la plataforma Dixeo';
+$string['platformurl_desc'] = 'Introduce la URL base de la plataforma Edunao Dixeo. El plugin añadirá https:// automáticamente.';
+$string['default_platformurl'] = 'https://app.dixeo.com';
+
+// Clave API
+$string['apikey'] = 'Clave API de Dixeo';
+$string['apikey_desc'] = "Introduce la clave API proporcionada por Edunao para activar la generación de cursos.";
+$string['default_apikey'] = 'fa2e6c8adab11e9dcdb171681f11fdc1';
+
+// Categoría por defecto
+$string['categoryname'] = 'Categoría para los cursos creados';
+$string['categoryname_desc'] = 'Introduce el nombre de la categoría local donde se crearán los cursos.';
+$string['default_categoryname'] = 'Cursos Dixeo';
+
+// Enlace de registro e instrucciones
+$string['register'] = 'Registrar';
+$string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Introduce la URL y la clave API de la plataforma Dixeo para registrar tu sitio.';
+$string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>No pudimos registrar tu plataforma. Por favor revisa la URL y la clave API.';
+$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Necesitas registrar tu plataforma para usar el generador de cursos.';
+$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>Tu plataforma ya está registrada.';
+
