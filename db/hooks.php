@@ -17,7 +17,7 @@
 /**
  * Hook to allow plugins to add any elements to the top of the body.
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2025 Josemaria Bolanos <admin@mako.digital>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 $callbacks = [
     [
         'hook' => \core\hook\output\before_standard_top_of_body_html_generation::class,
-        'callback' => 'block_course_generator\output::hook_before_top_of_body',
+        'callback' => 'block_dixeo_coursegen\output::hook_before_top_of_body',
         'priority' => 0,
     ],
 ];

@@ -18,13 +18,13 @@
 /**
  *
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2024 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use block_course_generator\webservice;
+use block_dixeo_coursegen\webservice;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -48,13 +48,13 @@ if ($clientid && $tooldomain) {
 
 if ($ADMIN->fulltree) {
     // Check if the platform is already registered
-    $apikey = get_config('block_course_generator', 'apikey');
-    $platformurl = get_config('block_course_generator', 'platformurl');
+    $apikey = get_config('block_dixeo_coursegen', 'apikey');
+    $platformurl = get_config('block_dixeo_coursegen', 'platformurl');
 
     // Create a fake button for disabled registration.
     $registerbutton = \html_writer::tag(
         'button',
-        new \lang_string('register', 'block_course_generator'),
+        new \lang_string('register', 'block_dixeo_coursegen'),
         array('class' => 'btn btn-secondary disabled', 'onclick' => 'return false;', 'style' => 'cursor: default;')
     );
 
@@ -81,7 +81,7 @@ if ($ADMIN->fulltree) {
                 // Create a button to trigger registration
                 $registerbutton = \html_writer::link(
                     $url,
-                    new \lang_string('register', 'block_course_generator'),
+                    new \lang_string('register', 'block_dixeo_coursegen'),
                     array('class' => 'btn btn-primary mb-3')
                 );
 
@@ -96,34 +96,34 @@ if ($ADMIN->fulltree) {
 
     $registrationlink = \html_writer::tag(
         'p',
-        new \lang_string($instructions, 'block_course_generator'),
+        new \lang_string($instructions, 'block_dixeo_coursegen'),
         array('class' => 'bold')
     ) . $registerbutton;
 
     // Add Platform URL setting.
     $settings->add(new admin_setting_configtext(
-        'block_course_generator/platformurl',
-        get_string('platformurl', 'block_course_generator'),
-        get_string('platformurl_desc', 'block_course_generator'),
-        get_string('default_platformurl', 'block_course_generator'),
+        'block_dixeo_coursegen/platformurl',
+        get_string('platformurl', 'block_dixeo_coursegen'),
+        get_string('platformurl_desc', 'block_dixeo_coursegen'),
+        get_string('default_platformurl', 'block_dixeo_coursegen'),
         PARAM_URL
     ));
 
     // Add API key setting.
     $settings->add(new admin_setting_configtext(
-        'block_course_generator/apikey',
-        get_string('apikey', 'block_course_generator'),
-        get_string('apikey_desc', 'block_course_generator'),
-        get_string('default_apikey', 'block_course_generator'),
+        'block_dixeo_coursegen/apikey',
+        get_string('apikey', 'block_dixeo_coursegen'),
+        get_string('apikey_desc', 'block_dixeo_coursegen'),
+        get_string('default_apikey', 'block_dixeo_coursegen'),
         PARAM_TEXT
     ));
 
     // Add course generation category name setting.
     $settings->add(new admin_setting_configtext(
-        'block_course_generator/categoryname',
-        get_string('categoryname', 'block_course_generator'),
-        get_string('categoryname_desc', 'block_course_generator') . $registrationlink,
-        get_string('default_categoryname', 'block_course_generator'),
+        'block_dixeo_coursegen/categoryname',
+        get_string('categoryname', 'block_dixeo_coursegen'),
+        get_string('categoryname_desc', 'block_dixeo_coursegen') . $registrationlink,
+        get_string('default_categoryname', 'block_dixeo_coursegen'),
         PARAM_TEXT
     ));
 }

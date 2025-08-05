@@ -17,17 +17,17 @@
 /**
  * Hook to allow plugins to add any elements to the top of the body.
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2025 Josemaria Bolanos <admin@mako.digital>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_course_generator;
+namespace block_dixeo_coursegen;
 
 /**
  * Hook to allow plugins to add any elements to the top of the body.
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2025 Josemaria Bolanos <admin@mako.digital>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -41,7 +41,7 @@ class output {
         global $CFG;
 
         // Require  library.
-        require_once($CFG->dirroot.'/blocks/course_generator/lib.php');
+        require_once($CFG->dirroot.'/blocks/dixeo_coursegen/lib.php');
 
         // Call callback implementation.
         $hook->add_html(before_top_of_body());

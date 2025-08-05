@@ -1,17 +1,17 @@
-.block_course_generator.card {
+.block_dixeo_coursegen.card {
     background-color: transparent;
     border: none;
 }
 
-.block_course_generator h2 {
+.block_dixeo_coursegen h2 {
     color: #108df0;
 }
 
-.block_course_generator #prompt-form textarea {
+.block_dixeo_coursegen #prompt-form textarea {
     border: none;
 }
 
-.block_course_generator .generator-form {
+.block_dixeo_coursegen .generator-form {
     position: relative;
     padding: 20px;
     background-color: #fff;
@@ -20,7 +20,7 @@
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.block_course_generator .dropzone-message {
+.block_dixeo_coursegen .dropzone-message {
     position: absolute;
     top: 0;
     width: 100%;
@@ -33,17 +33,17 @@
     justify-content: center;
 }
 
-.block_course_generator .drag-over .dropzone-message {
+.block_dixeo_coursegen .drag-over .dropzone-message {
     display: flex;
 }
 
-.block_course_generator #course_description {
+.block_dixeo_coursegen #course_description {
     overflow-y: hidden;
     min-height: 60px;
     max-height: 200px;
 }
 
-.block_course_generator #generate_course {
+.block_dixeo_coursegen #generate_course {
     right: 3%;
     height: 35px;
     background-color: #108df0;
@@ -51,34 +51,34 @@
     padding: 5px 10px;
 }
 
-.block_course_generator #generate_course:focus,
-.block_course_generator #generate_course.focus {
+.block_dixeo_coursegen #generate_course:focus,
+.block_dixeo_coursegen #generate_course.focus {
     box-shadow: none;
 }
 
-.block_course_generator #generate_course img {
+.block_dixeo_coursegen #generate_course img {
     position: relative;
     margin-right: 5px;
 }
 
-.block_course_generator .upload-instructions {
+.block_dixeo_coursegen .upload-instructions {
     font-size: 12px;
 }
 
-.block_course_generator .label_course_files {
+.block_dixeo_coursegen .label_course_files {
     left: 10px;
     top: 50%;
     cursor: pointer;
     margin-bottom: 0
 }
 
-.block_course_generator .s-progress {
+.block_dixeo_coursegen .s-progress {
     background-color: #babfc5;
     border-radius: 0;
     height: 12px;
 }
 
-.block_course_generator .s-progress .s-progress--bar {
+.block_dixeo_coursegen .s-progress .s-progress--bar {
     background-color: #108df0;
     height: 100%;
     border-radius: 0;
@@ -86,16 +86,16 @@
     max-width: 100% !important;
 }
 
-.block_course_generator .s-progress .s-progress--bar.done {
+.block_dixeo_coursegen .s-progress .s-progress--bar.done {
     background-color: #108df0;
     transition: width 0.2s ease-in-out;
 }
 
-.block_course_generator .s-progress__segmented {
+.block_dixeo_coursegen .s-progress__segmented {
     position: relative;
 }
 
-.block_course_generator .s-progress .s-progress--segments {
+.block_dixeo_coursegen .s-progress .s-progress--segments {
     display: flex;
     height: 100%;
     justify-content: space-between;
@@ -105,7 +105,7 @@
     width: 100%;
 }
 
-.block_course_generator .s-progress .s-progress--segments li {
+.block_dixeo_coursegen .s-progress .s-progress--segments li {
     display: block;
     position: relative;
     padding-top: 10px;
@@ -114,11 +114,11 @@
     width: 25%;
 }
 
-.block_course_generator .s-progress .s-progress--segments li:last-child {
+.block_dixeo_coursegen .s-progress .s-progress--segments li:last-child {
     width: 0;
 }
 
-.block_course_generator .s-progress .s-progress--segments li:before {
+.block_dixeo_coursegen .s-progress .s-progress--segments li:before {
     background-color: #FFFFFF;
     content: "";
     height: 101%;
@@ -129,16 +129,16 @@
     clip-path: polygon(40% 0, 100% 50%, 40% 100%, 0% 100%, 60% 50%, 0% 0%);
 }
 
-.block_course_generator .s-progress .s-progress--segments li:first-child:before {
+.block_dixeo_coursegen .s-progress .s-progress--segments li:first-child:before {
     clip-path: polygon(40% 0%, 100% 50%, 40% 100%, 0% 100%, 0% 0%);
 }
 
-.block_course_generator .s-progress .s-progress--segments li:last-child:before {
+.block_dixeo_coursegen .s-progress .s-progress--segments li:last-child:before {
     clip-path: polygon(100% 0, 100% 100%, 0% 100%, 60% 50%, 0% 0%);
     left: -8px;
 }
 
-.block_course_generator #file_names .file-item {
+.block_dixeo_coursegen #file_names .file-item {
     border-radius: 8px;
     font-size: 13px;
     display: inline-block;
@@ -148,12 +148,12 @@
     position: relative;
 }
 
-.block_course_generator #file_names .file-item:hover {
+.block_dixeo_coursegen #file_names .file-item:hover {
     background: #108df033;
 }
 
 #generation-widget .delete-icon,
-.block_course_generator .delete-icon {
+.block_dixeo_coursegen .delete-icon {
     color: #aaa;
     display: inline-block;
     position: absolute;
@@ -166,28 +166,28 @@
 }
 
 #generation-widget .delete-icon:hover,
-.block_course_generator .delete-icon:hover {
+.block_dixeo_coursegen .delete-icon:hover {
     color: #333;
     background: #ccc;
     cursor: pointer;
 }
 
 #generation-widget .delete-icon i,
-.block_course_generator .delete-icon i {
+.block_dixeo_coursegen .delete-icon i {
     position: absolute;
     top: 1px;
     right: 3px;
 }
 
-.block_course_generator #file_names ul {
+.block_dixeo_coursegen #file_names ul {
     list-style-type: none;
 }
 
-.block_course_generator .p64 {
+.block_dixeo_coursegen .p64 {
     padding: 15px 0px 25px 0;
 }
-.block_course_generator .alert_course_generated,
-.block_course_generator #loader {
+.block_dixeo_coursegen .alert_course_generated,
+.block_dixeo_coursegen #loader {
     color: #7f7f7f;
     padding: 40px !important;
     background-color: #fff;
@@ -196,11 +196,11 @@
     box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.block_course_generator #loader {
+.block_dixeo_coursegen #loader {
     padding-bottom: 60px !important;
 }
 
-.block_course_generator .alert_course_generated .side-by-side {
+.block_dixeo_coursegen .alert_course_generated .side-by-side {
     display: flex;
     align-items: flex-end; /* Aligns children to the bottom */
     gap: 0.5rem; /* Optional spacing between label and div */
@@ -208,7 +208,7 @@
     justify-content: center;
 }
 
-.block_course_generator .alert_course_generated .button_view_course {
+.block_dixeo_coursegen .alert_course_generated .button_view_course {
     background-color: #108df0;
     color: #fff;
     padding: 4px 10px;
@@ -217,11 +217,11 @@
     font-weight: 700;
 }
 
-.block_course_generator .alert_course_generated .button_view_course img{
+.block_dixeo_coursegen .alert_course_generated .button_view_course img{
     margin-right: 0.5rem
 }
 
-.block_course_generator .alert_course_generated .button_generate_another {
+.block_dixeo_coursegen .alert_course_generated .button_generate_another {
     background-color: #fff;
     color: #108df0;
     padding: 5px 10px;
@@ -233,18 +233,18 @@
     font-weight: normal;
 }
 
-.block_course_generator .alert_course_generated .button_generate_another:hover {
+.block_dixeo_coursegen .alert_course_generated .button_generate_another:hover {
     color: #108df0;
 }
 
-.block_course_generator .side-by-side {
+.block_dixeo_coursegen .side-by-side {
     display: flex;
     align-items: flex-end;
     gap: 0.5rem;
     padding-top: 0.5rem;
 }
 
-.block_course_generator .generation-step {
+.block_dixeo_coursegen .generation-step {
     position: relative;
     top: 10px;
     font-size: 13px;
@@ -253,7 +253,7 @@
 }
 
 @media (max-width: 790px) {
-    .block_course_generator .p64 {
+    .block_dixeo_coursegen .p64 {
         padding: 15px 0px 40px 0;
     }
 }
@@ -285,6 +285,6 @@
     margin-left: 32px;
 }
 
-.block_course_generator #success_message_container .side-by-side {
+.block_dixeo_coursegen #success_message_container .side-by-side {
     padding-top: 2.0rem;
 }

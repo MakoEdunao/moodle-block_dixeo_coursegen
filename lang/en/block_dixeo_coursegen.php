@@ -1,9 +1,9 @@
 <?php
 
 /**
- * Strings for component 'block_course_generator'
+ * Strings for component 'block_dixeo_coursegen'
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2025 Josemaria Bolanos <admin@mako.digital>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 */

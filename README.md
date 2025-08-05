@@ -13,7 +13,7 @@ The Dixeo Course Generator plugin allows Moodle administrators and course creato
 
 ## Installation
 
-1. **Download** the plugin and place the `course_generator` folder into your Moodle's `blocks` directory.
+1. **Download** the plugin and place the `dixeo_coursegen` folder into your Moodle's `blocks` directory.
 
 2. **Visit** the Site Administration page to complete the installation process.
 

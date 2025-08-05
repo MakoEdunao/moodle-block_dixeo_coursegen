@@ -2,12 +2,12 @@
 /**
  * LTI Platform Registration plugin
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  Josemaria Bolanos <admin@mako.digital>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_course_generator;
+namespace block_dixeo_coursegen;
 
 use Firebase\JWT\JWT;
 use mod_lti\local\ltiopenid\jwks_helper;

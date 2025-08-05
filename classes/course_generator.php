@@ -18,13 +18,13 @@
 /**
  *
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2024 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_course_generator;
+namespace block_dixeo_coursegen;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -73,7 +73,7 @@ class course_generator {
         $this->files = $files;
 
         // Get the course category.
-        $categoryname = get_config('block_course_generator', 'categoryname');
+        $categoryname = get_config('block_dixeo_coursegen', 'categoryname');
         $this->categoryid = $DB->get_field('course_categories', 'id', ['name' => $categoryname]);
         if ($this->categoryid == false) {
             // Category does not exist, create a new one at the root level.
@@ -88,13 +88,13 @@ class course_generator {
         }
 
         // Get platform url from settings (add https if neither http nor https are found).
-        $this->platformurl = get_config('block_course_generator', 'platformurl');
+        $this->platformurl = get_config('block_dixeo_coursegen', 'platformurl');
         if (!preg_match('#^https?://#', $this->platformurl)) {
             $this->platformurl = 'https://' . $this->platformurl;
         }
 
         // Retrieve configuration settings.
-        $this->token = get_config('block_course_generator', 'apikey');
+        $this->token = get_config('block_dixeo_coursegen', 'apikey');
 
         // Get LTI type ID.
         $sql = <<<SQL
@@ -330,24 +330,24 @@ class course_generator {
 
         // Check enrol LTI is enabled.
         if (!enrol_is_enabled('lti')) {
-            return get_string('error_lti_disabled', 'block_course_generator');
+            return get_string('error_lti_disabled', 'block_dixeo_coursegen');
         }
 
         // Check apikey available.
-        $apikey = get_config('block_course_generator', 'apikey');
+        $apikey = get_config('block_dixeo_coursegen', 'apikey');
         if ($apikey === '') {
-            return get_string('apikey_desc', 'block_course_generator');
+            return get_string('apikey_desc', 'block_dixeo_coursegen');
         }
 
         // Check if platformurl is available.
-        $platformurl = get_config('block_course_generator', 'platformurl');
+        $platformurl = get_config('block_dixeo_coursegen', 'platformurl');
         if ($platformurl === '') {
-            return get_string('platformurl_desc', 'block_course_generator');
+            return get_string('platformurl_desc', 'block_dixeo_coursegen');
         }
 
         // Register platform if not already registered
         if (!webservice::call('check', $platformurl, $apikey)) {
-            return get_string('error_platform_not_registered', 'block_course_generator');
+            return get_string('error_platform_not_registered', 'block_dixeo_coursegen');
         }
 
         return null;

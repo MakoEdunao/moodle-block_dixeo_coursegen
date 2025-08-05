@@ -18,7 +18,7 @@
 /**
  *
  *
- * @package    block_course_generator
+ * @package    block_dixeo_coursegen
  * @copyright  2024 Edunao SAS (contact@edunao.com)
  * @author     Pierre FACQ <pierre.facq@edunao.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -45,7 +45,7 @@ $description = required_param('description', PARAM_TEXT);
 $files = $_FILES['course_files'] ?? null;
 
 try {
-    $generator = new \block_course_generator\course_generator($description, $files);
+    $generator = new \block_dixeo_coursegen\course_generator($description, $files);
     $course = $generator->generate_course();
 
     http_response_code(200);
@@ -54,6 +54,6 @@ try {
     echo json_encode($response);
 } catch (Exception $e) {
     echo json_encode([
-        'error' => get_string('error_generation_failed', 'block_course_generator', $e->getMessage() . ' ' . $e->getTraceAsString())
+        'error' => get_string('error_generation_failed', 'block_dixeo_coursegen', $e->getMessage() . ' ' . $e->getTraceAsString())
     ]);
 }

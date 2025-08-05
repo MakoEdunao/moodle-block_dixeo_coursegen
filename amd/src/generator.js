@@ -222,7 +222,7 @@ define([
             }, 1000);
         },
         finishProgress: async function(courseid, coursename) {
-            Template.render('block_course_generator/success_message', {courseid: courseid, coursename: coursename}).then((html) => {
+            Template.render('block_dixeo_coursegen/success_message', {courseid: courseid, coursename: coursename}).then((html) => {
                 this.setProgress(100);
                 generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
                 generationContainer.classList.replace('d-block', 'd-none');
@@ -278,7 +278,7 @@ define([
                 files: contextFiles
             };
 
-            Template.render('block_course_generator/filenames', context).then((html) => {
+            Template.render('block_dixeo_coursegen/filenames', context).then((html) => {
                 filesContainer.innerHTML = html;
 
                 let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
@@ -319,7 +319,7 @@ define([
         },
         notify: async function() {
             let strings = [];
-            let component = 'block_course_generator';
+            let component = 'block_dixeo_coursegen';
 
             for (let i = 0; i < arguments.length; i++) {
                 if (Array.isArray(arguments[i])) {
