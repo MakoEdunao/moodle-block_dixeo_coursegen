@@ -1,48 +1,74 @@
-# Dixeo Course Generator Plugin for Moodle
+![Dixeo logo](pix/dixeo-logo.png)
 
-## Overview
+# Dixeo Course Generator for Moodle LMS
 
-The Dixeo Course Generator plugin allows Moodle administrators and course creators to generate courses using AI. By providing a course description and optional files, the plugin communicates with an external AI service to generate a fully functional course in Moodle.
+Effortlessly create complete Moodle courses using the power of AI. The **Dixeo Course Generator** helps administrators and educators turn a simple course description and optional supporting files into a fully functional, ready-to-use Moodle course in just a few clicks.
 
-## Features
+This plugin generates your course on Dixeo.com and automatically configures your Moodle platform to access it via LTI.
 
-- **AI-Powered Course Generation**: Generate courses based on a description.
-- **File Upload Support**: Upload files to be used as source material.
-- **Automatic LTI Module Setup**: Integrates the generated content via LTI.
-- **Multi-language Support**: Available in English, French, Spanish, and Italian.
+You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) to start building courses directly.
 
-## Installation
+---
 
-1. **Download** the plugin and place the `dixeo_coursegen` folder into your Moodle's `blocks` directory.
+## 🚀 Features
 
-2. **Visit** the Site Administration page to complete the installation process.
+- **AI-Powered Course Generation**  
+  Automatically generate structured courses based on a short description.
 
-## Configuration
+- **File Upload Support**  
+  Enrich the course generation by uploading relevant source files (e.g., PDFs, docs).
 
-1. **Navigate** to `Site Administration > Plugins > Blocks > Dixeo Course Generator`.
+- **Automatic LTI Module Integration**  
+  The plugin sets up LTI modules for seamless access to the generated content.
 
-2. **Enter** the API key provided by Edunao.
+- **Multi-language Support**  
+  Available in **English**, **French**, **Spanish**, and **Italian**.
 
-3. **Specify** the category name where generated courses will be created.
+---
 
-4. **Ensure** that the LTI enrolment method is enabled on your Moodle platform.
+## ⚙️ Installation
 
-## Usage
+1. Download the plugin ZIP file.
+2. Extract and place the folder named `dixeo_coursegen` into the `/blocks` directory of your Moodle installation.
+3. Log in to your Moodle site as an administrator.
+4. Navigate to **Site administration** — Moodle will detect the new plugin and walk you through the installation steps.
 
-1. **Add** an instance of the block `Dixeo Course Generator` to your dashboard.
+---
 
-2. **Provide** a course description in the text area.
+## 🔧 Configuration
 
-3. **(Optional)** Upload any files you want to include as source material.
+![Dixeo settings](pix/dixeo-screen2.png)
 
-4. **Click** on the **Generate** button.
+1. Go to **Site administration** > **Plugins** > **Blocks** > **Dixeo Course Generator**.
+2. Enter the **API key** provided by Dixeo.
+3. Specify the **default category name** where generated courses will be created.
+4. Ensure the **LTI enrolment method** is enabled on your Moodle platform.
 
-5. **Wait** for the course to be generated. A success message will appear with a link to the new course.
+---
 
-## Permissions
+## 🧑‍🏫 How to Use
 
-- Users must have the `moodle/course:create` capability to access and use the plugin.
+![Dixeo settings](pix/dixeo-screen1.png)
 
-## Support
+1. Add the **Dixeo Course Generator** block to your Moodle dashboard or course page.
+2. Provide a **course description** in the input box.
+3. *(Optional)* Upload any supporting documents to enhance content generation.
+4. Click the **Generate** button.
+5. Wait a few moments for the course to be created.
+6. A **success message** will appear with a link to the newly generated course.
 
-For support and further information, please contact Edunao or refer to the plugin documentation.
+---
+
+## 🔐 Permissions
+
+Ensure that users have the `moodle/course:create` capability to access and use the plugin features.
+
+---
+
+## 🆘 Support
+
+For assistance, questions, or further information, please contact **Dixeo** or refer to the official plugin documentation.
+
+---
+
+*Created and maintained by [Dixeo](https://www.dixeo.com/)*
