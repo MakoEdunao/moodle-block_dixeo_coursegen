@@ -124,7 +124,7 @@ class webservice {
 
         if ($decoded->result && isset($decoded->registrationurl)) {
             $registrationurl = new \moodle_url($decoded->registrationurl);
-            $returnurl = $CFG->wwwroot . '/admin/settings.php?section=blocksettingcourse_generator';
+            $returnurl = $CFG->wwwroot . '/admin/settings.php?section=blocksettingdixeo_coursegen';
             $registrationurl->param('returnurl', $returnurl);
             redirect($registrationurl);
         }

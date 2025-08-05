@@ -70,7 +70,7 @@ if ($ADMIN->fulltree) {
                 $url = new \moodle_url(
                     '\admin\settings.php',
                     [
-                        'section' => 'blocksettingcourse_generator',
+                        'section' => 'blocksettingdixeo_coursegen',
                         'register' => true,
                     ]
                 );
