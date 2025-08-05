@@ -30,6 +30,13 @@ $string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
 $string['dixeo_coursegen:addinstance'] = 'Add a Dixeo Course Generator block';
 
+// Privacy
+$string['privacy:metadata:userid'] = 'The ID of the user accessing the LTI Consumer';
+$string['privacy:metadata:email'] = 'The email address of the user accessing the LTI Consumer';
+$string['privacy:metadata:firstname'] = 'The firstname of the user accessing the LTI Consumer';
+$string['privacy:metadata:lastname'] = 'The lastname of the user accessing the LTI Consumer';
+$string['privacy:metadata:externalpurpose'] = 'The LTI Consumer provides user information and context to the LTI Tool Provider.';
+
 // Prompt
 $string['heading'] = 'What do you want to teach today?';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
