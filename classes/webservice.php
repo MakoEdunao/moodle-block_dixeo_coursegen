@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,7 +16,7 @@
 
 /**
  * LTI Platform Registration
- * 
+ *
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
@@ -87,11 +86,11 @@ class webservice {
     public static function register_platform(string $toolurl, string $token): bool {
         global $CFG, $SITE, $PAGE;
 
-        // Open ID configuration
+        // Open ID configuration.
         $confurl = new \moodle_url('/mod/lti/openid-configuration.php');
         $openid = htmlspecialchars($confurl->out(false));
 
-        // Registration token
+        // Registration token.
         $clientid = registration_helper::get()->new_clientid();
         $scope = registration_helper::REG_TOKEN_OP_NEW_REG;
         $now = time();
@@ -99,7 +98,7 @@ class webservice {
             "sub" => $clientid,
             "scope" => $scope,
             "iat" => $now,
-            "exp" => $now + HOURSECS
+            "exp" => $now + HOURSECS,
         ];
         $privatekey = jwks_helper::get_private_key();
         $regtoken = JWT::encode($jwttoken, $privatekey['key'], 'RS256', $privatekey['kid']);

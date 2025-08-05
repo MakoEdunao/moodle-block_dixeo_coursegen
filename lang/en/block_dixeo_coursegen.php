@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,7 +16,7 @@
 
 /**
  * Strings for component 'block_dixeo_coursegen'
- * 
+ *
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
@@ -30,14 +29,14 @@ $string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
 $string['dixeo_coursegen:addinstance'] = 'Add a Dixeo Course Generator block';
 
-// Privacy
+// Privacy.
 $string['privacy:metadata:userid'] = 'The ID of the user accessing the LTI Consumer';
 $string['privacy:metadata:email'] = 'The email address of the user accessing the LTI Consumer';
 $string['privacy:metadata:firstname'] = 'The firstname of the user accessing the LTI Consumer';
 $string['privacy:metadata:lastname'] = 'The lastname of the user accessing the LTI Consumer';
 $string['privacy:metadata:externalpurpose'] = 'The LTI Consumer provides user information and context to the LTI Tool Provider.';
 
-// Prompt
+// Prompt.
 $string['heading'] = 'What do you want to teach today?';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
 $string['attachfile'] = 'Attach a source document';
@@ -46,21 +45,21 @@ $string['generate_course'] = 'Generate';
 $string['totalsize'] = '<b>Total size:</b> {$a}';
 $string['removefile'] = 'Remove file';
 
-// Generation
+// Generation.
 $string['heading2'] = 'We are building your course!';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
 $string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
 $string['view_course'] = 'View your course';
 $string['generate_another'] = 'Generate a new course';
 
-// Steps
+// Steps.
 $string['step1'] = 'Validating input';
 $string['step2'] = 'Analyzing subject';
 $string['step3'] = 'Structuring modules';
 $string['step4'] = 'Generating content';
 $string['step5'] = 'Finalizing details';
 
-// File errors
+// File errors.
 $string['invalidinput'] = 'Information required.';
 $string['descriptionorfilesrequired'] = 'Please enter a course description or upload files to generate the course.';
 $string['uploaderror'] = 'Error uploading file.';
@@ -70,27 +69,27 @@ $string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload small
 
 // Settings.
 $string['settings'] = 'Dixeo Course Generator';
-$string['error_generation_failed'] = 'Dixeo course generation failed. 
+$string['error_generation_failed'] = 'Dixeo course generation failed.
 Error: {$a}';
 $string['error_lti_disabled'] = "Dixeo course generation requires to enable LTI enrolment on your platform";
 $string['error_platform_not_registered'] = "Your platform is not registered on the Dixeo platform. Please contact your administrator.";
 
-// Platform URL
+// Platform URL.
 $string['platformurl'] = 'Dixeo platform URL';
 $string['platformurl_desc'] = 'Enter the base URL of the Dixeo platform. The plugin will prepend https:// automatically.';
 $string['default_platformurl'] = 'https://app.dixeo.com';
 
-// API key
+// API key.
 $string['apikey'] = 'Dixeo API key';
 $string['apikey_desc'] = "Enter the API key given by Dixeo to activate the course generation.";
 $string['default_apikey'] = 'fa2e6c8adab11e9dcdb171681f11fdc1';
 
-// Default category
+// Default category.
 $string['categoryname'] = 'Category for created courses';
 $string['categoryname_desc'] = 'Enter the name of the local category where courses will be created.';
 $string['default_categoryname'] = 'Dixeo courses';
 
-// Registration link and instructions
+// Registration link and instructions.
 $string['register'] = 'Register';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Enter the URL and API key of the Dixeo platform to register your site.';
 $string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>We couldn\'t register your platform. Please check the URL and API key.';

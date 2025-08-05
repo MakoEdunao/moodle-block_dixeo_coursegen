@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -21,8 +20,6 @@
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-http_response_code(500);
 
 define('AJAX_SCRIPT', true);
 
@@ -51,7 +48,9 @@ try {
     $response = ['courseid' => $course->id, 'coursename' => $course->fullname];
     echo json_encode($response);
 } catch (Exception $e) {
+    http_response_code(500);
+
     echo json_encode([
-        'error' => get_string('error_generation_failed', 'block_dixeo_coursegen', $e->getMessage() . ' ' . $e->getTraceAsString())
+        'error' => get_string('error_generation_failed', 'block_dixeo_coursegen', $e->getMessage() . ' ' . $e->getTraceAsString()),
     ]);
 }

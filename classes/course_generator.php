@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -343,7 +342,7 @@ class course_generator {
             return get_string('platformurl_desc', 'block_dixeo_coursegen');
         }
 
-        // Register platform if not already registered
+        // Register platform if not already registered.
         if (!webservice::call('check', $platformurl, $apikey)) {
             return get_string('error_platform_not_registered', 'block_dixeo_coursegen');
         }

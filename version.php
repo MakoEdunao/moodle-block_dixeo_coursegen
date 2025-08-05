@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -17,7 +16,7 @@
 
 /**
  * Version details
- * 
+ *
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
@@ -28,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2025022109;                 // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2023100909;                 // Requires this Moodle version.
-$plugin->component = 'block_dixeo_coursegen';   // Full name of the plugin (used for diagnostics)
+$plugin->component = 'block_dixeo_coursegen';   // Full name of the plugin (used for diagnostics).
 
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v1.0.0';
