@@ -18,7 +18,7 @@
 /**
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Edunao SAS (contact@dixeo.com)
+ * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -206,7 +206,7 @@ class course_generator {
 
         $response = $this->curl->post($serviceurl, $params);
         if (!$response) {
-            throw new \moodle_exception('Error during course generation on Edunao 123');
+            throw new \moodle_exception('Error during course generation on Dixeo.com');
         }
 
         return $response;

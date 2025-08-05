@@ -18,7 +18,7 @@
 /**
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Edunao SAS (contact@dixeo.com)
+ * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

@@ -20,7 +20,7 @@
  * 
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Edunao SAS (contact@dixeo.com)
+ * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -70,12 +70,12 @@ $string['error_platform_not_registered'] = "Your platform is not registered on t
 
 // Platform URL
 $string['platformurl'] = 'Dixeo platform URL';
-$string['platformurl_desc'] = 'Enter the base URL of the Edunao Dixeo platform. The plugin will prepend https:// automatically.';
+$string['platformurl_desc'] = 'Enter the base URL of the Dixeo platform. The plugin will prepend https:// automatically.';
 $string['default_platformurl'] = 'https://app.dixeo.com';
 
 // API key
 $string['apikey'] = 'Dixeo API key';
-$string['apikey_desc'] = "Enter the API key given by Edunao to activate the course generation.";
+$string['apikey_desc'] = "Enter the API key given by Dixeo to activate the course generation.";
 $string['default_apikey'] = 'fa2e6c8adab11e9dcdb171681f11fdc1';
 
 // Default category
