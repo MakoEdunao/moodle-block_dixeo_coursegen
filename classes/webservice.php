@@ -80,7 +80,6 @@ class webservice {
      *
      * @param  string $toolurl
      * @param  string $token
-     * @param  string $clientid
      * @return bool
      */
     public static function register_platform(string $toolurl, string $token): bool {
