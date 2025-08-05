@@ -152,7 +152,6 @@
     background: #108df033;
 }
 
-#generation-widget .delete-icon,
 .block_dixeo_coursegen .delete-icon {
     color: #aaa;
     display: inline-block;
@@ -165,14 +164,12 @@
     right: -8px;
 }
 
-#generation-widget .delete-icon:hover,
 .block_dixeo_coursegen .delete-icon:hover {
     color: #333;
     background: #ccc;
     cursor: pointer;
 }
 
-#generation-widget .delete-icon i,
 .block_dixeo_coursegen .delete-icon i {
     position: absolute;
     top: 1px;
@@ -256,33 +253,6 @@
     .block_dixeo_coursegen .p64 {
         padding: 15px 0px 40px 0;
     }
-}
-
-#generation-widget {
-    top: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1040;
-}
-
-#generation-widget #generation_progress {
-    transform: scale(0.9);
-    opacity: 1;
-    padding: 10px;
-    background-color: #e9ebee;
-}
-
-#generation-widget .delete-icon {
-    right: -11px;
-}
-
-#generation_progress object {
-    position: absolute;
-    top: 7px;
-}
-
-#generation_progress .inprogress {
-    margin-left: 32px;
 }
 
 .block_dixeo_coursegen #success_message_container .side-by-side {

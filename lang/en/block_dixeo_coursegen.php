@@ -12,7 +12,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
-$string['activity_chooser:addinstance'] = 'Add a Dixeo Course Generator block';
+$string['dixeo_coursegen:addinstance'] = 'Add a Dixeo Course Generator block';
 
 // Prompt
 $string['heading'] = 'What do you want to teach today?';
@@ -25,8 +25,6 @@ $string['removefile'] = 'Remove file';
 
 // Generation
 $string['heading2'] = 'We are building your course!';
-$string['inprogress'] = 'Course generation in progress...';
-$string['dismiss'] = 'Dismiss';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
 $string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
 $string['view_course'] = 'View your course';
