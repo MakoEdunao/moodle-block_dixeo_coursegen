@@ -44,7 +44,12 @@ class block_dixeo_coursegen extends block_base {
      * @return bool
      */
     public function has_config() {
-        return true;
+        global $CFG;
+
+        $pluginmanager = \core_plugin_manager::instance();
+        $localedai = $pluginmanager->get_plugin_info('local_edai');
+
+        return !$localedai || !empty($CFG->overridegenerationurl);
     }
 
     public function specialization() {
