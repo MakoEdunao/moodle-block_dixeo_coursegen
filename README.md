@@ -67,7 +67,7 @@ Ensure that users have the `moodle/course:create` capability to access and use t
 
 ## 🆘 Support
 
-For assistance, questions, or further information, please contact **Dixeo** or refer to the official plugin documentation.
+For assistance, questions, or further information, please contact **contact@dixeo.com** or refer to the official plugin documentation.
 
 ---
 
