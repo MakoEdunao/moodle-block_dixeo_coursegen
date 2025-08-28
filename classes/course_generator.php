@@ -327,11 +327,6 @@ class course_generator {
         require_login();
         require_capability('moodle/course:create', \context_system::instance());
 
-        // Check enrol LTI is enabled.
-        if (!enrol_is_enabled('lti')) {
-            return get_string('error_lti_disabled', 'block_dixeo_coursegen');
-        }
-
         // Check apikey available.
         $apikey = get_config('block_dixeo_coursegen', 'apikey');
         if ($apikey === '') {
