@@ -89,7 +89,7 @@ class block_dixeo_coursegen extends block_base {
             $generationurl = $CFG->overridegenerationurl;
         }
 
-        if (str_contains($generationurl, 'edai_course_generator_client')) {
+        if (str_contains($generationurl, 'dixeo_coursegen')) {
             $configerrors = \block_dixeo_coursegen\course_generator::check_configuration();
             if ($configerrors) {
                 $this->content->text = $OUTPUT->notification($configerrors, 'notifyerror');
