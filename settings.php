@@ -40,6 +40,14 @@ if ($clientid && $tooldomain) {
     if ($ltitype = $DB->get_record('lti_types', $conditions)) {
         $ltitype->state = LTI_TOOL_STATE_CONFIGURED;
         $DB->update_record('lti_types', $ltitype);
+
+        // Delete old LTI type records if they exist.
+        $sql = "SELECT id FROM {lti_types} WHERE baseurl = :baseurl AND id < :newid";
+        $oldtypes = $DB->get_records_sql($sql, ['baseurl' => $ltitype->baseurl, 'newid' => $ltitype->id]);
+
+        foreach ($oldtypes as $oldtype) {
+            $DB->delete_records('lti_types', ['id' => $oldtype->id]);
+        }
     }
 }
 
