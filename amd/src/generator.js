@@ -40,8 +40,11 @@ define([
             generateCourse.addEventListener('click', (event) => {
                 event.preventDefault();
 
+                let courseDescriptionValue = courseDescription.value.trim();
+                courseDescription.value = '';
+
                 // Check if the course description is filled or files are uploaded.
-                if (courseDescription.value.trim() === '' && courseFiles.files.length === 0) {
+                if (courseDescriptionValue === '' && courseFiles.files.length === 0) {
                     this.notify('invalidinput', 'descriptionorfilesrequired');
                     return;
                 }
@@ -51,7 +54,7 @@ define([
                 }
 
                 const formdata = new FormData();
-                formdata.append('description', courseDescription.value);
+                formdata.append('description', courseDescriptionValue);
                 for (let i = 0; i < courseFiles.files.length; i++) {
                     formdata.append('course_files[]', courseFiles.files[i]);
                 }
