@@ -98,6 +98,8 @@ class course_generator {
             SELECT id
               FROM {lti_types} tp
              WHERE baseurl = '{$this->platformurl}/enrol/lti/launch.php'
+          ORDER BY id DESC
+             LIMIT 1
         SQL;
         $this->ltitypeid = $DB->get_field_sql($sql, null, MUST_EXIST);
 
