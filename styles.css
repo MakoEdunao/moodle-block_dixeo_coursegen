@@ -253,6 +253,33 @@
     .block_dixeo_coursegen .p64 {
         padding: 15px 0px 40px 0;
     }
+
+    .block_dixeo_coursegen #course_description {
+        font-size: 16px;
+        min-height: 100px !important;
+    }
+
+    .block_dixeo_coursegen #loader {
+        padding: 30px 20px !important;
+    }
+
+    .block_dixeo_coursegen #file_names {
+        margin-left: -31px;
+        margin-bottom: 45px;
+    }
+
+    .block_dixeo_coursegen .generation-step {
+        display: none;
+    }
+
+    .block_dixeo_coursegen #success_message_container .side-by-side {
+        display: block;
+    }
+
+    .block_dixeo_coursegen #success_message_container .side-by-side a {
+        margin: 15px auto 0 auto;
+        display: block !important;
+    }
 }
 
 .block_dixeo_coursegen #success_message_container .side-by-side {
