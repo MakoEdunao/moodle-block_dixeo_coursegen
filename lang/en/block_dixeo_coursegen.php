@@ -71,8 +71,7 @@ $string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload small
 $string['settings'] = 'Dixeo Course Generator';
 $string['error_generation_failed'] = 'Dixeo course generation failed.
 Error: {$a}';
-$string['error_lti_disabled'] = "Dixeo course generation requires to enable LTI enrolment on your platform";
-$string['error_platform_not_registered'] = "Your platform is not registered on the Dixeo platform. Please contact your administrator.";
+$string['error_platform_not_registered'] = 'Your platform is not registered on the Dixeo platform. Please have your administrator complete your registration here: {$a}';
 
 // Platform URL.
 $string['platformurl'] = 'Dixeo platform URL';

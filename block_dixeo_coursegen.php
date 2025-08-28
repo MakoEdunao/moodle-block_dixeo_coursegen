@@ -92,7 +92,10 @@ class block_dixeo_coursegen extends block_base {
         if (str_contains($generationurl, 'dixeo_coursegen')) {
             $configerrors = \block_dixeo_coursegen\course_generator::check_configuration();
             if ($configerrors) {
-                $this->content->text = $OUTPUT->notification($configerrors, 'notifyerror');
+                $settingsurl = new \moodle_url('/admin/settings.php', ['section' => 'blocksettingdixeo_coursegen']);
+                $settingslink = \html_writer::link($settingsurl, $settingsurl->out());
+                $notregistered = get_string('error_platform_not_registered', 'block_dixeo_coursegen', $settingslink);
+                $this->content->text = $OUTPUT->notification($notregistered, 'notifyerror');
                 return $this->content;
             }
         }

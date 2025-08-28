@@ -341,7 +341,9 @@ class course_generator {
 
         // Register platform if not already registered.
         if (!webservice::call('check', $platformurl, $apikey)) {
-            return get_string('error_platform_not_registered', 'block_dixeo_coursegen');
+            $settingsurl = new \moodle_url('/admin/settings.php', ['section' => 'blocksettingdixeo_coursegen']);
+            $settingslink = \html_writer::link($settingsurl, $settingsurl->out());
+            return get_string('error_platform_not_registered', 'block_dixeo_coursegen', $settingslink);
         }
 
         return null;
