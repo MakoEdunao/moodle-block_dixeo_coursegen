@@ -92,5 +92,7 @@ $string['default_categoryname'] = 'Dixeo courses';
 $string['register'] = 'Register';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Enter the URL and API key of the Dixeo platform to register your site.';
 $string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>We couldn\'t register your platform. Please check the URL and API key.';
-$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>You need to register your platform to use the course generator.';
+$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
+<span class="needs-registration">You need to register your platform to use the course generator.</span>
+<span class="needs-saving hidden">Save your changes first before proceeding with registration.</span>';
 $string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>Your platform is already registered.';

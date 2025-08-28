@@ -88,11 +88,13 @@ if ($ADMIN->fulltree) {
                         ]
                     );
 
+                    $PAGE->requires->js_call_amd('block_dixeo_coursegen/dirty', 'init');
+
                     // Create a button to trigger registration.
-                    $registerbutton = \html_writer::link(
-                        $url,
+                    $registerbutton = \html_writer::tag(
+                        'button',
                         new \lang_string('register', 'block_dixeo_coursegen'),
-                        ['class' => 'btn btn-primary mb-3']
+                        ['class' => 'dixeo-register-button btn btn-primary mb-3', 'data-url' => $url->out(false)]
                     );
 
                     $instructions = 'needsregistration';
@@ -107,7 +109,7 @@ if ($ADMIN->fulltree) {
         $registrationlink = \html_writer::tag(
             'p',
             new \lang_string($instructions, 'block_dixeo_coursegen'),
-            ['class' => 'bold']
+            ['class' => 'dixeo-register-instructions bold']
         ) . $registerbutton;
 
         // Add Platform URL setting.
