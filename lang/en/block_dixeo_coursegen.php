@@ -76,7 +76,7 @@ $string['error_platform_not_registered'] = "Your platform is not registered on t
 
 // Platform URL.
 $string['platformurl'] = 'Dixeo platform URL';
-$string['platformurl_desc'] = 'Enter the base URL of the Dixeo platform. The plugin will prepend https:// automatically.';
+$string['platformurl_desc'] = 'Enter the base URL of the Dixeo platform.';
 $string['default_platformurl'] = 'https://app.dixeo.com';
 
 // API key.
