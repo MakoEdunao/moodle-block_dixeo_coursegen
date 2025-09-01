@@ -106,11 +106,13 @@ if ($ADMIN->fulltree) {
             $instructions = 'enterurlandkey';
         }
 
-        $registrationlink = \html_writer::tag(
-            'p',
-            new \lang_string($instructions, 'block_dixeo_coursegen'),
-            ['class' => 'dixeo-register-instructions bold']
-        ) . $registerbutton;
+        if ($instructions) {
+            $registrationlink = \html_writer::tag(
+                'p',
+                new \lang_string($instructions, 'block_dixeo_coursegen'),
+                ['class' => 'dixeo-register-instructions bold']
+            ) . $registerbutton;
+        }
 
         // Add Platform URL setting.
         $settings->add(new admin_setting_configtext(
