@@ -106,6 +106,7 @@ if ($ADMIN->fulltree) {
             $instructions = 'enterurlandkey';
         }
 
+        $registrationlink = '';
         if ($instructions) {
             $registrationlink = \html_writer::tag(
                 'p',
