@@ -220,18 +220,21 @@ define([
                 }
 
                 // Increase by a random amount every second
-                let increment = Math.floor(Math.random() * 5);
+                let increment = Math.floor(Math.random() * 1.75);
                 this.setProgress(this.progress + increment);
             }, 1000);
         },
         finishProgress: async function(courseid, coursename) {
-            Template.render('block_dixeo_coursegen/success_message', {courseid: courseid, coursename: coursename}).then((html) => {
-                this.setProgress(100);
-                generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
-                generationContainer.classList.replace('d-block', 'd-none');
-            }).catch((error) => {
-                Notification.exception(error);
-            });
+            this.setProgress(100);
+            setTimeout(() => {
+                Template.render('block_dixeo_coursegen/success_message', {courseid: courseid, coursename: coursename})
+                .then((html) => {
+                    generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
+                    generationContainer.classList.replace('d-block', 'd-none');
+                }).catch((error) => {
+                    Notification.exception(error);
+                });
+            }, 500);
         },
         resetProgress: function() {
             generateCourse.disabled = false;
