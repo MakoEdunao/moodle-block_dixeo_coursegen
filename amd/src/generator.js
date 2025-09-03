@@ -13,6 +13,8 @@ define([
     const tempCourseFiles       = generatorForm.querySelector('#temp_course_files');
     const courseFiles           = generatorForm.querySelector('#course_files');
     const filesContainer        = generatorForm.querySelector('#file_names');
+    const maxfilesize           = 20 * 1024 * 1024;  // 20 MB
+    const maxtotalsize          = 50 * 1024 * 1024; // 50 MB
 
     return {
         init: function(generationURL) {
@@ -67,9 +69,7 @@ define([
                     return response.json().then(data => {
                         if (!response.ok) {
                             this.resetProgress();
-                            throw new Error(
-                                response.status === 402 ? data.error : 'Oops, error during course creation. Please try again.'
-                            );
+                            throw new Error(data.error);
                         }
                         return data;
                     });
@@ -81,7 +81,8 @@ define([
                 })
                 .catch(error => {
                     this.resetProgress();
-                    Notification.alert('', error.message);
+                    const errorTitle = Str.get_string('error_title', 'block_dixeo_coursegen');
+                    Notification.alert(errorTitle, error.message);
                 });
             });
         },
@@ -107,9 +108,6 @@ define([
         },
         transferFiles: function(newFiles) {
             // Validate files.
-            const maxfilesize = 20 * 1024 * 1024;  // 20 MB
-            const maxtotalsize = 50 * 1024 * 1024; // 50 MB
-            this.maxtotalsize = maxtotalsize;
             const allowedtypes = [
                 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -280,7 +278,7 @@ define([
             let context = {
                 hasFiles: hasFiles,
                 totalSize: this.formatFilesize(totalSize),
-                maxTotalSize : this.formatFilesize(this.maxtotalsize),
+                maxTotalSize : this.formatFilesize(maxtotalsize),
                 files: contextFiles
             };
 

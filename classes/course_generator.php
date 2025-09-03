@@ -143,6 +143,15 @@ class course_generator {
             throw new \moodle_exception($responsedata['error']);
         }
 
+        if (!isset(
+                $responsedata['coursefullname'],
+                $responsedata['courseshortname'],
+                $responsedata['coursesummary'],
+                $responsedata['ltiparameters']
+            )) {
+            throw new \moodle_exception('Invalid response from course generation service.');
+        }
+
         // Create course.
         $course = $this->create_course($responsedata);
 

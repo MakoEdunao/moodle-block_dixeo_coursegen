@@ -50,7 +50,12 @@ try {
 } catch (Exception $e) {
     http_response_code(500);
 
+    $debug = '';
+    if (debugging('', DEBUG_DEVELOPER)) {
+        $debug = '<br><br>Error:<br>' . $e->getMessage() . '<br><br>' . $e->getTraceAsString();
+    }
+
     echo json_encode([
-        'error' => get_string('error_generation_failed', 'block_dixeo_coursegen', $e->getMessage() . ' ' . $e->getTraceAsString()),
+        'error' => get_string('error_generation_failed', 'block_dixeo_coursegen') . $debug,
     ]);
 }
