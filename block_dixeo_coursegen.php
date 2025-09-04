@@ -66,6 +66,11 @@ class block_dixeo_coursegen extends block_base {
         // Note: do NOT include files at the top of this file.
         require_once($CFG->libdir . '/filelib.php');
 
+        // We can exit early if the current user doesn't have the capability to create courses.
+        if (!has_capability('moodle/course:create', $this->context)) {
+            return null;
+        }
+
         if ($this->content !== null) {
             return $this->content;
         }

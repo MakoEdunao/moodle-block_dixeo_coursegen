@@ -27,17 +27,30 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
-    'block/dixeo_coursegen:myaddinstance' => [
+    'block/dixeo_coursegen:addinstance' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
 
         'captype' => 'write',
-        'contextlevel' => CONTEXT_BLOCK,
+        'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
         ],
 
-        'clonepermissionsfrom' => 'moodle/my:manageblocks',
+        'clonepermissionsfrom' => 'moodle/course:create',
+    ],
+
+    'block/dixeo_coursegen:myaddinstance' => [
+        'riskbitmask' => RISK_SPAM | RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+
+        'clonepermissionsfrom' => 'moodle/course:create',
     ],
 
 ];
