@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Dixeo Course Generator';
 $string['blocktitle'] = '';
 $string['dixeo_coursegen:addinstance'] = 'Add a Dixeo Course Generator block';
+$string['dixeo_coursegen:myaddinstance'] = 'Add a new Dixeo Course Generator block to my dashboard';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'The ID of the user accessing the LTI Consumer';
