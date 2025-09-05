@@ -218,7 +218,7 @@ define([
                 }
 
                 // Increase by a random amount every second
-                let increment = Math.floor(Math.random() * 1.75);
+                let increment = Math.floor(Math.random() * 5);
                 this.setProgress(this.progress + increment);
             }, 1000);
         },
