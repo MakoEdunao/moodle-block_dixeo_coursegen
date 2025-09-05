@@ -143,6 +143,10 @@ class course_generator {
             throw new \moodle_exception($responsedata['error']);
         }
 
+        if (isset($responsedata['exception'])) {
+            throw new \moodle_exception($responsedata['message']);
+        }
+
         if (!isset(
                 $responsedata['coursefullname'],
                 $responsedata['courseshortname'],
@@ -214,7 +218,12 @@ class course_generator {
             . "&wsfunction=local_edai_course_generator"
             . "&moodlewsrestformat=json";
 
-        $response = $this->curl->post($serviceurl, $params);
+        $options = [
+            'CURLOPT_TIMEOUT' => 600,        // Max execution time in seconds (10 minutes)
+            'CURLOPT_CONNECTTIMEOUT' => 60,  // Optional: connection timeout
+        ];
+        
+        $response = $this->curl->post($serviceurl, $params, $options);
         if (!$response) {
             throw new \moodle_exception('Error during course generation on Dixeo.com');
         }
@@ -264,6 +273,8 @@ class course_generator {
     }
 
     private function enrol_user(int $courseid, int $userid): void {
+        global $CFG;
+
         // Enroll the current user in the newly created course.
         $enrol = enrol_get_plugin('manual');
         if (!$enrol) {
