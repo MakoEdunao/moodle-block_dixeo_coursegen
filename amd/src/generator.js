@@ -25,9 +25,9 @@ define([
     'jquery',
     'core/templates',
     'core/notification',
-    'core/str'
-], function($, Template, Notification, Str) {
-    const generatorForm         = document.getElementById('edai_course_generator_form');
+    'core/str',
+    'core/config'
+], function($, Template, Notification, Str, Config) {
     const promptContainer       = generatorForm.querySelector('.prompt-container');
     const promptForm            = generatorForm.querySelector('#prompt-form');
     const generationContainer   = generatorForm.querySelector('.generation-container');
@@ -248,7 +248,13 @@ define([
         finishProgress: async function(courseid, coursename) {
             this.setProgress(100);
             setTimeout(() => {
-                Template.render('block_dixeo_coursegen/success_message', {courseid: courseid, coursename: coursename})
+                let context = {
+                    courseid: courseid,
+                    coursename: coursename,
+                    wwwroot: Config.wwwroot
+                };
+
+                Template.render('block_dixeo_coursegen/success_message', context)
                 .then((html) => {
                     generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
                     generationContainer.classList.replace('d-block', 'd-none');

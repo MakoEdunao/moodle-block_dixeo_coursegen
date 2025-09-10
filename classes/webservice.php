@@ -86,7 +86,7 @@ class webservice {
         global $CFG, $SITE, $PAGE;
 
         // Open ID configuration.
-        $confurl = new \moodle_url('/mod/lti/openid-configuration.php');
+        $confurl = new \moodle_url($CFG->wwwroot . '/mod/lti/openid-configuration.php');
         $openid = htmlspecialchars($confurl->out(false));
 
         // Registration token.

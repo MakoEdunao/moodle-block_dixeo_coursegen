@@ -81,7 +81,7 @@ if ($ADMIN->fulltree) {
                 } else {
                     // Create a button to trigger registration.
                     $url = new \moodle_url(
-                        '\admin\settings.php',
+                        $CFG->wwwroot . '/admin/settings.php',
                         [
                             'section' => 'blocksettingdixeo_coursegen',
                             'register' => true,
