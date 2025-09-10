@@ -94,14 +94,13 @@ class course_generator {
         $this->token = get_config('block_dixeo_coursegen', 'apikey');
 
         // Get LTI type ID.
-        $sql = <<<SQL
-            SELECT id
-              FROM {lti_types} tp
-             WHERE baseurl = '{$this->platformurl}/enrol/lti/launch.php'
-          ORDER BY id DESC
-             LIMIT 1
-        SQL;
-        $this->ltitypeid = $DB->get_field_sql($sql, null, MUST_EXIST);
+        $sql = "SELECT id
+                  FROM {lti_types} tp
+                 WHERE baseurl = :baseurl
+              ORDER BY id DESC
+                 LIMIT 1";
+        $baseurl = "{$this->platformurl}/enrol/lti/launch.php";
+        $this->ltitypeid = $DB->get_field_sql($sql, ['baseurl' => $baseurl], MUST_EXIST);
 
         // Initialize cURL.
         $this->curl = new \curl();
