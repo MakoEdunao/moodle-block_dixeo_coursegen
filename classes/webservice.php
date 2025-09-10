@@ -44,6 +44,7 @@ class webservice {
         } else if ($action == 'registration') {
             return self::register_platform($url, $token);
         }
+        return false;
     }
 
     /**
