@@ -19,12 +19,8 @@
 
     Dixeo Course Generator Prompt Template
 
-    Data attributes required for JS:
-    * generationurl
-
     Example context (json):
     {
-        "generationurl": "https://example.com/blocks/dixeo_coursegen/ajax/generate_course.php",
         "course_description": "Create a course about..."
     }
 }}
@@ -34,11 +30,11 @@
         <div id="prompt-form" class="form-group position-relative mb-0">
             <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_dixeo_coursegen {{/str}}">{{course_description}}</textarea>
             <div class="dropzone-message">{{#str}} draganddrop, block_dixeo_coursegen {{/str}}</div>
-            <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
-            <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
+            <input type="file" id="temp_coursefiles" name="temp_coursefiles[]" class="form-control d-none" multiple="">
+            <input type="file" id="coursefiles" name="coursefiles[]" class="form-control d-none" multiple="">
         </div>
         <div class="side-by-side">
-            <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_coursegen {{/str}}">
+            <label for="temp_coursefiles" class="label_coursefiles" title="{{#str}} attachfile, block_dixeo_coursegen {{/str}}">
                 <i class="fa fa-paperclip fa-2x"></i>
             </label>
             <div id="file_names" class="mt-2"></div>
@@ -52,6 +48,6 @@
 
 {{#js}}
 require(['block_dixeo_coursegen/generator'], function(Generator) {
-    Generator.init('{{generationurl}}');
+    Generator.init();
 });
 {{/js}}

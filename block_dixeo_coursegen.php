@@ -23,6 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use block_dixeo_coursegen\course_generator;
+
 /**
  * The Dixeo Course Generator block class
  */
@@ -99,33 +101,22 @@ class block_dixeo_coursegen extends block_base {
         $this->content = new stdClass();
         $this->content->footer = '';
 
-        // Check which generator is available.
-        $pluginmanager = \core_plugin_manager::instance();
-        $localedai = $pluginmanager->get_plugin_info('local_edai');
+        if (course_generator::get_generator_type() !== 'local') {
+            // Handle non-local generator case.
+            $configerrors = course_generator::check_configuration();
 
-        $generationurl = $CFG->wwwroot . '/local/edai/ajax/generate_course.php';
-        if (!$localedai) {
-            $generationurl = $CFG->wwwroot . '/blocks/dixeo_coursegen/ajax/generate_course.php';
-        }
-
-        // Add to config.php to override the generation processor URL.
-        if (!empty($CFG->overridegenerationurl)) {
-            $generationurl = $CFG->overridegenerationurl;
-        }
-
-        if (str_contains($generationurl, 'dixeo_coursegen')) {
-            $configerrors = \block_dixeo_coursegen\course_generator::check_configuration();
             if ($configerrors) {
                 $settingsurl = new \moodle_url($CFG->wwwroot . '/admin/settings.php', ['section' => 'blocksettingdixeo_coursegen']);
                 $settingslink = \html_writer::link($settingsurl, $settingsurl->out());
                 $notregistered = get_string('error_platform_not_registered', 'block_dixeo_coursegen', $settingslink);
+
                 $this->content->text = $OUTPUT->notification($notregistered, 'notifyerror');
+
                 return $this->content;
             }
         }
 
         $context = [
-            'generationurl' => $generationurl,
             'course_description' => $coursedescription,
         ];
         $text = $OUTPUT->render_from_template('block_dixeo_coursegen/course_generator', $context);

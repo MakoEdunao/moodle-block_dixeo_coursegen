@@ -26,22 +26,23 @@ define([
     'core/templates',
     'core/notification',
     'core/str',
-    'core/config'
-], function($, Template, Notification, Str, Config) {
+    'core/config',
+    'core/ajax'
+], function($, Template, Notification, Str, Config, Ajax) {
     const generatorForm = document.getElementById('edai_course_generator_form');
     const promptContainer = generatorForm.querySelector('.prompt-container');
     const promptForm = generatorForm.querySelector('#prompt-form');
     const generationContainer = generatorForm.querySelector('.generation-container');
     const courseDescription = generatorForm.querySelector('#course_description');
     const generateCourse = generatorForm.querySelector('#generate_course');
-    const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
-    const courseFiles = generatorForm.querySelector('#course_files');
+    const tempCourseFiles = generatorForm.querySelector('#temp_coursefiles');
+    const courseFiles = generatorForm.querySelector('#coursefiles');
     const filesContainer = generatorForm.querySelector('#file_names');
     const maxfilesize = 20 * 1024 * 1024; // 20 MB.
     const maxtotalsize = 50 * 1024 * 1024; // 50 MB.
 
     return {
-        init: function(generationURL) {
+        init: function() {
             this.progress = 0;
 
             this.adjustDescriptionHeight();
@@ -82,28 +83,27 @@ define([
                 const formdata = new FormData();
                 formdata.append('description', courseDescriptionValue);
                 for (let i = 0; i < courseFiles.files.length; i++) {
-                    formdata.append('course_files[]', courseFiles.files[i]);
+                    formdata.append('coursefiles[]', courseFiles.files[i]);
                 }
 
-                fetch(generationURL, {
-                    method: 'POST',
-                    body: formdata
-                })
-                .then(response => {
-                    return response.json().then(data => {
-                        if (!response.ok) {
-                            this.resetProgress();
-                            throw new Error(data.error);
-                        }
-                        return data;
-                    });
-                })
+                const request = {
+                    methodname: 'block_dixeo_coursegen_generate_course',
+                    args: formdata
+                };
+                let promise = Ajax.call([request])[0];
+
+                promise
                 .then(data => {
-                    const courseid = data.courseid;
-                    const coursename = data.coursename;
-                    this.finishProgress(courseid, coursename);
+                    if (data.errormessage) {
+                        this.resetProgress();
+                        throw new Error(data.errormessage);
+                    } else {
+                        const courseid = data.courseid;
+                        const coursename = data.coursename;
+                        this.finishProgress(courseid, coursename);
+                    }
                 })
-                .catch(error => {
+                .fail(error => {
                     this.resetProgress();
                     const errorTitle = Str.get_string('error_title', 'block_dixeo_coursegen');
                     Notification.alert(errorTitle, error.message);
