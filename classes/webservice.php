@@ -29,6 +29,11 @@ use Firebase\JWT\JWT;
 use mod_lti\local\ltiopenid\jwks_helper;
 use mod_lti\local\ltiopenid\registration_helper;
 
+/**
+ * Webservice Class
+ *
+ * Handles webservice calls for platform registration and checking.
+ */
 class webservice {
     /**
      * Call a webservice.

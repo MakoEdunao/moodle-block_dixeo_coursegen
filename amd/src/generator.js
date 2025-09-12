@@ -28,16 +28,17 @@ define([
     'core/str',
     'core/config'
 ], function($, Template, Notification, Str, Config) {
-    const promptContainer       = generatorForm.querySelector('.prompt-container');
-    const promptForm            = generatorForm.querySelector('#prompt-form');
-    const generationContainer   = generatorForm.querySelector('.generation-container');
-    const courseDescription     = generatorForm.querySelector('#course_description');
-    const generateCourse        = generatorForm.querySelector('#generate_course');
-    const tempCourseFiles       = generatorForm.querySelector('#temp_course_files');
-    const courseFiles           = generatorForm.querySelector('#course_files');
-    const filesContainer        = generatorForm.querySelector('#file_names');
-    const maxfilesize           = 20 * 1024 * 1024;  // 20 MB
-    const maxtotalsize          = 50 * 1024 * 1024; // 50 MB
+    const generatorForm = document.getElementById('edai_course_generator_form');
+    const promptContainer = generatorForm.querySelector('.prompt-container');
+    const promptForm = generatorForm.querySelector('#prompt-form');
+    const generationContainer = generatorForm.querySelector('.generation-container');
+    const courseDescription = generatorForm.querySelector('#course_description');
+    const generateCourse = generatorForm.querySelector('#generate_course');
+    const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
+    const courseFiles = generatorForm.querySelector('#course_files');
+    const filesContainer = generatorForm.querySelector('#file_names');
+    const maxfilesize = 20 * 1024 * 1024; // 20 MB.
+    const maxtotalsize = 50 * 1024 * 1024; // 50 MB.
 
     return {
         init: function(generationURL) {
@@ -307,7 +308,7 @@ define([
             let context = {
                 hasFiles: hasFiles,
                 totalSize: this.formatFilesize(totalSize),
-                maxTotalSize : this.formatFilesize(maxtotalsize),
+                maxTotalSize: this.formatFilesize(maxtotalsize),
                 files: contextFiles
             };
 

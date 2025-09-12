@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Course generator class.
+ *
  * @package    block_dixeo_coursegen
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
@@ -146,12 +148,14 @@ class course_generator {
             throw new \moodle_exception($responsedata['message']);
         }
 
-        if (!isset(
+        if (
+            !isset(
                 $responsedata['coursefullname'],
                 $responsedata['courseshortname'],
                 $responsedata['coursesummary'],
                 $responsedata['ltiparameters']
-            )) {
+            )
+        ) {
             throw new \moodle_exception('Invalid response from course generation service.');
         }
 
@@ -218,10 +222,10 @@ class course_generator {
             . "&moodlewsrestformat=json";
 
         $options = [
-            'CURLOPT_TIMEOUT' => 600,        // Max execution time in seconds (10 minutes)
-            'CURLOPT_CONNECTTIMEOUT' => 60,  // Optional: connection timeout
+            'CURLOPT_TIMEOUT' => 600, // Max execution time in seconds (10 minutes).
+            'CURLOPT_CONNECTTIMEOUT' => 60, // Optional: connection timeout.
         ];
-        
+
         $response = $this->curl->post($serviceurl, $params, $options);
         if (!$response) {
             throw new \moodle_exception('Error during course generation on Dixeo.com');
@@ -271,6 +275,13 @@ class course_generator {
         return $course;
     }
 
+    /**
+     * Enrolls a user into a specified course using the manual enrolment plugin.
+     *
+     * @param int $courseid The ID of the course to enroll the user in.
+     * @param int $userid The ID of the user to be enrolled.
+     * @throws \Exception If the manual enrolment plugin is not found or if an error occurs during enrolment.
+     */
     private function enrol_user(int $courseid, int $userid): void {
         global $CFG;
 
@@ -342,6 +353,37 @@ class course_generator {
         rebuild_course_cache($course->id, true);
     }
 
+    /**
+     * Determines the type of course generator to use ('local' or 'remote').
+     *
+     * @return string The generator type: 'local' or 'remote'.
+     */
+    public static function get_generator_type() {
+        global $CFG;
+
+        // Check which generator is available.
+        $pluginmanager = \core_plugin_manager::instance();
+        $localedai = $pluginmanager->get_plugin_info('local_edai');
+
+        $generationtype = 'local';
+        if (!$localedai) {
+            $generationtype = 'remote';
+        }
+
+        // Add to config.php to override the generation type.
+        if (!empty($CFG->overridegenerationtype)) {
+            $generationtype = $CFG->overridegenerationtype;
+        }
+
+        return $generationtype;
+    }
+
+    /**
+     * Checks the configuration for the Dixeo Course Generator block.
+     *
+     * @return string|null Returns a localized error message if a configuration issue is found,
+     *                    or null if the configuration is valid.
+     */
     public static function check_configuration() {
         require_login();
         require_capability('moodle/course:create', \context_system::instance());

@@ -23,12 +23,21 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+/**
+ * The Dixeo Course Generator block class
+ */
 class block_dixeo_coursegen extends block_base {
-
+    /**
+     * Set the initial properties for the block
+     */
     public function init() {
         $this->title = get_string('blocktitle', 'block_dixeo_coursegen');
     }
 
+    /**
+     * Set the applicable formats for this block
+     * @return array
+     */
     public function applicable_formats() {
         return [
             'course-view' => false,
@@ -52,14 +61,24 @@ class block_dixeo_coursegen extends block_base {
         return !$localedai || !empty($CFG->overridegenerationurl);
     }
 
+    /**
+     * Instance specialisations (must have instance allow config true)
+     */
     public function specialization() {
         $this->title = !empty($this->config->title) ? $this->config->title : get_string('blocktitle', 'block_dixeo_coursegen');
     }
 
+    /**
+     * All multiple instances of this block
+     * @return bool Returns false
+     */
     public function instance_allow_multiple() {
         return false;
     }
 
+    /**
+     * Gets the content for this block
+     */
     public function get_content() {
         global $OUTPUT, $COURSE, $CFG;
 
@@ -116,4 +135,3 @@ class block_dixeo_coursegen extends block_base {
         return $this->content;
     }
 }
-

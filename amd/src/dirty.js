@@ -55,7 +55,7 @@ define(['jquery'], function($) {
                     const now = (el.type === 'checkbox' || el.type === 'radio') ? el.checked : el.value;
                     if (now != initial.get(el.name)) {
                         dirty = true;
-                        return false;
+                        return;
                     }
                 });
                 return dirty;
@@ -95,7 +95,9 @@ define(['jquery'], function($) {
                     const href = register.dataset.url;
                     if (href) {
                         window.location.assign(href);
+                        return true;
                     }
+                    return false;
                 }
             });
         }

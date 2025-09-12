@@ -69,7 +69,7 @@
     left: 10px;
     top: 50%;
     cursor: pointer;
-    margin-bottom: 0
+    margin-bottom: 0;
 }
 
 .block_dixeo_coursegen .s-progress {
@@ -83,7 +83,7 @@
     height: 100%;
     border-radius: 0;
     transition: width 1s ease-in-out;
-    max-width: 100% !important;
+    max-width: 100%;
 }
 
 .block_dixeo_coursegen .s-progress .s-progress--bar.done {
@@ -119,7 +119,7 @@
 }
 
 .block_dixeo_coursegen .s-progress .s-progress--segments li:before {
-    background-color: #FFFFFF;
+    background-color: #fff;
     content: "";
     height: 101%;
     top: 0;
@@ -181,12 +181,16 @@
 }
 
 .block_dixeo_coursegen .p64 {
-    padding: 15px 0px 25px 0;
+    padding-top: 15px;
+    padding-right: 0;
+    padding-bottom: 25px;
+    padding-left: 0;
 }
+
 .block_dixeo_coursegen .alert_course_generated,
 .block_dixeo_coursegen #loader {
     color: #7f7f7f;
-    padding: 40px !important;
+    padding: 40px;
     background-color: #fff;
     margin-bottom: 1.5rem;
     border-radius: 1.2rem;
@@ -194,7 +198,7 @@
 }
 
 .block_dixeo_coursegen #loader {
-    padding-bottom: 60px !important;
+    padding-bottom: 60px;
 }
 
 .block_dixeo_coursegen .alert_course_generated .side-by-side {
@@ -214,8 +218,8 @@
     font-weight: 700;
 }
 
-.block_dixeo_coursegen .alert_course_generated .button_view_course img{
-    margin-right: 0.5rem
+.block_dixeo_coursegen .alert_course_generated .button_view_course img {
+    margin-right: 0.5rem;
 }
 
 .block_dixeo_coursegen .alert_course_generated .button_generate_another {
@@ -251,16 +255,19 @@
 
 @media (max-width: 790px) {
     .block_dixeo_coursegen .p64 {
-        padding: 15px 0px 40px 0;
+        padding-top: 15px;
+        padding-right: 0;
+        padding-bottom: 40px;
+        padding-left: 0;
     }
 
     .block_dixeo_coursegen #course_description {
         font-size: 16px;
-        min-height: 100px !important;
+        min-height: 100px;
     }
 
     .block_dixeo_coursegen #loader {
-        padding: 30px 20px !important;
+        padding: 30px 20px;
     }
 
     .block_dixeo_coursegen #file_names {
@@ -278,7 +285,7 @@
 
     .block_dixeo_coursegen #success_message_container .side-by-side a {
         margin: 15px auto 0 auto;
-        display: block !important;
+        display: block;
     }
 }
 
