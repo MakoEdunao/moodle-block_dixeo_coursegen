@@ -89,23 +89,23 @@ define([
                     method: 'POST',
                     body: formdata
                 })
-                .then(response => {
-                    return response.json().then(data => {
-                        if (!response.ok) {
-                            this.resetProgress();
-                            throw new Error(data.error);
-                        }
-                        return data;
-                    });
+                .then(async response => {
+                    const data = await response.json();
+                    if (!response.ok) {
+                        this.resetProgress();
+                        throw new Error(data.error);
+                    }
+                    return data;
                 })
                 .then(data => {
                     const courseid = data.courseid;
                     const coursename = data.coursename;
                     this.finishProgress(courseid, coursename);
+                    return;
                 })
-                .catch(error => {
+                .catch(async error => {
                     this.resetProgress();
-                    const errorTitle = Str.get_string('error_title', 'block_dixeo_coursegen');
+                    const errorTitle = await Str.get_string('error_title', 'block_dixeo_coursegen');
                     Notification.alert(errorTitle, error.message);
                 });
             });
@@ -259,6 +259,7 @@ define([
                 .then((html) => {
                     generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
                     generationContainer.classList.replace('d-block', 'd-none');
+                    return;
                 }).catch((error) => {
                     Notification.exception(error);
                 });
@@ -338,6 +339,7 @@ define([
                     });
                 });
 
+                return;
             }).catch((error) => {
                 Notification.exception(error);
             });
