@@ -127,6 +127,7 @@ class block_dixeo_coursegen extends block_base {
         $context = [
             'generationurl' => $generationurl,
             'course_description' => $coursedescription,
+            'taskid' => uniqid('', true),
         ];
         $text = $OUTPUT->render_from_template('block_dixeo_coursegen/course_generator', $context);
 

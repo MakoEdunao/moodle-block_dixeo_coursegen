@@ -24,9 +24,10 @@
 
     Example context (json):
     {
+        "taskid": 12345
     }
 }}
-<div class="generation-container text-center d-none">
+<div class="generation-container text-center d-none" data-taskid="{{taskid}}" data-status="0">
     <h2 class="mb-4">{{#str}} heading2, block_dixeo_coursegen {{/str}}</h2>
     <div id="loader" class="justify-content-center align-items-center">
         <p>{{#str}} generating_course, block_dixeo_coursegen {{/str}}</p>

@@ -82,13 +82,9 @@
     background-color: #108df0;
     height: 100%;
     border-radius: 0;
-    transition: width 1s ease-in-out;
+    transition: width 3s ease-in-out;
     max-width: 100%;
-}
-
-.block_dixeo_coursegen .s-progress .s-progress--bar.done {
-    background-color: #108df0;
-    transition: width 0.2s ease-in-out;
+    min-width: 1.5%;
 }
 
 .block_dixeo_coursegen .s-progress__segmented {

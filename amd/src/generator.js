@@ -26,8 +26,9 @@ define([
     'core/templates',
     'core/notification',
     'core/str',
-    'core/config'
-], function($, Template, Notification, Str, Config) {
+    'core/config',
+    'block_dixeo_coursegen/poll'
+], function($, Template, Notification, Str, Config, Poll) {
     const generatorForm = document.getElementById('edai_course_generator_form');
     const promptContainer = generatorForm.querySelector('.prompt-container');
     const promptForm = generatorForm.querySelector('#prompt-form');
@@ -81,15 +82,20 @@ define([
 
                 const formdata = new FormData();
                 formdata.append('description', courseDescriptionValue);
+                formdata.append('taskid', generationContainer.dataset.taskid);
                 for (let i = 0; i < courseFiles.files.length; i++) {
                     formdata.append('course_files[]', courseFiles.files[i]);
                 }
+
+                // Start polling for progress updates.
+                const poll = Poll.init(generationContainer);
 
                 fetch(generationURL, {
                     method: 'POST',
                     body: formdata
                 })
                 .then(async response => {
+                    poll.cleanup(); // Stop polling when we get a response.
                     const data = await response.json();
                     if (!response.ok) {
                         this.resetProgress();
@@ -237,13 +243,26 @@ define([
             generationContainer.classList.replace('d-none', 'd-block');
 
             let interval = setInterval(() => {
-                if (this.progress >= 90) {
+                if (this.progress >= 95) {
                     clearInterval(interval);
                 }
 
                 // Increase by a random amount every second
-                let increment = Math.floor(Math.random() * 5);
-                this.setProgress(this.progress + increment);
+                let stage = parseInt(generationContainer.dataset.status);
+
+                if (this.progress < stage * 20) {
+                    this.setProgress(stage * 20);
+                } else {
+                    // Each increment should average about 20/45 ≈ 0.44.
+                    // Use Math.random() to get a value between 0.3 and 0.6, rounded to 2 decimals.
+                    let increment = +(0.3 + Math.random() * 0.3).toFixed(2);
+
+                    if (this.progress < 40 || this.progress > 80) {
+                        increment /= 2; // Slow down before 40% and after 90%.
+                    }
+
+                    this.setProgress(this.progress + increment);
+                }
             }, 1000);
         },
         finishProgress: async function(courseid, coursename) {
@@ -263,7 +282,7 @@ define([
                 }).catch((error) => {
                     Notification.exception(error);
                 });
-            }, 500);
+            }, 3000);
         },
         resetProgress: function() {
             generateCourse.disabled = false;
