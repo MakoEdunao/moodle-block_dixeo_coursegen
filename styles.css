@@ -5,6 +5,9 @@
 
 .block_dixeo_coursegen h2 {
     color: #108df0;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
 .block_dixeo_coursegen #prompt-form textarea {
