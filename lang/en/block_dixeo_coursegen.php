@@ -39,6 +39,7 @@ $string['default_platformurl'] = 'https://dixeo.com';
 $string['descriptionorfilesrequired'] = 'Please enter a course description or upload files to generate the course.';
 $string['dixeo_coursegen:addinstance'] = 'Add a Dixeo Course Generator block';
 $string['dixeo_coursegen:myaddinstance'] = 'Add a new Dixeo Course Generator block to my dashboard';
+$string['dixeo_coursegen:create'] = 'Create courses using Dixeo Course Generator';
 $string['draganddrop'] = 'Drag and drop your files to upload';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Enter the URL and API key of the Dixeo platform to register your site.';
 $string['error_generation_failed'] = 'An unexpected error occurred while creating the course. Please try again.';

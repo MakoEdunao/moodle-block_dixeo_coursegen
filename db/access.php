@@ -58,10 +58,10 @@ $capabilities = [
 
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSECAT,
-        'archetypes' => array(
+        'archetypes' => [
             'coursecreator' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        )
+            'manager' => CAP_ALLOW,
+        ],
     ],
 
 ];
