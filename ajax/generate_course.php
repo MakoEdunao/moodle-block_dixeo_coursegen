@@ -31,7 +31,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 require_login();
 
 $context = context_system::instance();
-require_capability('moodle/course:create', $context);
+require_capability('block/dixeo_coursegen:create', $context);
 
 // Unlock the session early to not stop other http requests.
 \core\session\manager::write_close();

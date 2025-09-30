@@ -32,6 +32,6 @@ $functions = [
         'description' => 'Return status for course generation.',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => 'moodle/course:create',
+        'capabilities' => 'block/dixeo_coursegen:create',
     ],
 ];

@@ -53,4 +53,15 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/course:create',
     ],
 
+    'block/dixeo_coursegen:create' => [
+        'riskbitmask' => RISK_XSS,
+
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSECAT,
+        'archetypes' => array(
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ],
+
 ];

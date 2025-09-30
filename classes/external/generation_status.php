@@ -65,7 +65,7 @@ final class generation_status extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        require_capability('moodle/site:config', $context);
+        require_capability('block/dixeo_coursegen:create', $context);
         require_sesskey();
 
         // Check which generator is available.

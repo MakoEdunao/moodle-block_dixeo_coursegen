@@ -386,7 +386,7 @@ class course_generator {
      */
     public static function check_configuration() {
         require_login();
-        require_capability('moodle/course:create', \context_system::instance());
+        require_capability('block/dixeo_coursegen:create', \context_system::instance());
 
         // Check apikey available.
         $apikey = get_config('block_dixeo_coursegen', 'apikey');
