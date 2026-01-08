@@ -68,16 +68,8 @@ final class generation_status extends external_api {
         require_capability('block/dixeo_coursegen:create', $context);
         require_sesskey();
 
-        // Check which generator is available.
-        $pluginmanager = \core_plugin_manager::instance();
-        $localedai = $pluginmanager->get_plugin_info('local_edai');
-
-        if ($localedai) {
-            $coursecreator = new \local_edai\course_creator($DB, $USER);
-            $status = $coursecreator->get_generation_status($taskid);
-        } else {
-            $status = 0; // TODO: Handle LTI status updates.
-        }
+        $generator = new \block_dixeo_coursegen\course_generator($taskid);
+        $status = $generator->get_generation_status();
 
         return [
             'status' => $status,

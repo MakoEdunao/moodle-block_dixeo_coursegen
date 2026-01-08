@@ -19,12 +19,8 @@
 
     Dixeo Course Generator Prompt Template
 
-    Data attributes required for JS:
-    * generationurl
-
     Example context (json):
     {
-        "generationurl": "https://example.com/blocks/dixeo_coursegen/ajax/generate_course.php",
         "course_description": "Create a course about..."
     }
 }}
@@ -38,11 +34,16 @@
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
         <div class="side-by-side">
+            <!--
             <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_coursegen {{/str}}">
                 <i class="fa fa-paperclip fa-2x"></i>
             </label>
             <div id="file_names" class="mt-2"></div>
-            <button id="generate_course" class="btn btn-secondary btn-circle position-absolute text-white d-flex align-items-center" title="{{#str}} generate_course, block_dixeo_coursegen {{/str}}">
+            -->
+            <button id="generate_course" class="btn btn-secondary" title="{{#str}} generate_course, block_dixeo_coursegen {{/str}}">
+                <img src="{{config.wwwroot}}/blocks/dixeo_coursegen/pix/lightning.svg" alt="Logo" width="25" height="25">
+            </button>
+            <button id="generate_course_structure" class="btn btn-secondary text-white" title="{{#str}} generate_course, block_dixeo_coursegen {{/str}}">
                 <img src="{{config.wwwroot}}/blocks/dixeo_coursegen/pix/dixeo-white.svg" alt="Logo" width="25" height="25">
                 <span>{{#str}} generate_course, block_dixeo_coursegen {{/str}}</span>
             </button>
@@ -52,6 +53,6 @@
 
 {{#js}}
 require(['block_dixeo_coursegen/generator'], function(Generator) {
-    Generator.init('{{generationurl}}');
+    Generator.init();
 });
 {{/js}}
