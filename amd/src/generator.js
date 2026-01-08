@@ -22,19 +22,20 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 define([
+    'core/ajax',
     'jquery',
     'core/templates',
     'core/notification',
     'core/str',
-    'core/config',
-    'block_dixeo_coursegen/poll'
-], function($, Template, Notification, Str, Config, Poll) {
+    'core/config'
+], function(Ajax, $, Template, Notification, Str, Config) {
     const generatorForm = document.getElementById('edai_course_generator_form');
     const promptContainer = generatorForm.querySelector('.prompt-container');
     const promptForm = generatorForm.querySelector('#prompt-form');
     const generationContainer = generatorForm.querySelector('.generation-container');
     const courseDescription = generatorForm.querySelector('#course_description');
     const generateCourse = generatorForm.querySelector('#generate_course');
+    const generateStructure = generatorForm.querySelector('#generate_course_structure');
     const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
     const courseFiles = generatorForm.querySelector('#course_files');
     const filesContainer = generatorForm.querySelector('#file_names');
@@ -42,7 +43,7 @@ define([
     const maxtotalsize = 50 * 1024 * 1024; // 50 MB.
 
     return {
-        init: function(generationURL) {
+        init: function() {
             this.progress = 0;
 
             this.adjustDescriptionHeight();
@@ -51,7 +52,7 @@ define([
             // Trigger generation if course description is filled on page load.
             if (courseDescription.value.trim() !== '') {
                 setTimeout(() => {
-                    generateCourse.click();
+                    generateStructure.click();
                 }, 1000);
             }
 
@@ -59,61 +60,62 @@ define([
             courseDescription.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
-                    generateCourse.click();
+                    generateStructure.click();
                 }
             });
 
             // Add event listener to generate course button.
-            generateCourse.addEventListener('click', (event) => {
-                event.preventDefault();
+            generateCourse.addEventListener('click', (event) => this.generateCourse(event, false));
+            // Add event listener to generate course structure button.
+            generateStructure.addEventListener('click', (event) => this.generateCourse(event, true));
+        },
+        generateCourse: function(event, reviewStructure) {
+            event.preventDefault();
 
-                let courseDescriptionValue = courseDescription.value.trim();
-                courseDescription.value = '';
+            let courseDescriptionValue = courseDescription.value.trim();
+            courseDescription.value = '';
 
-                // Check if the course description is filled or files are uploaded.
-                if (courseDescriptionValue === '' && courseFiles.files.length === 0) {
-                    this.notify('invalidinput', 'descriptionorfilesrequired');
+            // Check if the course description is filled or files are uploaded.
+            if (courseDescriptionValue === '' && courseFiles.files.length === 0) {
+                this.notify('invalidinput', 'descriptionorfilesrequired');
+                return;
+            }
+
+            if (this.progress === 0) {
+                this.startProgress();
+            }
+
+            // for (let i = 0; i < courseFiles.files.length; i++) {
+            //     formdata.append('course_files[]', courseFiles.files[i]);
+            // }
+
+            Ajax.call([{
+                methodname: 'block_dixeo_coursegen_generate_course',
+                args: {
+                    job_id: generationContainer.dataset.job_id,
+                    description: courseDescriptionValue,
+                    skip: reviewStructure ? 0 : 1,
+                    sesskey: M.cfg.sesskey
+                },
+            }])[0]
+            .then(data => {
+                const courseid = data.courseid;
+                const coursename = data.coursename;
+
+                if (courseid == 0 && reviewStructure == true) {
+                    window.location.href = Config.wwwroot + '/blocks/dixeo_coursegen/review.php?id=' +
+                        generationContainer.dataset.job_id;
                     return;
                 }
 
-                if (this.progress === 0) {
-                    this.startProgress();
-                }
+                this.finishProgress(courseid, coursename);
 
-                const formdata = new FormData();
-                formdata.append('description', courseDescriptionValue);
-                formdata.append('taskid', generationContainer.dataset.taskid);
-                for (let i = 0; i < courseFiles.files.length; i++) {
-                    formdata.append('course_files[]', courseFiles.files[i]);
-                }
-
-                // Start polling for progress updates.
-                const poll = Poll.init(generationContainer);
-
-                fetch(generationURL, {
-                    method: 'POST',
-                    body: formdata
-                })
-                .then(async response => {
-                    poll.cleanup(); // Stop polling when we get a response.
-                    const data = await response.json();
-                    if (!response.ok) {
-                        this.resetProgress();
-                        throw new Error(data.error);
-                    }
-                    return data;
-                })
-                .then(data => {
-                    const courseid = data.courseid;
-                    const coursename = data.coursename;
-                    this.finishProgress(courseid, coursename);
-                    return;
-                })
-                .catch(async error => {
-                    this.resetProgress();
-                    const errorTitle = await Str.get_string('error_title', 'block_dixeo_coursegen');
-                    Notification.alert(errorTitle, error.message);
-                });
+                return;
+            })
+            .catch(async error => {
+                this.resetProgress();
+                const errorTitle = await Str.get_string('error_title', 'block_dixeo_coursegen');
+                Notification.alert(errorTitle, error.message);
             });
         },
         adjustDescriptionHeight: function() {
@@ -239,6 +241,7 @@ define([
         },
         startProgress: function() {
             generateCourse.disabled = true;
+            generateStructure.disabled = true;
             promptContainer.classList.replace('d-block', 'd-none');
             generationContainer.classList.replace('d-none', 'd-block');
 
@@ -286,6 +289,7 @@ define([
         },
         resetProgress: function() {
             generateCourse.disabled = false;
+            generateStructure.disabled = false;
             promptContainer.classList.replace('d-none', 'd-block');
             generationContainer.classList.replace('d-block', 'd-none');
 
@@ -332,36 +336,38 @@ define([
                 files: contextFiles
             };
 
-            Template.render('block_dixeo_coursegen/filenames', context).then((html) => {
-                filesContainer.innerHTML = html;
+            if (filesContainer) {
+                Template.render('block_dixeo_coursegen/filenames', context).then((html) => {
+                    filesContainer.innerHTML = html;
 
-                let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
-                deleteIcons.forEach((deleteIcon, index) => {
-                    let that = this;
-                    let toDelete = courseFiles.files[index].name;
+                    let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
+                    deleteIcons.forEach((deleteIcon, index) => {
+                        let that = this;
+                        let toDelete = courseFiles.files[index].name;
 
-                    deleteIcon.addEventListener('click', function() {
-                        // Remove file from display.
-                        let toolTipId = deleteIcon.getAttribute('aria-describedby');
-                        document.getElementById(toolTipId).remove();
+                        deleteIcon.addEventListener('click', function() {
+                            // Remove file from display.
+                            let toolTipId = deleteIcon.getAttribute('aria-describedby');
+                            document.getElementById(toolTipId).remove();
 
-                        // Remove file from course files.
-                        let dataTransfer = new DataTransfer();
-                        for (let i = 0; i < courseFiles.files.length; i++) {
-                            if (courseFiles.files[i].name !== toDelete) {
-                                dataTransfer.items.add(courseFiles.files[i]);
+                            // Remove file from course files.
+                            let dataTransfer = new DataTransfer();
+                            for (let i = 0; i < courseFiles.files.length; i++) {
+                                if (courseFiles.files[i].name !== toDelete) {
+                                    dataTransfer.items.add(courseFiles.files[i]);
+                                }
                             }
-                        }
 
-                        courseFiles.files = dataTransfer.files;
-                        that.displayFileNames();
+                            courseFiles.files = dataTransfer.files;
+                            that.displayFileNames();
+                        });
                     });
-                });
 
-                return;
-            }).catch((error) => {
-                Notification.exception(error);
-            });
+                    return;
+                }).catch((error) => {
+                    Notification.exception(error);
+                });
+            }
         },
         formatFilesize: (size) => {
             const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];

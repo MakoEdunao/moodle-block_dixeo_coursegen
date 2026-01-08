@@ -53,12 +53,7 @@ class block_dixeo_coursegen extends block_base {
      * @return bool
      */
     public function has_config() {
-        global $CFG;
-
-        $pluginmanager = \core_plugin_manager::instance();
-        $localedai = $pluginmanager->get_plugin_info('local_edai');
-
-        return !$localedai || !empty($CFG->overridegenerationurl);
+        return false;
     }
 
     /**
@@ -99,40 +94,33 @@ class block_dixeo_coursegen extends block_base {
         $this->content = new stdClass();
         $this->content->footer = '';
 
-        // Check which generator is available.
-        $pluginmanager = \core_plugin_manager::instance();
-        $localedai = $pluginmanager->get_plugin_info('local_edai');
-
-        $generationurl = $CFG->wwwroot . '/local/edai/ajax/generate_course.php';
-        if (!$localedai) {
-            $generationurl = $CFG->wwwroot . '/blocks/dixeo_coursegen/ajax/generate_course.php';
-        }
-
-        // Add to config.php to override the generation processor URL.
-        if (!empty($CFG->overridegenerationurl)) {
-            $generationurl = $CFG->overridegenerationurl;
-        }
-
-        if (str_contains($generationurl, 'dixeo_coursegen')) {
-            $configerrors = \block_dixeo_coursegen\course_generator::check_configuration();
-            if ($configerrors) {
-                $settingsurl = new \moodle_url($CFG->wwwroot . '/admin/settings.php', ['section' => 'blocksettingdixeo_coursegen']);
-                $settingslink = \html_writer::link($settingsurl, $settingsurl->out());
-                $notregistered = get_string('error_platform_not_registered', 'block_dixeo_coursegen', $settingslink);
-                $this->content->text = $OUTPUT->notification($notregistered, 'notifyerror');
-                return $this->content;
-            }
-        }
-
         $context = [
-            'generationurl' => $generationurl,
             'course_description' => $coursedescription,
-            'taskid' => uniqid('', true),
+            'job_id' => self::generate_job_id(),
         ];
         $text = $OUTPUT->render_from_template('block_dixeo_coursegen/course_generator', $context);
 
         $this->content->text = $text;
 
         return $this->content;
+    }
+
+    /**
+     * Generate a unique job ID (UUID v4).
+     *
+     * @return string Generated job ID.
+     */
+    public function generate_job_id(): string {
+        return sprintf(
+            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0x0fff) | 0x4000,
+            mt_rand(0, 0x3fff) | 0x8000,
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff),
+            mt_rand(0, 0xffff)
+        );
     }
 }

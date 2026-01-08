@@ -29,5 +29,9 @@ $plugin->version   = 2026030300;                 // The current plugin version (
 $plugin->requires  = 2023100909;                 // Requires this Moodle version.
 $plugin->component = 'block_dixeo_coursegen';   // Full name of the plugin (used for diagnostics).
 
+$plugin->dependencies = [
+    'block_dixeo_modulegen' => 2025102314
+];
+
 $plugin->maturity = MATURITY_STABLE;
 $plugin->release = 'v1.1.0';

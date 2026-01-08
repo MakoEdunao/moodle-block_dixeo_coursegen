@@ -25,6 +25,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    'block_dixeo_coursegen_generate_course' => [
+        'classname'   => 'block_dixeo_coursegen\\external\\generate_course',
+        'methodname'  => 'generate_course',
+        'classpath'   => '',
+        'description' => 'Begins course generation.',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'block/dixeo_coursegen:create',
+    ],
     'block_dixeo_coursegen_get_status' => [
         'classname'   => 'block_dixeo_coursegen\\external\\generation_status',
         'methodname'  => 'get_status',

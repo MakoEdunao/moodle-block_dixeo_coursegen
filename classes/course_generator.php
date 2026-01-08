@@ -27,10 +27,14 @@ namespace block_dixeo_coursegen;
 
 defined('MOODLE_INTERNAL') || die();
 
+global $CFG;
+require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->libdir . '/enrollib.php');
-require_once($CFG->dirroot . '/mod/lti/lib.php');
-require_once($CFG->dirroot . '/mod/lti/locallib.php');
+
+use block_dixeo_modulegen\helper\config;
+use block_dixeo_modulegen\helper\queue;
+use block_dixeo_modulegen\helper\section;
 
 /**
  * Class course_generator
@@ -38,8 +42,14 @@ require_once($CFG->dirroot . '/mod/lti/locallib.php');
  * Handles the generation of courses using AI.
  */
 class course_generator {
+    /** @var string The unique job identifier. */
+    private string $jobid;
+
     /** @var string The course description. */
     private string $description;
+
+    /** @var bool Whether to skip structure validation. */
+    private bool $skip;
 
     /** @var array|null Uploaded files associated with the course. */
     private ?array $files;
@@ -47,37 +57,32 @@ class course_generator {
     /** @var int ID of the category where the course will be created. */
     private int $categoryid;
 
-    /** @var string The external platform url. */
-    private string $platformurl;
-
-    /** @var string API token for authentication. */
-    private string $token;
-
-    /** @var int LTI type ID. */
-    private int $ltitypeid;
-
     /** @var \curl cURL instance for making HTTP requests. */
     private \curl $curl;
 
     /**
      * Course Generator constructor.
+     * @param string $jobid Unique job identifier.
      * @param string $description Course description.
+     * @param bool $skip Whether to skip structure validation.
      * @param array|null $files Uploaded files.
      * @throws \dml_exception
      */
-    public function __construct(string $description, ?array $files = null) {
+    public function __construct(string $jobid, string $description = '', bool $skip = false, ?array $files = null) {
         global $DB;
 
+        $this->jobid = $jobid;
         $this->description = $description;
+        $this->skip = $skip;
         $this->files = $files;
 
         // Get the course category.
-        $categoryname = get_config('block_dixeo_coursegen', 'categoryname');
-        $this->categoryid = $DB->get_field('course_categories', 'id', ['name' => $categoryname]);
+        $config = config::load();
+        $this->categoryid = $DB->get_field('course_categories', 'id', ['name' => $config->categoryname]);
         if ($this->categoryid == false) {
             // Category does not exist, create a new one at the root level.
             $category = \core_course_category::create([
-                'name' => $categoryname,
+                'name' => $config->categoryname,
                 'parent' => 0,
                 'idnumber' => null,
                 'description' => '',
@@ -85,24 +90,6 @@ class course_generator {
             ]);
             $this->categoryid = $category->id;
         }
-
-        // Get platform url from settings (add https if neither http nor https are found).
-        $this->platformurl = get_config('block_dixeo_coursegen', 'platformurl');
-        if (!preg_match('#^https?://#', $this->platformurl)) {
-            $this->platformurl = 'https://' . $this->platformurl;
-        }
-
-        // Retrieve configuration settings.
-        $this->token = get_config('block_dixeo_coursegen', 'apikey');
-
-        // Get LTI type ID.
-        $sql = "SELECT id
-                  FROM {lti_types} tp
-                 WHERE baseurl = :baseurl
-              ORDER BY id DESC
-                 LIMIT 1";
-        $baseurl = "{$this->platformurl}/enrol/lti/launch.php";
-        $this->ltitypeid = $DB->get_field_sql($sql, ['baseurl' => $baseurl], MUST_EXIST);
 
         // Initialize cURL.
         $this->curl = new \curl();
@@ -115,61 +102,102 @@ class course_generator {
      * @throws \moodle_exception
      * @throws \dml_exception
      */
-    public function generate_course(): \stdClass {
-        global $CFG, $USER;
+    public function generate_course(): ?\stdClass {
+        global $DB, $USER;
 
-        // Prepare parameters.
-        $params = [
-            'platformurl' => $CFG->wwwroot,
-            'user[id]' => $USER->id,
-            'user[email]' => $USER->email,
-            'user[firstname]' => $USER->firstname,
-            'user[lastname]' => $USER->lastname,
-            'description' => $this->description,
-        ];
+        // Load config.
+        $config = config::load();
 
-        // Upload files if any.
-        if (!empty($this->files)) {
-            $itemids = $this->upload_files();
-            foreach ($itemids as $key => $itemid) {
-                $params["files[$key]"] = $itemid;
+        $request = $config->url . '/webservice/rest/server.php' .
+            '?wstoken=' . $config->token .
+            '&wsfunction=local_dixeo_generate_structure' .
+            '&moodlewsrestformat=json';
+
+        $description = format_text($this->description, FORMAT_PLAIN);
+        $request .= '&description=' . urlencode($description);
+
+        if ($this->jobid) {
+            $request .= '&options[job_id]=' . urlencode($this->jobid);
+        }
+
+        $lang = current_language();
+        $request .= '&options[language]=' . $lang;
+
+        $response = $this->curl->post($request);
+
+        if (!$response) {
+            throw new \Exception('No response from Dixeo server. Request: ' . $request, 500);
+        }
+
+        $response = json_decode($response, true);
+
+        if (!isset($response['success']) || (!isset($response['data']) && !isset($response['job_id']))) {
+            $error = $response['error'] ?? 'Unknown error';
+            throw new \Exception(
+                'Invalid response from Dixeo server: ' . json_encode($error) .
+                '. Response: ' . json_encode($response) .
+                '. Request: ' . json_encode($requesturl),
+                500
+            );
+        }
+
+        if ($response['success'] === false) {
+            $errormessage = 'Unknown error';
+            $errordetails = '';
+            $errorcode = 500;
+            if (isset($response['error'])) {
+                $errormessage = $response['error']['message'] ?? 'Unknown error';
+                $errordetails = $response['error']['details'] ?? '';
+                $errorcode = $response['error']['code'] ?? 500;
+            }
+            throw new \Exception(
+                'Invalid fail response from Dixeo server: ' . $errormessage . ' ' . $errordetails .
+                '. Response: ' . json_encode($response) .
+                '. Request: ' . json_encode($requesturl),
+                $errorcode
+            );
+        } else {
+            if (isset($response['data']['success']) && $response['data']['success'] === false) {
+                $errormessage = $response['data']['error'] ?? 'Unknown error';
+                throw new \Exception(
+                    'Invalid fail data response from Dixeo server: ' . $errormessage .
+                    '. Response: ' . json_encode($response) .
+                    '. Request: ' . json_encode($requesturl),
+                );
+            } else {
+                if (empty($response['data']['title'])){
+                    throw new \Exception(
+                        'Invalid data response from Dixeo server: Missing course title.' .
+                        '. Response: ' . json_encode($response) .
+                        '. Request: ' . json_encode($requesturl),
+                    );
+                }
             }
         }
 
-        // Call external web service.
-        $response = $this->call_external_service($params);
-        $responsedata = json_decode($response, true);
+        if ($this->skip) {
+            // If skipping structure validation, create course.
+            $course = $this->create_course($response);
 
-        if (isset($responsedata['error'])) {
-            throw new \moodle_exception($responsedata['error']);
+            // Enrol user to newly created course.
+            $this->enrol_user($course->id, $USER->id);
+
+            // Return course.
+            return $course;
+        } else {
+            // Store the generated structure in the database;
+            $DB->insert_record('block_dixeo_coursegen_structure', [
+                'jobid' => $this->jobid,
+                'userid' => $USER->id,
+                'description' => $this->description,
+                'structure' => json_encode($response['data']),
+                'version' => 1,
+                'timecreated' => time(),
+            ]);
+
+            // Return null and redirect to review page.
+            return null;
         }
-
-        if (isset($responsedata['exception'])) {
-            throw new \moodle_exception($responsedata['message']);
-        }
-
-        if (
-            !isset(
-                $responsedata['coursefullname'],
-                $responsedata['courseshortname'],
-                $responsedata['coursesummary'],
-                $responsedata['ltiparameters']
-            )
-        ) {
-            throw new \moodle_exception('Invalid response from course generation service.');
-        }
-
-        // Create course.
-        $course = $this->create_course($responsedata);
-
-        // Enrol user to newly created course.
-        $this->enrol_user($course->id, $USER->id);
-
-        // Setup LTI module.
-        $this->setup_lti_module($course, $responsedata);
-
-        // Return course.
-        return $course;
     }
 
     /**
@@ -178,6 +206,7 @@ class course_generator {
      * @return array List of item IDs for the uploaded files.
      * @throws \moodle_exception
      */
+    /*
     private function upload_files(): array {
         $itemids = [];
         $filecount = count($this->files['name']);
@@ -207,69 +236,76 @@ class course_generator {
 
         return $itemids;
     }
-
-    /**
-     * Calls the external service to generate course data.
-     *
-     * @param array $params Parameters to send to the external service.
-     * @return string The response from the external service.
-     * @throws \moodle_exception
-     */
-    private function call_external_service(array $params): string {
-        $serviceurl = "{$this->platformurl}/webservice/rest/server.php"
-            . "?wstoken={$this->token}"
-            . "&wsfunction=local_edai_course_generator"
-            . "&moodlewsrestformat=json";
-
-        $options = [
-            'CURLOPT_TIMEOUT' => 600, // Max execution time in seconds (10 minutes).
-            'CURLOPT_CONNECTTIMEOUT' => 60, // Optional: connection timeout.
-        ];
-
-        $response = $this->curl->post($serviceurl, $params, $options);
-        if (!$response) {
-            throw new \moodle_exception('Error during course generation on Dixeo.com');
-        }
-
-        return $response;
-    }
+    */
 
     /**
      * Creates a Moodle course based on the data from the external service.
      *
-     * @param array $responsedata Data received from the external service.
+     * @param array $response Data received from the external service.
      * @return \stdClass The created course object.
      * @throws \dml_exception
      * @throws \moodle_exception
      */
-    private function create_course(array $responsedata): \stdClass {
-        global $DB;
+    private function create_course(array $response): \stdClass {
+        // Prepare course data.
+        $coursedata = (object) [];
+        $coursedata->category = $this->categoryid;
+        $coursedata->fullname = $response['data']['title'];
+        $coursedata->shortname = $this->generate_unique_shortname($response['data']['title']);
+        $coursedata->summary = $response['data']['summary'] ?? '';
+        $coursedata->summaryformat = FORMAT_HTML;
+        $coursedata->format = $response['data']['format'] ?? 'topics';
+        $coursedata->lang = $response['data']['language'] ?? '';
+        $coursedata->newsitems = 0;
+        $coursedata->showgrades = 1;
+        $coursedata->showreports = 1;
+        $coursedata->visible = 1;
+        $coursedata->enablecompletion = 1;
+        $coursedata->startdate = time();
 
-        $shortname = $responsedata['courseshortname'];
-        $fullname = $responsedata['coursefullname'];
-        $summary = $responsedata['coursesummary'];
+        // Apply settings if provided.
+        if (isset($response['data']['settings'])) {
+            if (isset($response['data']['settings']['startdate'])) {
+                $coursedata->startdate = $response['data']['settings']['startdate'];
+            }
+            if (isset($response['data']['settings']['enddate'])) {
+                $coursedata->enddate = $response['data']['settings']['enddate'];
+            }
+            if (isset($response['data']['settings']['numsections'])) {
+                $coursedata->numsections = $response['data']['settings']['numsections'];
+            }
+        }
 
-        $courseconfig = (object) [
-            'fullname' => $fullname,
-            'shortname' => $shortname,
-            'summary' => $summary,
-            'summaryformat' => FORMAT_HTML,
-            'category' => $this->categoryid,
-            'format' => 'singleactivity',
-            'visible' => 1,
-            'activitytype' => 'lti',
-        ];
+        // Create the course.
+        $course = \create_course($coursedata);
 
-        $course = create_course($courseconfig);
+        if (!$course || !$course->id) {
+            throw new generation_exception('Failed to create course');
+        }
 
-        // Force course format option in case it was not set to lti due to permission issue.
-        if ($course->activitytype !== 'lti') {
-            $courseformatoption = $DB->get_record('course_format_options', [
-                'courseid' => $course->id,
-                'name' => 'activitytype',
-            ]);
-            $courseformatoption->value = 'lti';
-            $DB->update_record('course_format_options', $courseformatoption);
+        $sections = $response['data']['sections'] ?? [];
+
+        foreach ($sections as $section) {
+            $newsection = section::create(
+                $course->id,
+                $section['title'] ?? 'Section Placeholder',
+                $section['summary'] ?? ''
+            );
+
+            foreach ($section['modules'] as $module) {
+                queue::add(
+                    $course->id,
+                    $module['type'],
+                    $module['title'] ?? '',
+                    $module['description'] ?? '',
+                    $module['instructions'] ?? '',
+                    $module['hints'] ?? '',
+                    $newsection->section,
+                    null,
+                    $course->lang,
+                    null
+                );
+            }
         }
 
         return $course;
@@ -305,108 +341,34 @@ class course_generator {
     }
 
     /**
-     * Sets up the LTI module within the course.
+     * Generate unique shortname for course
      *
-     * @param \stdClass $course The course object.
-     * @param array $responsedata Data received from the external service.
-     * @throws \dml_exception
+     * @param string $title Course title
+     * @return string Unique shortname
      */
-    private function setup_lti_module(\stdClass $course, array $responsedata): void {
+    private function generate_unique_shortname(string $title): string {
         global $DB;
 
-        $ltiparams = $responsedata['ltiparameters'];
-        $moduleid = $DB->get_field('modules', 'id', ['name' => 'lti'], MUST_EXIST);
+        // Convert to lowercase and replace spaces.
+        $shortname = strtolower($title);
+        $shortname = preg_replace('/[^a-z0-9]+/', '_', $shortname);
+        $shortname = trim($shortname, '_');
 
-        $ltimodule = (object)[
-            'course' => $course->id,
-            'name' => $responsedata['coursefullname'],
-            'intro' => $responsedata['coursesummary'],
-            'introformat' => FORMAT_HTML,
-            'typeid' => $this->ltitypeid,
-            'toolurl' => "{$this->platformurl}/enrol/lti/launch.php",
-            'instructorcustomparameters' => $ltiparams,
-            'grade' => 100,
-            'launchcontainer' => LTI_LAUNCH_CONTAINER_WINDOW,
-            'instructorchoicesendname' => 1,
-            'instructorchoicesendemailaddr' => 1,
-            'debuglaunch' => 0,
-            'showtitlelaunch' => 1,
-            'showdescriptionlaunch' => 1,
-            'instructorchoiceacceptgrades' => 1,
-        ];
-
-        $instanceid = lti_add_instance($ltimodule, null);
-
-        $cm = (object) [
-            'course' => $course->id,
-            'module' => $moduleid,
-            'instance' => $instanceid,
-            'section' => 0,
-            'visible' => 1,
-            'visibleoncoursepage' => 1,
-        ];
-        $cmid = add_course_module($cm);
-
-        // Add the module to the specified course section.
-        course_add_cm_to_section($course->id, $cmid, 0);
-
-        rebuild_course_cache($course->id, true);
-    }
-
-    /**
-     * Determines the type of course generator to use ('local' or 'remote').
-     *
-     * @return string The generator type: 'local' or 'remote'.
-     */
-    public static function get_generator_type() {
-        global $CFG;
-
-        // Check which generator is available.
-        $pluginmanager = \core_plugin_manager::instance();
-        $localedai = $pluginmanager->get_plugin_info('local_edai');
-
-        $generationtype = 'local';
-        if (!$localedai) {
-            $generationtype = 'remote';
+        // Limit length.
+        if (strlen($shortname) > 50) {
+            $shortname = substr($shortname, 0, 50);
         }
 
-        // Add to config.php to override the generation type.
-        if (!empty($CFG->overridegenerationtype)) {
-            $generationtype = $CFG->overridegenerationtype;
+        $shortname ?: 'course_' . time();
+
+        $counter = 1;
+
+        // Check if shortname exists.
+        while ($DB->record_exists('course', ['shortname' => $shortname])) {
+            $shortname = $baseshortname . '_' . $counter;
+            $counter++;
         }
 
-        return $generationtype;
-    }
-
-    /**
-     * Checks the configuration for the Dixeo Course Generator block.
-     *
-     * @return string|null Returns a localized error message if a configuration issue is found,
-     *                    or null if the configuration is valid.
-     */
-    public static function check_configuration() {
-        require_login();
-        require_capability('block/dixeo_coursegen:create', \context_system::instance());
-
-        // Check apikey available.
-        $apikey = get_config('block_dixeo_coursegen', 'apikey');
-        if ($apikey === '') {
-            return get_string('apikey_desc', 'block_dixeo_coursegen');
-        }
-
-        // Check if platformurl is available.
-        $platformurl = get_config('block_dixeo_coursegen', 'platformurl');
-        if ($platformurl === '') {
-            return get_string('platformurl_desc', 'block_dixeo_coursegen');
-        }
-
-        // Register platform if not already registered.
-        if (!webservice::call('check', $platformurl, $apikey)) {
-            $settingsurl = new \moodle_url($CFG->wwwroot . '/admin/settings.php', ['section' => 'blocksettingdixeo_coursegen']);
-            $settingslink = \html_writer::link($settingsurl, $settingsurl->out());
-            return get_string('error_platform_not_registered', 'block_dixeo_coursegen', $settingslink);
-        }
-
-        return null;
+        return $shortname;
     }
 }
