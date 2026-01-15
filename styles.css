@@ -272,6 +272,10 @@
         padding-left: 0;
     }
 
+    .block_dixeo_coursegen #edai_course_generator_form {
+        padding: 0;
+    }
+
     .block_dixeo_coursegen #course_description {
         font-size: 16px;
         min-height: 100px;
