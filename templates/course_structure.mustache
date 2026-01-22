@@ -1,0 +1,139 @@
+{{!
+    @template block_dixeo_coursegen/course_structure
+
+    Course structure template for the JSON editor.
+
+    Context variables required for this template:
+    * title - Course title
+    * summary - Course summary (optional)
+    * image - Course image (optional)
+    * jobid - Job ID
+    * sections - Array of sections
+}}
+<div class="course-overview mb-4">
+    {{#image}}
+    <div class="course-image mb-3">
+        <img src="{{image}}" alt="{{title}}" loading="lazy" width="280" height="157" decoding="async">
+    </div>
+    {{/image}}
+    <h2 class="course-title editable mb-2" data-path="title">{{title}}</h2>
+    <div class="edit-controls"></div>
+    {{#summary}}
+    <p class="course-summary editable text-muted mb-2" data-path="summary">{{summary}}</p>
+    <div class="edit-controls"></div>
+    {{/summary}}
+</div>
+
+{{#hasSections}}
+<div class="course-sections">
+    {{#sections}}
+    <div class="add-section-container position-relative">
+        <button class="btn-add-section btn btn-sm btn-outline-primary" data-section-index="{{index}}">
+            <i class="fa fa-plus"></i>
+        </button>
+    </div>
+    <div class="section-item mb-4 border rounded p-3" data-section-idx="{{index}}">
+        <div class="item-actions">
+            <button class="btn-edit-item" title="{{strings.edit}}" data-action="edit"><i class="fa fa-pencil"></i></button>
+            <button class="btn-copy-item" title="{{strings.duplicate}}" data-action="copy"><i class="fa fa-copy"></i></button>
+            <button class="btn-delete-item btn-danger" title="{{strings.delete}}" data-action="delete"><i class="fa fa-trash"></i></button>
+        </div>
+
+        <div class="section-header d-flex align-items-start">
+            <button class="btn btn-link p-0 me-2 text-decoration-none collapsed" type="button"
+                    data-toggle="collapse" data-target="#section-{{jobid}}-{{index}}" aria-expanded="false">
+                <i class="fa fa-chevron-right"></i>
+            </button>
+
+            <div class="section-content flex-grow-1">
+                <h4 class="section-title editable mb-2" data-path="sections[{{index}}].title">
+                    {{title}}
+                </h4>
+                <div class="edit-controls"></div>
+                {{#summary}}
+                <p class="section-summary editable text-muted" data-path="sections[{{index}}].summary">
+                    {{summary}}
+                </p>
+                <div class="edit-controls"></div>
+                {{/summary}}
+            </div>
+        </div>
+
+        {{#hasModules}}
+        <div class="collapse mt-3" id="section-{{jobid}}-{{index}}">
+            <div class="modules-list ps-4">
+                {{#modules}}
+                <div class="add-module-container position-relative">
+                    <button class="btn-add-module btn btn-sm btn-outline-secondary" data-section-index="{{sectionIndex}}" data-module-index="{{index}}">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+                <div class="module-item d-flex mb-3 p-3 bg-light rounded" data-module-idx="{{index}}">
+                    <div class="item-actions">
+                        <button class="btn-edit-item" title="{{strings.edit}}" data-action="edit"><i class="fa fa-pencil"></i></button>
+                        <button class="btn-copy-item" title="{{strings.duplicate}}" data-action="copy"><i class="fa fa-copy"></i></button>
+                        <button class="btn-delete-item btn-danger" title="{{strings.delete}}" data-action="delete"><i class="fa fa-trash"></i></button>
+                    </div>
+
+                    <div class="module-type-select-wrapper me-3 text-primary" data-section-index="{{sectionIndex}}" data-module-index="{{index}}">
+                        <button type="button" class="module-type-select-toggle" aria-haspopup="listbox" aria-expanded="false" aria-label="{{strings.change_activity_type}}">
+                            <i class="fa {{icon}} fa-2x"></i>
+                            <i class="fa fa-chevron-down module-type-select-chevron" aria-hidden="true"></i>
+                        </button>
+                        <div class="module-type-select-dropdown d-none" role="listbox" aria-hidden="true">
+                            {{#moduleTypeOptions}}
+                            <div class="module-type-option" data-value="{{value}}" role="option">
+                                <i class="fa {{icon}}" aria-hidden="true"></i>
+                                <span>{{label}}</span>
+                            </div>
+                            {{/moduleTypeOptions}}
+                        </div>
+                    </div>
+
+                    <div class="module-details flex-grow-1">
+                        <div class="module-type text-muted small ml-2 mb-1">{{typeUpper}}</div>
+                        <h5 class="module-title editable mb-1" data-path="sections[{{sectionIndex}}].modules[{{index}}].title">
+                            {{title}}
+                        </h5>
+                        <div class="edit-controls"></div>
+                        {{#hints}}
+                        <p class="module-hints editable text-muted mb-1 small"
+                           data-path="sections[{{sectionIndex}}].modules[{{index}}].hints">
+                            {{hints}}
+                        </p>
+                        <div class="edit-controls"></div>
+                        {{/hints}}
+                    </div>
+                </div>
+                {{/modules}}
+                <div class="add-module-container position-relative">
+                    <button class="btn-add-module btn btn-sm btn-outline-secondary" data-section-index="{{index}}" data-module-index="{{modules.length}}">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {{/hasModules}}
+        {{^hasModules}}
+        <div class="add-module-container-empty mt-3">
+            <button class="btn-add-module btn btn-sm btn-outline-secondary" data-section-index="{{index}}" data-module-index="0">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+        {{/hasModules}}
+    </div>
+    {{/sections}}
+    <div class="add-section-container position-relative">
+        <button class="btn-add-section btn btn-sm btn-outline-primary" data-section-index="{{sections.length}}">
+            <i class="fa fa-plus"></i>
+        </button>
+    </div>
+</div>
+{{/hasSections}}
+{{^hasSections}}
+<div class="add-section-container-empty">
+    <button class="btn-add-section btn btn-sm btn-outline-primary" data-section-index="0">
+        <i class="fa fa-plus"></i>
+    </button>
+</div>
+{{/hasSections}}

@@ -307,3 +307,711 @@
 .block_dixeo_coursegen #success_message_container .side-by-side {
     padding-top: 2.0rem;
 }
+
+/* ============================================
+   JSON Editor Styles (review.php)
+   ============================================ */
+#page-blocks-dixeo_coursegen-review #page.drawers {
+    padding: 0;
+}
+
+#page-blocks-dixeo_coursegen-review #page.drawers .main-inner,
+#page-blocks-dixeo_coursegen-review #region-main {
+    background: transparent;
+    padding: 0;
+    margin-top: 0;
+}
+
+#page-blocks-dixeo_coursegen-review #page-wrapper #page-footer {
+    margin-bottom: 70px;
+}
+
+
+#page-blocks-dixeo_coursegen-review .course-structure-container {
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    padding-bottom: 100px; /* Space for footer */
+    min-height: calc(100vh - 200px); /* Ensure page is tall enough for footer */
+}
+
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: #f8f9fa !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer .container-fluid {
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer button i,
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer a i {
+    margin-right: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer .btn,
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer a.btn {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+#page-blocks-dixeo_coursegen-review .editor-toolbar-footer .btn-label {
+    padding-left: 0.5rem;
+}
+
+#page-blocks-dixeo_coursegen-review .autosave-status {
+    flex: 1;
+    justify-content: center;
+}
+
+#page-blocks-dixeo_coursegen-review #countdown-timer {
+    font-size: 1rem;
+    padding: 0.25rem 0.75rem;
+}
+
+#page-blocks-dixeo_coursegen-review .section-item {
+    position: relative;
+    transition: box-shadow 0.2s, opacity 0.2s, border-color 0.2s, border-style 0.2s;
+    cursor: move;
+    background: #ffffff;
+    /* Add matching shadow to prevent layout shift on hover - must match hover shadow exactly */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    /* Reserve space for drag-over border (2px) to prevent layout shift */
+    border: 1px solid #dee2e6 !important;
+    margin: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .module-item {
+    position: relative;
+    transition: box-shadow 0.2s, opacity 0.2s, border-color 0.2s, border-style 0.2s;
+    cursor: move;
+    /* Add matching shadow to prevent layout shift on hover - must match hover shadow exactly */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0);
+    /* Reserve space for drag-over border (2px) to prevent layout shift */
+    border: 2px solid transparent !important;
+    margin: 0;
+}
+
+/* Add section/module buttons */
+#page-blocks-dixeo_coursegen-review .add-section-container,
+#page-blocks-dixeo_coursegen-review .add-module-container {
+    margin: 2px 0;
+    text-align: center;
+    min-height: 23px;
+}
+
+#page-blocks-dixeo_coursegen-review .add-section-container::before,
+#page-blocks-dixeo_coursegen-review .add-section-container::after,
+#page-blocks-dixeo_coursegen-review .add-module-container::before,
+#page-blocks-dixeo_coursegen-review .add-module-container::after {
+    display: none;
+    position: absolute;
+    top: 3px;
+    content: '';
+    border-top: 1px dashed #108df099;
+    width: calc(50% - 15px);
+}
+
+#page-blocks-dixeo_coursegen-review .add-section-container::after,
+#page-blocks-dixeo_coursegen-review .add-module-container::after {
+    right: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .add-module-container::before,
+#page-blocks-dixeo_coursegen-review .add-module-container::after {
+    border-color: #6a737b99;
+}
+
+#page-blocks-dixeo_coursegen-review .add-module-container::before {
+    width: calc(50% - 28px);
+}
+
+#page-blocks-dixeo_coursegen-review .add-module-container::after {
+    width: calc(50% - 4px);
+}
+
+#page-blocks-dixeo_coursegen-review .add-section-container:hover::before,
+#page-blocks-dixeo_coursegen-review .add-section-container:hover::after,
+#page-blocks-dixeo_coursegen-review .add-module-container:hover::before,
+#page-blocks-dixeo_coursegen-review .add-module-container:hover::after {
+    display: block;
+}
+
+#page-blocks-dixeo_coursegen-review .add-section-container-empty,
+#page-blocks-dixeo_coursegen-review .add-module-container-empty {
+    margin: 8px 0;
+    text-align: center;
+    padding: 8px;
+}
+
+/* Hide add buttons by default (except empty state) */
+#page-blocks-dixeo_coursegen-review .add-section-container .btn-add-section,
+#page-blocks-dixeo_coursegen-review .add-module-container .btn-add-module {
+    display: none;
+}
+
+/* Show add buttons on hover of container itself */
+#page-blocks-dixeo_coursegen-review .add-section-container:hover .btn-add-section,
+#page-blocks-dixeo_coursegen-review .add-module-container:hover .btn-add-module {
+    display: inline-block;
+}
+
+/* Show add module button when hovering over section with no modules */
+#page-blocks-dixeo_coursegen-review .section-item:hover .add-module-container-empty .btn-add-module {
+    display: inline-block;
+}
+
+/* Empty state buttons are always visible */
+#page-blocks-dixeo_coursegen-review .add-section-container-empty .btn-add-section,
+#page-blocks-dixeo_coursegen-review .add-module-container-empty .btn-add-module {
+    display: inline-block !important;
+}
+
+/* Smaller button styling */
+#page-blocks-dixeo_coursegen-review .btn-add-section,
+#page-blocks-dixeo_coursegen-review .btn-add-module {
+    border-style: dashed;
+    border-width: 1px;
+    transition: border-style 0.2s, opacity 0.2s;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    line-height: 1.2;
+    margin: 0;
+    /* Prevent layout shift - use opacity instead of transform */
+    opacity: 0.9;
+    margin-top: -18px;
+}
+
+#page-blocks-dixeo_coursegen-review .btn-add-module {
+    margin-left: -24px;
+}
+
+#page-blocks-dixeo_coursegen-review .btn-add-section i,
+#page-blocks-dixeo_coursegen-review .btn-add-module i {
+    font-size: 0.7rem;
+    margin: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .btn-add-section:hover,
+#page-blocks-dixeo_coursegen-review .btn-add-module:hover {
+    border-style: solid;
+    opacity: 1;
+}
+
+#page-blocks-dixeo_coursegen-review .section-item:hover,
+#page-blocks-dixeo_coursegen-review .module-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#page-blocks-dixeo_coursegen-review .section-item.dragging,
+#page-blocks-dixeo_coursegen-review .module-item.dragging {
+    opacity: 0.4;
+}
+
+#page-blocks-dixeo_coursegen-review .section-item.drag-over,
+#page-blocks-dixeo_coursegen-review .module-item.drag-over {
+    border: 2px dashed #0f6cbf !important;
+    background: #e7f3ff;
+    /* Border width change from 1px to 2px might cause slight shift, but minimized */
+}
+
+#page-blocks-dixeo_coursegen-review .item-actions {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    gap: 8px;
+}
+
+#page-blocks-dixeo_coursegen-review .section-item:hover > .item-actions {
+    opacity: 1;
+}
+
+#page-blocks-dixeo_coursegen-review .module-item:hover > .item-actions {
+    opacity: 1;
+}
+
+#page-blocks-dixeo_coursegen-review .item-actions button {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 4px;
+    background: transparent;
+    border: none;
+    color: #108df0;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#page-blocks-dixeo_coursegen-review .item-actions button:hover {
+    color: #0a70c0;
+}
+
+#page-blocks-dixeo_coursegen-review .item-actions button.btn-danger:hover {
+    color: #dc3545;
+}
+
+#page-blocks-dixeo_coursegen-review .editable {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s, outline 0.2s;
+    /* Add transparent outline to prevent layout shift on hover */
+    outline: 1px dashed transparent;
+    outline-offset: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .course-sections .editable {
+    width: calc(100% - 130px);
+}
+
+#page-blocks-dixeo_coursegen-review .editable:hover:not(.editing) {
+    background: #108df00f;
+    outline: 1px dashed #108df07d;
+}
+
+#page-blocks-dixeo_coursegen-review .editable.editing {
+    background: white;
+    border: 2px solid #0f6cbf;
+    outline: none;
+}
+
+#page-blocks-dixeo_coursegen-review .editable[contenteditable='true'] {
+    min-height: 40px;
+}
+
+#page-blocks-dixeo_coursegen-review .edit-controls {
+    margin-top: 8px;
+    display: none;
+}
+
+#page-blocks-dixeo_coursegen-review .editing + .edit-controls {
+    display: block;
+    text-align: right;
+    margin: 0 0 8px 0;
+}
+
+#page-blocks-dixeo_coursegen-review .course-sections .editing + .edit-controls {
+    margin: 0 130px 8px 0;
+}
+
+#page-blocks-dixeo_coursegen-review .section-header > button {
+    background: #108df0;
+    min-width: 30px;
+    min-height: 30px;
+    border-radius: 15px;
+    color: #fff;
+    margin-top: 2px;
+}
+
+#page-blocks-dixeo_coursegen-review .section-header button:hover {
+    text-decoration: none;
+}
+
+#page-blocks-dixeo_coursegen-review .section-header button i {
+    transition: transform 0.2s;
+}
+
+#page-blocks-dixeo_coursegen-review .section-title {
+    font-weight: 600;
+    color: #333;
+}
+
+#page-blocks-dixeo_coursegen-review .section-summary {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+#page-blocks-dixeo_coursegen-review .section-summary.editing {
+    margin-bottom: 10px;
+}
+
+#page-blocks-dixeo_coursegen-review .module-icon {
+    min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Module type select: looks like icon, hover shows outline, dropdown with icon+text options */
+#page-blocks-dixeo_coursegen-review .module-type-select-wrapper {
+    position: relative;
+    min-width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 50px;
+    min-height: 50px;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: inherit;
+    outline: 1px solid transparent;
+    outline-offset: 2px;
+    transition: outline-color 0.2s, outline-offset 0.2s;
+    position: relative;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle:hover {
+    outline: 1px solid #108df0;
+    outline-offset: 2px;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle:focus {
+    outline: 1px solid #108df0;
+    outline-offset: 2px;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-chevron {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 0.6rem;
+    color: #108df0;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle:hover .module-type-select-chevron,
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle.highlighted .module-type-select-chevron {
+    opacity: 1;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-toggle.highlighted {
+    outline: 1px solid #108df0 !important;
+    outline-offset: 2px;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type:hover,
+#page-blocks-dixeo_coursegen-review .module-type.highlighted {
+    background: #108df00f;
+}
+
+/* Module-type hover highlight handled via JavaScript */
+
+#page-blocks-dixeo_coursegen-review .module-type-select-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 4px;
+    min-width: 220px;
+    max-height: 320px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1001;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-select-dropdown:not(.d-none) {
+    display: block;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-option:hover {
+    background: #f0f4f8;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-option i {
+    width: 20px;
+    text-align: center;
+    color: #108df0;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type-option span {
+    color: #000;
+}
+
+#page-blocks-dixeo_coursegen-review .module-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+#page-blocks-dixeo_coursegen-review .module-type {
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    max-width: 200px;
+}
+
+#page-blocks-dixeo_coursegen-review .module-hints {
+    line-height: 1.5;
+}
+
+#page-blocks-dixeo_coursegen-review .module-details .editing {
+    padding: 8px;
+}
+
+#page-blocks-dixeo_coursegen-review .course-image {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#page-blocks-dixeo_coursegen-review .saving-indicator {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    animation: slideIn 0.3s;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+#page-blocks-dixeo_coursegen-review .saving-indicator .fa-spinner {
+    margin-right: 8px;
+}
+
+#page-blocks-dixeo_coursegen-review .saving-indicator .fa-check {
+    margin-right: 8px;
+}
+
+/* ============================================
+   Touch / no-hover: show hover-only elements
+   ============================================ */
+@media (hover: none), (pointer: coarse) {
+    #page-blocks-dixeo_coursegen-review .item-actions {
+        opacity: 1;
+    }
+
+    #page-blocks-dixeo_coursegen-review .add-section-container .btn-add-section,
+    #page-blocks-dixeo_coursegen-review .add-module-container .btn-add-module {
+        display: inline-block;
+    }
+
+    #page-blocks-dixeo_coursegen-review .add-section-container::before,
+    #page-blocks-dixeo_coursegen-review .add-section-container::after,
+    #page-blocks-dixeo_coursegen-review .add-module-container::before,
+    #page-blocks-dixeo_coursegen-review .add-module-container::after {
+        display: block;
+    }
+}
+
+/* ============================================
+   Responsive: reduce horizontal space, mobile
+   ============================================ */
+@media (max-width: 767px) {
+    #page-blocks-dixeo_coursegen-review .course-structure-container {
+        padding: 12px 8px;
+        padding-bottom: 100px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer {
+        padding: 8px 4px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer .container-fluid {
+        padding-left: 6px;
+        padding-right: 6px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .section-item {
+        padding: 12px 10px !important;
+        margin-bottom: 1rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .module-item {
+        padding: 10px 8px !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .item-actions {
+        right: 8px;
+        top: 10px;
+        gap: 4px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .item-actions button {
+        width: 28px;
+        height: 28px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .section-header {
+        margin-top: 32px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .section-header > button {
+        min-width: 28px;
+        min-height: 28px;
+        margin-top: 0;
+        position: absolute;
+        top: 10px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .section-header .me-2 {
+        margin-right: 0.5rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-sections .editable {
+        width: 100%;
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-sections .editing + .edit-controls {
+        margin: 0 0 8px 0;
+    }
+
+    #page-blocks-dixeo_coursegen-review .modules-list {
+        padding-left: 0.5rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .module-type-select-wrapper {
+        min-width: 36px;
+        margin-right: 0.75rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .module-type-select-toggle {
+        min-width: 36px;
+        min-height: 36px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .module-type-select-toggle i {
+        font-size: 1.25rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .module-type-select-dropdown {
+        min-width: 200px;
+        max-height: 280px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .add-section-container,
+    #page-blocks-dixeo_coursegen-review .add-module-container {
+        margin: 2px 0;
+        min-height: 22px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .add-module-container::before {
+        width: calc(50% - 16px);
+    }
+    
+    #page-blocks-dixeo_coursegen-review .add-module-container::after {
+        width: calc(50% - 14px);
+    }
+
+    #page-blocks-dixeo_coursegen-review .btn-add-section,
+    #page-blocks-dixeo_coursegen-review .btn-add-module {
+        margin-left: 0;
+    }
+
+    #page-blocks-dixeo_coursegen-review .add-section-container-empty,
+    #page-blocks-dixeo_coursegen-review .add-module-container-empty {
+        margin: 6px 0;
+        padding: 6px 4px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-overview {
+        margin-bottom: 1rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-overview .course-image {
+        margin-bottom: 0.75rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .autosave-status .me-2,
+    #page-blocks-dixeo_coursegen-review .autosave-status .ms-2 {
+        margin-left: 0.25rem !important;
+        margin-right: 0.25rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-actions .me-2 {
+        margin-right: 0.25rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .saving-indicator {
+        left: 8px;
+        right: 8px;
+        padding: 10px 12px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer .btn,
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer a.btn {
+        padding: 0.5rem 1rem;
+    }
+
+    /* Footer buttons: icon only, labels hidden (use title for a11y) */
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer .btn-label {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+    #page-blocks-dixeo_coursegen-review .course-structure-container {
+        padding: 16px 12px;
+        padding-bottom: 100px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer {
+        padding: 10px 8px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .editor-toolbar-footer .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    #page-blocks-dixeo_coursegen-review .section-item {
+        padding: 14px 12px !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .modules-list {
+        padding-left: 1rem !important;
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-sections .editable {
+        width: calc(100% - 110px);
+    }
+
+    #page-blocks-dixeo_coursegen-review .course-sections .editing + .edit-controls {
+        margin: 0 110px 8px 0;
+    }
+
+    #page-blocks-dixeo_coursegen-review .item-actions {
+        right: 12px;
+    }
+}

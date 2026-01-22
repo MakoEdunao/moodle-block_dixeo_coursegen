@@ -22,6 +22,7 @@
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
@@ -33,6 +34,7 @@ $functions = [
         'type'        => 'read',
         'ajax'        => true,
         'capabilities' => 'block/dixeo_coursegen:create',
+        'loginrequired' => true,
     ],
     'block_dixeo_coursegen_get_status' => [
         'classname'   => 'block_dixeo_coursegen\\external\\generation_status',
@@ -42,5 +44,36 @@ $functions = [
         'type'        => 'read',
         'ajax'        => true,
         'capabilities' => 'block/dixeo_coursegen:create',
+        'loginrequired' => true,
+    ],
+    'block_dixeo_coursegen_get_structure' => [
+        'classname'   => 'block_dixeo_coursegen\\external\\get_structure',
+        'methodname'  => 'get_structure',
+        'classpath'   => '',
+        'description' => 'Get course generation structure by job ID',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'block/dixeo_coursegen:create',
+        'loginrequired' => true,
+    ],
+    'block_dixeo_coursegen_save_structure' => [
+        'classname'   => 'block_dixeo_coursegen\\external\\save_structure',
+        'methodname'  => 'save_structure',
+        'classpath'   => '',
+        'description' => 'Save course generation structure (creates new version)',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities' => 'block/dixeo_coursegen:create',
+        'loginrequired' => true,
+    ],
+    'block_dixeo_coursegen_get_versions' => [
+        'classname'   => 'block_dixeo_coursegen\\external\\get_versions',
+        'methodname'  => 'get_versions',
+        'classpath'   => '',
+        'description' => 'Get all versions for a job',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'block/dixeo_coursegen:create',
+        'loginrequired' => true,
     ],
 ];

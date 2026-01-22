@@ -11,7 +11,7 @@
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who initiated the job"/>
         <FIELD NAME="description" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="structure" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="Course structure (JSON)"/>
-        <FIELD NAME="version" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="Draft version"/>
+        <FIELD NAME="version" TYPE="char" LENGTH="20" NOTNULL="true" DEFAULT="1.0" SEQUENCE="false" COMMENT="Version (major.minor format, e.g., 1.0, 1.1, 2.0)"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>

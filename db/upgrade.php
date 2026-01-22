@@ -65,5 +65,32 @@ function xmldb_block_dixeo_coursegen_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2025093002, 'dixeo_coursegen');
     }
 
+    if ($oldversion < 2026012001) {
+        // Change version column from INT to VARCHAR to support major.minor format.
+        $table = new xmldb_table('block_dixeo_coursegen_structure');
+        $field = new xmldb_field('version', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, '1.0', 'structure');
+        $key = new xmldb_key('jobid_version_uk', XMLDB_KEY_UNIQUE, ['jobid', 'version']);
+
+        // Step 1: Drop the unique key (required before changing column type).
+        $dbman->drop_key($table, $key);
+
+        // Step 2: Convert existing integer versions to major.minor format.
+        $records = $DB->get_records('block_dixeo_coursegen_structure');
+        foreach ($records as $record) {
+            // Convert integer version to major.minor (e.g., 1 -> 1.0, 2 -> 2.0).
+            $newversion = $record->version . '.0';
+            $DB->set_field('block_dixeo_coursegen_structure', 'version', $newversion, ['id' => $record->id]);
+        }
+
+        // Step 3: Change the field type from INT to VARCHAR.
+        $dbman->change_field_type($table, $field);
+
+        // Step 4: Recreate the unique key with the new column type.
+        $dbman->add_key($table, $key);
+
+        // Dixeo_coursegen savepoint reached.
+        upgrade_block_savepoint(true, 2026012001, 'dixeo_coursegen');
+    }
+
     return true;
 }

@@ -34,4 +34,4 @@ $plugin->dependencies = [
 ];
 
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.1.0';
+$plugin->release = 'v1.2.0';
