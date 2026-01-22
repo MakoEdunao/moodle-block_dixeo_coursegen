@@ -1,0 +1,86 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template block_dixeo_coursegen/review
+
+    Course structure review and editor page.
+
+    Context variables required for this template:
+    * jobid - The job identifier
+    * version - Optional version to load (empty for latest)
+}}
+
+<div class="block_dixeo_coursegen">
+
+    {{! Hidden structure data container }}
+    <input type="hidden" id="structure-data" data-jobid="{{jobid}}" data-version="{{version}}">
+
+    {{! Course structure container (will be populated by JavaScript) }}
+    <div class="course-structure-container">
+        <div id="loading-indicator" class="text-center py-5">
+            <i class="fa fa-spinner fa-spin fa-3x"></i>
+            <p class="mt-3">{{loading}}</p>
+        </div>
+    </div>
+
+    {{! Template for editing controls (hidden) }}
+    <div id="edit-controls-template" class="d-none">
+        <button class="btn btn-success btn-sm me-2 save-edit">{{save}}</button>
+        <button class="btn btn-secondary btn-sm cancel-edit">{{cancel}}</button>
+    </div>
+
+    {{! Editor toolbar - Fixed footer }}
+    <div class="editor-toolbar-footer bg-light border-top p-3">
+        <div class="container-fluid d-flex align-items-center justify-content-between">
+            {{! Cancel button (left) }}
+            <div class="editor-cancel">
+                <a href="{{config.wwwroot}}" class="btn btn-outline-secondary btn-sm" title="{{cancel}}">
+                    <i class="fa fa-times" aria-hidden="true"></i><span class="btn-label">{{cancel}}</span>
+                </a>
+            </div>
+
+            {{! Auto-save status and undo/redo (center) }}
+            <div class="autosave-status d-flex align-items-center justify-content-center">
+                <span id="autosave-label" class="me-2 text-muted" style="display: none;">{{autosave_in}} </span>
+                <span id="countdown-timer" class="badge badge-primary me-2" style="display: none;">60</span>
+            </div>
+
+            {{! Manual actions (right) }}
+            <div class="editor-actions">
+                <button id="btn-undo" class="btn btn-secondary btn-sm mx-1" disabled title="{{undo}}">
+                    <i class="fa fa-undo" aria-hidden="true"></i><span class="btn-label">{{undo}}</span>
+                </button>
+                <button id="btn-redo" class="btn btn-secondary btn-sm mx-1" disabled title="{{redo}}">
+                    <i class="fa fa-redo" aria-hidden="true"></i><span class="btn-label">{{redo}}</span>
+                </button>
+                <button id="btn-reload" class="btn btn-secondary btn-sm mx-1 ml-4" title="{{reload}}">
+                    <i class="fa fa-refresh" aria-hidden="true"></i><span class="btn-label">{{reload}}</span>
+                </button>
+                <button id="btn-save-now" class="btn btn-primary btn-sm mx-1" title="{{save_now}}">
+                    <i class="fa fa-save" aria-hidden="true"></i><span class="btn-label">{{save_now}}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{! Initialize the editor }}
+{{#js}}
+require(['block_dixeo_coursegen/editor'], function(Editor) {
+    Editor.init('{{jobid}}');
+});
+{{/js}}
