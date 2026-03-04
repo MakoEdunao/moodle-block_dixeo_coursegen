@@ -25,7 +25,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025093000;                 // The current plugin version (Date: YYYYMMDDXX).
+$plugin->version   = 2026030300;                 // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2023100909;                 // Requires this Moodle version.
 $plugin->component = 'block_dixeo_coursegen';   // Full name of the plugin (used for diagnostics).
 
