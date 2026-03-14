@@ -34,7 +34,7 @@ function xmldb_block_dixeo_coursegen_upgrade($oldversion) {
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2025093002) {
+    if ($oldversion < 2026030301) {
 
         // Define table block_dixeo_coursegen_structure to be created.
         $table = new xmldb_table('block_dixeo_coursegen_structure');
@@ -62,10 +62,10 @@ function xmldb_block_dixeo_coursegen_upgrade($oldversion) {
         }
 
         // Dixeo_coursegen savepoint reached.
-        upgrade_block_savepoint(true, 2025093002, 'dixeo_coursegen');
+        upgrade_block_savepoint(true, 2026030301, 'dixeo_coursegen');
     }
 
-    if ($oldversion < 2026012001) {
+    if ($oldversion < 2026030302) {
         // Change version column from INT to VARCHAR to support major.minor format.
         $table = new xmldb_table('block_dixeo_coursegen_structure');
         $field = new xmldb_field('version', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, '1.0', 'structure');
@@ -89,7 +89,7 @@ function xmldb_block_dixeo_coursegen_upgrade($oldversion) {
         $dbman->add_key($table, $key);
 
         // Dixeo_coursegen savepoint reached.
-        upgrade_block_savepoint(true, 2026012001, 'dixeo_coursegen');
+        upgrade_block_savepoint(true, 2026030302, 'dixeo_coursegen');
     }
 
     return true;
