@@ -53,7 +53,7 @@ class block_dixeo_designer extends block_base {
      * @return bool
      */
     public function has_config() {
-        return false;
+        return true;
     }
 
     /**
