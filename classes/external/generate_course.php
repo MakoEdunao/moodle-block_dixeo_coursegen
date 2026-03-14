@@ -48,6 +48,7 @@ final class generate_course extends external_api {
         return new external_function_parameters([
             'job_id' => new external_value(PARAM_TEXT, 'Job id', VALUE_REQUIRED),
             'description' => new external_value(PARAM_TEXT, 'Course description', VALUE_REQUIRED),
+            'templateid' => new external_value(PARAM_TEXT, 'Course template id', VALUE_DEFAULT, null, NULL_ALLOWED),
             'sesskey' => new external_value(PARAM_RAW, 'Session key', VALUE_REQUIRED),
             'skip' => new external_value(PARAM_BOOL, 'Skip structure generation', VALUE_DEFAULT, 0),
         ]);
@@ -58,14 +59,27 @@ final class generate_course extends external_api {
      *
      * @param string $job_id The unique identifier for the generation job.
      * @param string $description The course description.
+     * @param string|null $templateid The selected template identifier.
      * @param string $sesskey The session key for security verification.
      * @param bool $skip Whether to skip structure generation.
      * @return array An associative array containing the status and the time it was updated.
      */
-    public static function generate_course(string $job_id, string $description, string $sesskey, bool $skip = false): array {
+    public static function generate_course(
+        string $job_id,
+        string $description,
+        ?string $templateid,
+        string $sesskey,
+        bool $skip = false
+    ): array {
         global $DB, $USER;
 
-        self::validate_parameters(self::generate_course_parameters(), ['job_id' => $job_id, 'description' => $description, 'sesskey' => $sesskey, 'skip' => $skip]);
+        self::validate_parameters(self::generate_course_parameters(), [
+            'job_id' => $job_id,
+            'description' => $description,
+            'templateid' => $templateid,
+            'sesskey' => $sesskey,
+            'skip' => $skip,
+        ]);
 
         $context = \context_system::instance();
         self::validate_context($context);
@@ -74,7 +88,7 @@ final class generate_course extends external_api {
         require_sesskey();
 
         try {
-            $generator = new \block_dixeo_designer\course_designer($job_id, $description, $skip);
+            $generator = new \block_dixeo_designer\course_designer($job_id, $description, $skip, null, $templateid);
             $course = $generator->generate_course();
 
             if (!$course) {

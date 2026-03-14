@@ -37,6 +37,13 @@
             <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_designer {{/str}}">
                 <i class="fa fa-paperclip fa-2x"></i>
             </label>
+            {{#has_template_options}}
+            <select id="templateid" name="templateid" class="custom-select" title="{{#str}} coursetemplate, block_dixeo_designer {{/str}}">
+                {{#template_options}}
+                    <option value="{{value}}"{{#selected}} selected{{/selected}}>{{label}}</option>
+                {{/template_options}}
+            </select>
+            {{/has_template_options}}
             <div id="file_names" class="mt-2"></div>
             <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course, block_dixeo_designer {{/str}}">
                 <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="Logo">

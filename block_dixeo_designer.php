@@ -27,6 +27,7 @@
  * The Dixeo Course Designer block class
  */
 class block_dixeo_designer extends block_base {
+
     /**
      * Set the initial properties for the block
      */
@@ -94,9 +95,13 @@ class block_dixeo_designer extends block_base {
         $this->content = new stdClass();
         $this->content->footer = '';
 
+        $templateoptions = \block_dixeo_designer\course_template_helper::get_course_template_options();
+
         $context = [
             'course_description' => $coursedescription,
             'job_id' => self::generate_job_id(),
+            'has_template_options' => !empty($templateoptions),
+            'template_options' => $templateoptions,
         ];
         $text = $OUTPUT->render_from_template('block_dixeo_designer/course_designer', $context);
 

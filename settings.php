@@ -30,12 +30,7 @@ if ($ADMIN->fulltree) {
         get_string('coursetemplate', 'block_dixeo_designer'),
         get_string('coursetemplate_desc', 'block_dixeo_designer'),
         '',
-        [
-            '' => get_string('coursetemplate_none', 'block_dixeo_designer'),
-            'template_alpha' => get_string('coursetemplate_template_alpha', 'block_dixeo_designer'),
-            'template_beta' => get_string('coursetemplate_template_beta', 'block_dixeo_designer'),
-            'template_gamma' => get_string('coursetemplate_template_gamma', 'block_dixeo_designer'),
-        ]
+        \block_dixeo_designer\course_template_helper::get_course_template_choices()
     ));
 
     $ADMIN->add('courses',

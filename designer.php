@@ -32,6 +32,11 @@ global $PAGE, $OUTPUT;
 $jobid = optional_param('id', '', PARAM_TEXT);
 $hasexistingjob = ($jobid !== '');
 $coursedescription = optional_param('course_description', '', PARAM_TEXT);
+$templateid = optional_param(
+    'templateid',
+    \block_dixeo_designer\course_template_helper::get_selected_course_template(),
+    PARAM_TEXT
+);
 
 if (!$hasexistingjob) {
     $jobid = sprintf(
@@ -61,9 +66,13 @@ echo $OUTPUT->header();
 
 if (!$hasexistingjob) {
     // Render the designer start page when opened from the Courses admin section.
+    $templateoptions = \block_dixeo_designer\course_template_helper::get_course_template_options($templateid);
+
     echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer', [
         'course_description' => $coursedescription,
         'job_id' => $jobid,
+        'has_template_options' => !empty($templateoptions),
+        'template_options' => $templateoptions,
     ]), 'block_dixeo_designer');
 } else {
     // Render the structure designer for an existing job.

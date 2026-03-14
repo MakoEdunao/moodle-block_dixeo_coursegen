@@ -54,6 +54,9 @@ class course_designer {
     /** @var array|null Uploaded files associated with the course. */
     private ?array $files;
 
+    /** @var string|null Selected pedagogical structure template. */
+    private ?string $templateid;
+
     /** @var int ID of the category where the course will be created. */
     private int $categoryid;
 
@@ -66,15 +69,23 @@ class course_designer {
      * @param string $description Course description.
      * @param bool $skip Whether to skip structure validation.
      * @param array|null $files Uploaded files.
+     * @param string|null $templateid Selected template id.
      * @throws \dml_exception
      */
-    public function __construct(string $jobid, string $description = '', bool $skip = false, ?array $files = null) {
+    public function __construct(
+        string $jobid,
+        string $description = '',
+        bool $skip = false,
+        ?array $files = null,
+        ?string $templateid = null
+    ) {
         global $DB;
 
         $this->jobid = $jobid;
         $this->description = $description;
         $this->skip = $skip;
         $this->files = $files;
+        $this->templateid = $templateid !== '' ? $templateid : null;
 
         // Get the course category.
         $config = config::load();
@@ -118,6 +129,10 @@ class course_designer {
 
         if ($this->jobid) {
             $request .= '&options[job_id]=' . urlencode($this->jobid);
+        }
+
+        if ($this->templateid !== null) {
+            $request .= '&options[templateid]=' . urlencode($this->templateid);
         }
 
         $lang = current_language();

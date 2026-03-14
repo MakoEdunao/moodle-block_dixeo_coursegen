@@ -34,6 +34,7 @@ define([
     const promptForm = generatorForm.querySelector('#prompt-form');
     const generationContainer = generatorForm.querySelector('.generation-container');
     const courseDescription = generatorForm.querySelector('#course_description');
+    const templateSelect = generatorForm.querySelector('#templateid');
     const generateCourse = generatorForm.querySelector('#generate_course');
     const generateStructure = generatorForm.querySelector('#generate_course_structure');
     const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
@@ -94,6 +95,7 @@ define([
                 args: {
                     job_id: generationContainer.dataset.job_id,
                     description: courseDescriptionValue,
+                    templateid: (templateSelect && templateSelect.value !== '') ? templateSelect.value : null,
                     skip: reviewStructure ? 0 : 1,
                     sesskey: M.cfg.sesskey
                 },
