@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course generator class.
+ * Course designer class.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_dixeo_coursegen;
+namespace block_dixeo_designer;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -37,11 +37,11 @@ use block_dixeo_modulegen\helper\queue;
 use block_dixeo_modulegen\helper\section;
 
 /**
- * Class course_generator
+ * Class course_designer
  *
  * Handles the generation of courses using AI.
  */
-class course_generator {
+class course_designer {
     /** @var string The unique job identifier. */
     private string $jobid;
 
@@ -61,7 +61,7 @@ class course_generator {
     private \curl $curl;
 
     /**
-     * Course Generator constructor.
+     * Course Designer constructor.
      * @param string $jobid Unique job identifier.
      * @param string $description Course description.
      * @param bool $skip Whether to skip structure validation.
@@ -186,7 +186,7 @@ class course_generator {
             return $course;
         } else {
             // Store the generated structure in the database;
-            $DB->insert_record('block_dixeo_coursegen_structure', [
+            $DB->insert_record('block_dixeo_designer_structure', [
                 'jobid' => $this->jobid,
                 'userid' => $USER->id,
                 'description' => $this->description,
@@ -195,7 +195,7 @@ class course_generator {
                 'timecreated' => time(),
             ]);
 
-            // Return null and redirect to review page.
+            // Return null and redirect to designer page.
             return null;
         }
     }

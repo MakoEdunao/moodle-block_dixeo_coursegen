@@ -15,16 +15,16 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template block_dixeo_coursegen/review
+    @template block_dixeo_designer/review
 
-    Course structure review and editor page.
+    Course structure review and designer page.
 
     Context variables required for this template:
     * jobid - The job identifier
     * version - Optional version to load (empty for latest)
 }}
 
-<div class="block_dixeo_coursegen">
+<div class="block_dixeo_designer">
 
     {{! Hidden structure data container }}
     <input type="hidden" id="structure-data" data-jobid="{{jobid}}" data-version="{{version}}">
@@ -78,9 +78,9 @@
     </div>
 </div>
 
-{{! Initialize the editor }}
+{{! Initialize the designer }}
 {{#js}}
-require(['block_dixeo_coursegen/editor'], function(Editor) {
-    Editor.init('{{jobid}}');
+require(['block_dixeo_designer/designer'], function(Designer) {
+    Designer.init('{{jobid}}');
 });
 {{/js}}

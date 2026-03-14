@@ -17,7 +17,7 @@
 /**
  * Version details
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,10 +27,10 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->version   = 2026030302;                 // The current plugin version (Date: YYYYMMDDXX).
 $plugin->requires  = 2023100909;                 // Requires this Moodle version.
-$plugin->component = 'block_dixeo_coursegen';   // Full name of the plugin (used for diagnostics).
+$plugin->component = 'block_dixeo_designer';   // Full name of the plugin (used for diagnostics).
 
 $plugin->dependencies = [
-    'block_dixeo_modulegen' => 2025102314
+    'local_dixeo' => 2026022301
 ];
 
 $plugin->maturity = MATURITY_STABLE;

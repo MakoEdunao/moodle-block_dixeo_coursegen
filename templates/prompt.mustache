@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template block_dixeo_coursegen/prompt
+    @template block_dixeo_designer/prompt
 
-    Dixeo Course Generator Prompt Template
+    Dixeo Course Designer Prompt Template
 
     Example context (json):
     {
@@ -25,34 +25,32 @@
     }
 }}
 <div class="prompt-container d-block">
-    <h2 class="text-center mb-4">{{#str}} heading, block_dixeo_coursegen {{/str}}</h2>
-    <form class="py-3 generator-form">
+    <h2 class="text-center mb-4">{{#str}} heading, block_dixeo_designer {{/str}}</h2>
+    <form class="generator-form p-0">
         <div id="prompt-form" class="form-group position-relative mb-0">
-            <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_dixeo_coursegen {{/str}}">{{course_description}}</textarea>
-            <div class="dropzone-message">{{#str}} draganddrop, block_dixeo_coursegen {{/str}}</div>
+            <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_dixeo_designer {{/str}}">{{course_description}}</textarea>
+            <div class="dropzone-message">{{#str}} draganddrop, block_dixeo_designer {{/str}}</div>
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
             <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
         <div class="side-by-side">
-            <!--
-            <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_coursegen {{/str}}">
+            <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_designer {{/str}}">
                 <i class="fa fa-paperclip fa-2x"></i>
             </label>
             <div id="file_names" class="mt-2"></div>
-            -->
-            <button id="generate_course" class="btn btn-secondary" title="{{#str}} generate_course, block_dixeo_coursegen {{/str}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_coursegen/pix/lightning.svg" alt="Logo" width="25" height="25">
+            <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course, block_dixeo_designer {{/str}}">
+                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="Logo">
             </button>
-            <button id="generate_course_structure" class="btn btn-secondary text-white" title="{{#str}} generate_course, block_dixeo_coursegen {{/str}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_coursegen/pix/dixeo-white.svg" alt="Logo" width="25" height="25">
-                <span>{{#str}} generate_course, block_dixeo_coursegen {{/str}}</span>
+            <button id="generate_course_structure" class="btn btn-primary text-white" title="{{#str}} generate_course, block_dixeo_designer {{/str}}">
+                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="Logo">
+                <span>{{#str}} generate_course, block_dixeo_designer {{/str}}</span>
             </button>
         </div>
     </form>
 </div>
 
 {{#js}}
-require(['block_dixeo_coursegen/generator'], function(Generator) {
+require(['block_dixeo_designer/generator'], function(Generator) {
     Generator.init();
 });
 {{/js}}

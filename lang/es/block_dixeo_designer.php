@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_dixeo_coursegen'
+ * Strings for component 'block_dixeo_designer'
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,9 +37,9 @@ $string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Cursos Dixeo';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['descriptionorfilesrequired'] = 'Por favor, introduce una descripción del curso o sube archivos para generar el curso.';
-$string['dixeo_coursegen:addinstance'] = 'Agregar un bloque Generador de Cursos Dixeo';
-$string['dixeo_coursegen:myaddinstance'] = 'Agregar un nuevo bloque Generador de Cursos Dixeo a mi panel';
-$string['dixeo_coursegen:create'] = 'Crear cursos con el Generador de Cursos Dixeo';
+$string['dixeo_designer:addinstance'] = 'Agregar un bloque Diseñador de Cursos Dixeo';
+$string['dixeo_designer:myaddinstance'] = 'Agregar un nuevo bloque Diseñador de Cursos Dixeo a mi panel';
+$string['dixeo_designer:create'] = 'Crear cursos con el Diseñador de Cursos Dixeo';
 $string['draganddrop'] = 'Arrastra y suelta tus archivos para subirlos';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Introduce la URL y la clave API de la plataforma Dixeo para registrar tu sitio.';
 $string['error_generation_failed'] = 'Ocurrió un error inesperado al crear el curso. Por favor, inténtalo de nuevo.';
@@ -54,13 +54,13 @@ $string['generating_course'] = 'Por favor, espera mientras preparamos tu curso. 
 $string['heading'] = '¿Qué quieres enseñar hoy?';
 $string['heading2'] = '¡Estamos construyendo tu curso!';
 $string['invalidinput'] = 'Información requerida.';
-$string['myaddinstance'] = 'Agregar un nuevo bloque Generador de Cursos Dixeo a mi panel';
+$string['myaddinstance'] = 'Agregar un nuevo bloque Diseñador de Cursos Dixeo a mi panel';
 $string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Necesitas registrar tu plataforma para usar el generador de cursos.</span>
+<span class="needs-registration">Necesitas registrar tu plataforma para usar el diseñador de cursos.</span>
 <span class="needs-saving hidden">Guarda tus cambios antes de continuar con el registro.</span>';
 $string['platformurl'] = 'URL de la plataforma Dixeo';
 $string['platformurl_desc'] = 'Introduce la URL base de la plataforma Dixeo.';
-$string['pluginname'] = 'Generador de Cursos Dixeo';
+$string['pluginname'] = 'Diseñador de Cursos Dixeo';
 $string['privacy:metadata:email'] = 'La dirección de correo electrónico del usuario que accede al Consumidor LTI';
 $string['privacy:metadata:externalpurpose'] = 'El Consumidor LTI proporciona información de usuario y contexto al Proveedor de Herramientas LTI.';
 $string['privacy:metadata:firstname'] = 'El nombre del usuario que accede al Consumidor LTI';
@@ -69,7 +69,7 @@ $string['privacy:metadata:userid'] = 'El ID del usuario que accede al Consumidor
 $string['prompt_placeholder'] = 'Introduce el curso que deseas generar: tema, número de secciones y cuestionario si es necesario.';
 $string['register'] = 'Registrar';
 $string['removefile'] = 'Eliminar archivo';
-$string['settings'] = 'Generador de Cursos Dixeo';
+$string['settings'] = 'Diseñador de Cursos Dixeo';
 $string['step1'] = 'Validando entrada';
 $string['step2'] = 'Analizando tema';
 $string['step3'] = 'Estructurando módulos';
@@ -80,38 +80,38 @@ $string['totaltoolarge'] = 'El tamaño total de los archivos supera el límite d
 $string['uploaderror'] = 'Error al subir el archivo.';
 $string['view_course'] = 'Ver tu curso';
 
-// Editor strings
-$string['editor_loading'] = 'Cargando estructura del curso...';
-$string['editor_invalid_data'] = 'Datos de estructura no válidos';
-$string['editor_save'] = 'Guardar';
-$string['editor_cancel'] = 'Cancelar';
-$string['editor_reload'] = 'Recargar';
-$string['editor_save_now'] = 'Guardar ahora';
-$string['editor_autosave_in'] = 'Guardado automático en:';
-$string['editor_version'] = 'Versión:';
-$string['editor_version_loading'] = 'Cargando...';
-$string['editor_disabled'] = 'Desactivado';
-$string['editor_edit'] = 'Editar';
-$string['editor_duplicate'] = 'Duplicar';
-$string['editor_delete'] = 'Eliminar';
-$string['editor_confirm_delete'] = 'Confirmar eliminación';
-$string['editor_delete_module_confirm'] = '¿Está seguro de que desea eliminar este módulo?';
-$string['editor_delete_section_confirm'] = '¿Está seguro de que desea eliminar esta sección y todos sus módulos?';
-$string['editor_reload_confirm'] = '¿Recargar estructura desde el servidor? Los cambios no guardados se perderán.';
-$string['editor_unsaved_changes'] = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
-$string['editor_saving'] = 'Guardando...';
-$string['editor_saved'] = '¡Guardado!';
-$string['editor_divergent_save'] = 'Guardado divergente';
-$string['editor_divergent_message'] = 'Estaba trabajando desde una versión anterior. Sus cambios se han guardado como versión {$a} para preservar el historial. Esta es una nueva rama desde su punto de partida.';
-$string['editor_ok'] = 'OK';
-$string['editor_add_section'] = 'Añadir nueva sección';
-$string['editor_add_activity'] = 'Añadir nueva actividad';
-$string['editor_undo'] = 'Deshacer';
-$string['editor_redo'] = 'Rehacer';
-$string['editor_new_section_title'] = 'Nueva sección';
-$string['editor_new_section_summary'] = 'Describa de qué trata esta sección';
-$string['editor_new_module_type'] = 'Página';
-$string['editor_new_module_title'] = 'Nueva página';
-$string['editor_new_module_hints'] = 'Describa de qué trata esta página';
-$string['editor_copy_suffix'] = ' (Copia)';
-$string['editor_change_activity_type'] = 'Cambiar tipo de actividad';
+// Designer strings
+$string['designer_loading'] = 'Cargando estructura del curso...';
+$string['designer_invalid_data'] = 'Datos de estructura no válidos';
+$string['designer_save'] = 'Guardar';
+$string['designer_cancel'] = 'Cancelar';
+$string['designer_reload'] = 'Recargar';
+$string['designer_save_now'] = 'Guardar ahora';
+$string['designer_autosave_in'] = 'Guardado automático en:';
+$string['designer_version'] = 'Versión:';
+$string['designer_version_loading'] = 'Cargando...';
+$string['designer_disabled'] = 'Desactivado';
+$string['designer_edit'] = 'Editar';
+$string['designer_duplicate'] = 'Duplicar';
+$string['designer_delete'] = 'Eliminar';
+$string['designer_confirm_delete'] = 'Confirmar eliminación';
+$string['designer_delete_module_confirm'] = '¿Está seguro de que desea eliminar este módulo?';
+$string['designer_delete_section_confirm'] = '¿Está seguro de que desea eliminar esta sección y todos sus módulos?';
+$string['designer_reload_confirm'] = '¿Recargar estructura desde el servidor? Los cambios no guardados se perderán.';
+$string['designer_unsaved_changes'] = 'Tiene cambios sin guardar. ¿Está seguro de que desea salir?';
+$string['designer_saving'] = 'Guardando...';
+$string['designer_saved'] = '¡Guardado!';
+$string['designer_divergent_save'] = 'Guardado divergente';
+$string['designer_divergent_message'] = 'Estaba trabajando desde una versión anterior. Sus cambios se han guardado como versión {$a} para preservar el historial. Esta es una nueva rama desde su punto de partida.';
+$string['designer_ok'] = 'OK';
+$string['designer_add_section'] = 'Añadir nueva sección';
+$string['designer_add_activity'] = 'Añadir nueva actividad';
+$string['designer_undo'] = 'Deshacer';
+$string['designer_redo'] = 'Rehacer';
+$string['designer_new_section_title'] = 'Nueva sección';
+$string['designer_new_section_summary'] = 'Describa de qué trata esta sección';
+$string['designer_new_module_type'] = 'Página';
+$string['designer_new_module_title'] = 'Nueva página';
+$string['designer_new_module_hints'] = 'Describa de qué trata esta página';
+$string['designer_copy_suffix'] = ' (Copia)';
+$string['designer_change_activity_type'] = 'Cambiar tipo de actividad';

@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * AMD module for course generator block.
+ * AMD module for course designer block.
  *
- * @module     block_dixeo_coursegen/generator
+ * @module     block_dixeo_designer/generator
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -29,7 +29,7 @@ define([
     'core/str',
     'core/config'
 ], function(Ajax, $, Template, Notification, Str, Config) {
-    const generatorForm = document.getElementById('edai_course_generator_form');
+    const generatorForm = document.getElementById('edai_course_designer_form');
     const promptContainer = generatorForm.querySelector('.prompt-container');
     const promptForm = generatorForm.querySelector('#prompt-form');
     const generationContainer = generatorForm.querySelector('.generation-container');
@@ -90,7 +90,7 @@ define([
             // }
 
             Ajax.call([{
-                methodname: 'block_dixeo_coursegen_generate_course',
+                methodname: 'block_dixeo_designer_generate_course',
                 args: {
                     job_id: generationContainer.dataset.job_id,
                     description: courseDescriptionValue,
@@ -103,7 +103,7 @@ define([
                 const coursename = data.coursename;
 
                 if (courseid == 0 && reviewStructure == true) {
-                    window.location.href = Config.wwwroot + '/blocks/dixeo_coursegen/review.php?id=' +
+                    window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' +
                         generationContainer.dataset.job_id;
                     return;
                 }
@@ -114,7 +114,7 @@ define([
             })
             .catch(async error => {
                 this.resetProgress();
-                const errorTitle = await Str.get_string('error_title', 'block_dixeo_coursegen');
+                const errorTitle = await Str.get_string('error_title', 'block_dixeo_designer');
                 Notification.alert(errorTitle, error.message);
             });
         },
@@ -277,7 +277,7 @@ define([
                     wwwroot: Config.wwwroot
                 };
 
-                Template.render('block_dixeo_coursegen/success_message', context)
+                Template.render('block_dixeo_designer/success_message', context)
                 .then((html) => {
                     generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
                     generationContainer.classList.replace('d-block', 'd-none');
@@ -337,7 +337,7 @@ define([
             };
 
             if (filesContainer) {
-                Template.render('block_dixeo_coursegen/filenames', context).then((html) => {
+                Template.render('block_dixeo_designer/filenames', context).then((html) => {
                     filesContainer.innerHTML = html;
 
                     let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
@@ -380,7 +380,7 @@ define([
         },
         notify: async function() {
             let strings = [];
-            let component = 'block_dixeo_coursegen';
+            let component = 'block_dixeo_designer';
 
             for (let i = 0; i < arguments.length; i++) {
                 if (Array.isArray(arguments[i])) {

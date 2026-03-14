@@ -17,12 +17,12 @@
 /**
  * Generation status class.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace block_dixeo_coursegen\external;
+namespace block_dixeo_designer\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -33,7 +33,7 @@ use core_external\external_value;
 /**
  * External API class for retrieving the generation status of a course creation task.
  *
- * @package    blocks_dixeo_coursegen
+ * @package    blocks_dixeo_designer
  * @copyright  2024 Your Name or Organization
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -65,10 +65,10 @@ final class generation_status extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        require_capability('block/dixeo_coursegen:create', $context);
+        require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
-        $generator = new \block_dixeo_coursegen\course_generator($taskid);
+        $generator = new \block_dixeo_designer\course_designer($taskid);
         $status = $generator->get_generation_status();
 
         return [

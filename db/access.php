@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dixeo Course Generator block
+ * Dixeo Course Designer block
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = [
 
-    'block/dixeo_coursegen:addinstance' => [
+    'block/dixeo_designer:addinstance' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
 
         'captype' => 'write',
@@ -40,7 +40,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/course:create',
     ],
 
-    'block/dixeo_coursegen:myaddinstance' => [
+    'block/dixeo_designer:myaddinstance' => [
         'riskbitmask' => RISK_SPAM | RISK_XSS,
 
         'captype' => 'write',
@@ -53,7 +53,7 @@ $capabilities = [
         'clonepermissionsfrom' => 'moodle/course:create',
     ],
 
-    'block/dixeo_coursegen:create' => [
+    'block/dixeo_designer:create' => [
         'riskbitmask' => RISK_XSS,
 
         'captype' => 'write',

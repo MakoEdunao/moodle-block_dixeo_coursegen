@@ -15,14 +15,14 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course generation class.
+ * Course designer external API.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-namespace block_dixeo_coursegen\external;
+namespace block_dixeo_designer\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -34,7 +34,7 @@ use block_dixeo_modulegen\helper\config;
 /**
  * External API class for retrieving the generation status of a course creation task.
  *
- * @package    blocks_dixeo_coursegen
+ * @package    blocks_dixeo_designer
  * @copyright  2024 Your Name or Organization
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -70,11 +70,11 @@ final class generate_course extends external_api {
         $context = \context_system::instance();
         self::validate_context($context);
 
-        require_capability('block/dixeo_coursegen:create', $context);
+        require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
         try {
-            $generator = new \block_dixeo_coursegen\course_generator($job_id, $description, $skip);
+            $generator = new \block_dixeo_designer\course_designer($job_id, $description, $skip);
             $course = $generator->generate_course();
 
             if (!$course) {
@@ -95,7 +95,7 @@ final class generate_course extends external_api {
             }
 
             return [
-                'error' => get_string('error_generation_failed', 'block_dixeo_coursegen') . $debug,
+                'error' => get_string('error_generation_failed', 'block_dixeo_designer') . $debug,
             ];
         }
     }

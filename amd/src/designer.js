@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Course structure JSON editor
+ * Course structure JSON designer
  *
- * @module     block_dixeo_coursegen/editor
+ * @module     block_dixeo_designer/designer
  * @package
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2026 Dixeo (contact@dixeo.com)
@@ -41,7 +41,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         {value: 'Find the words', label: 'Find the words', icon: 'fa-search'}
     ];
 
-    var Editor = {
+    var Designer = {
         jobid: null,
         version: '',
         structure: null,
@@ -57,7 +57,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         pendingCollapseState: null,
 
         /**
-         * Initialize the editor
+         * Initialize the designer
          * @param {string} jobid
          */
         init: function(jobid) {
@@ -81,7 +81,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          */
         showLoading: function() {
             var container = $('.course-structure-container');
-            Str.get_string('editor_loading', 'block_dixeo_coursegen').done(function(str) {
+            Str.get_string('designer_loading', 'block_dixeo_designer').done(function(str) {
                 container.html('<div id="loading-indicator" class="text-center py-5">' +
                     '<i class="fa fa-spinner fa-spin fa-3x"></i>' +
                     '<p class="mt-3">' + str + '</p>' +
@@ -98,7 +98,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             var loadIndex = (index !== undefined) ? index : -1;
 
             Ajax.call([{
-                methodname: 'block_dixeo_coursegen_get_structure',
+                methodname: 'block_dixeo_designer_get_structure',
                 args: {
                     jobid: this.jobid,
                     index: loadIndex
@@ -124,7 +124,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             var self = this;
 
             Ajax.call([{
-                methodname: 'block_dixeo_coursegen_get_versions',
+                methodname: 'block_dixeo_designer_get_versions',
                 args: {
                     jobid: this.jobid
                 },
@@ -155,7 +155,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             this.showSavingIndicator();
 
             Ajax.call([{
-                methodname: 'block_dixeo_coursegen_save_structure',
+                methodname: 'block_dixeo_designer_save_structure',
                 args: {
                     jobid: this.jobid,
                     structure: JSON.stringify(this.structure),
@@ -191,7 +191,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             if (!this.structure || !this.structure.title) {
                 var self = this;
-                Str.get_string('editor_invalid_data', 'block_dixeo_coursegen').done(function(str) {
+                Str.get_string('designer_invalid_data', 'block_dixeo_designer').done(function(str) {
                     container.html('<div class="alert alert-danger">' + str + '</div>');
                 });
                 return;
@@ -249,12 +249,12 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Load language strings and render template
             var stringsPromise = Str.get_strings([
-                {key: 'editor_edit', component: 'block_dixeo_coursegen'},
-                {key: 'editor_duplicate', component: 'block_dixeo_coursegen'},
-                {key: 'editor_delete', component: 'block_dixeo_coursegen'},
-                {key: 'editor_add_section', component: 'block_dixeo_coursegen'},
-                {key: 'editor_add_activity', component: 'block_dixeo_coursegen'},
-                {key: 'editor_change_activity_type', component: 'block_dixeo_coursegen'}
+                {key: 'designer_edit', component: 'block_dixeo_designer'},
+                {key: 'designer_duplicate', component: 'block_dixeo_designer'},
+                {key: 'designer_delete', component: 'block_dixeo_designer'},
+                {key: 'designer_add_section', component: 'block_dixeo_designer'},
+                {key: 'designer_add_activity', component: 'block_dixeo_designer'},
+                {key: 'designer_change_activity_type', component: 'block_dixeo_designer'}
             ]);
 
             stringsPromise.then(function(strings) {
@@ -267,13 +267,13 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                     change_activity_type: strings[5]
                 };
 
-                return Templates.render('block_dixeo_coursegen/course_structure', templateContext);
+                return Templates.render('block_dixeo_designer/course_structure', templateContext);
             }).then(function(html) {
                 container.html(html);
                 self.setupEventHandlersAfterRender();
             }).catch(function(error) {
                 Notification.exception(error);
-                Str.get_string('editor_invalid_data', 'block_dixeo_coursegen').done(function(str) {
+                Str.get_string('designer_invalid_data', 'block_dixeo_designer').done(function(str) {
                     container.html('<div class="alert alert-danger">' + str + '</div>');
                 });
             });
@@ -752,8 +752,8 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Load language strings for defaults
             Str.get_strings([
-                {key: 'editor_new_section_title', component: 'block_dixeo_coursegen'},
-                {key: 'editor_new_section_summary', component: 'block_dixeo_coursegen'}
+                {key: 'designer_new_section_title', component: 'block_dixeo_designer'},
+                {key: 'designer_new_section_summary', component: 'block_dixeo_designer'}
             ]).done(function(strings) {
                 var newSection = {
                     title: strings[0],
@@ -791,9 +791,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Load language strings for defaults
             Str.get_strings([
-                {key: 'editor_new_module_type', component: 'block_dixeo_coursegen'},
-                {key: 'editor_new_module_title', component: 'block_dixeo_coursegen'},
-                {key: 'editor_new_module_hints', component: 'block_dixeo_coursegen'}
+                {key: 'designer_new_module_type', component: 'block_dixeo_designer'},
+                {key: 'designer_new_module_title', component: 'block_dixeo_designer'},
+                {key: 'designer_new_module_hints', component: 'block_dixeo_designer'}
             ]).done(function(strings) {
                 var newModule = {
                     type: strings[0],
@@ -828,7 +828,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             var self = this;
             // Load language string for copy suffix
-            Str.get_string('editor_copy_suffix', 'block_dixeo_coursegen').done(function(copySuffix) {
+            Str.get_string('designer_copy_suffix', 'block_dixeo_designer').done(function(copySuffix) {
                 if ($moduleItem.length > 0) {
                     // Duplicate module
                     var sectionIdx = $sectionItem.data('section-idx');
@@ -863,12 +863,12 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             var $sectionItem = $button.closest('.section-item');
             var $moduleItem = $button.closest('.module-item');
 
-            var messageKey = $moduleItem.length > 0 ? 'editor_delete_module_confirm' : 'editor_delete_section_confirm';
-            var titleKey = 'editor_confirm_delete';
+            var messageKey = $moduleItem.length > 0 ? 'designer_delete_module_confirm' : 'designer_delete_section_confirm';
+            var titleKey = 'designer_confirm_delete';
 
             Str.get_strings([
-                {key: titleKey, component: 'block_dixeo_coursegen'},
-                {key: messageKey, component: 'block_dixeo_coursegen'},
+                {key: titleKey, component: 'block_dixeo_designer'},
+                {key: messageKey, component: 'block_dixeo_designer'},
                 {key: 'delete', component: 'core'},
                 {key: 'cancel', component: 'core'}
             ]).done(function(strings) {
@@ -959,7 +959,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Reload button
             $('#btn-reload').on('click', function() {
-                Str.get_string('editor_reload_confirm', 'block_dixeo_coursegen').done(function(confirmMsg) {
+                Str.get_string('designer_reload_confirm', 'block_dixeo_designer').done(function(confirmMsg) {
                     if (confirm(confirmMsg)) {
                         self.hasUnsavedChanges = false;
                         self.autoSaveEnabled = false;
@@ -1142,7 +1142,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             });
 
             // Load unsaved changes message
-            Str.get_string('editor_unsaved_changes', 'block_dixeo_coursegen').done(function(str) {
+            Str.get_string('designer_unsaved_changes', 'block_dixeo_designer').done(function(str) {
                 self.unsavedChangesMessage = str;
             });
 
@@ -1171,7 +1171,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             if (this.hasUnsavedChanges) {
                 var self = this;
                 Str.get_strings([
-                    {key: 'editor_reload_confirm', component: 'block_dixeo_coursegen'},
+                    {key: 'designer_reload_confirm', component: 'block_dixeo_designer'},
                     {key: 'cancel', component: 'core'},
                     {key: 'continue', component: 'core'}
                 ]).done(function(strings) {
@@ -1211,7 +1211,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             if (this.hasUnsavedChanges) {
                 var self = this;
                 Str.get_strings([
-                    {key: 'editor_reload_confirm', component: 'block_dixeo_coursegen'},
+                    {key: 'designer_reload_confirm', component: 'block_dixeo_designer'},
                     {key: 'cancel', component: 'core'},
                     {key: 'continue', component: 'core'}
                 ]).done(function(strings) {
@@ -1246,7 +1246,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             // Remove any existing indicators first
             $('.saving-indicator').remove();
 
-            Str.get_string('editor_saving', 'block_dixeo_coursegen').done(function(str) {
+            Str.get_string('designer_saving', 'block_dixeo_designer').done(function(str) {
                 var $indicator = $('<div class="saving-indicator"><i class="fa fa-spinner fa-spin"></i> ' + str + '</div>');
                 $('body').append($indicator);
 
@@ -1263,7 +1263,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             // Remove any existing indicators first
             $('.saving-indicator').remove();
 
-            Str.get_string('editor_saved', 'block_dixeo_coursegen').done(function(str) {
+            Str.get_string('designer_saved', 'block_dixeo_designer').done(function(str) {
                 var $indicator = $('<div class="saving-indicator"><i class="fa fa-check"></i> ' + str + '</div>');
                 $('body').append($indicator);
 
@@ -1281,9 +1281,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          */
         showDivergentWarning: function(version) {
             Str.get_strings([
-                {key: 'editor_divergent_save', component: 'block_dixeo_coursegen'},
-                {key: 'editor_divergent_message', component: 'block_dixeo_coursegen', param: version},
-                {key: 'editor_ok', component: 'block_dixeo_coursegen'}
+                {key: 'designer_divergent_save', component: 'block_dixeo_designer'},
+                {key: 'designer_divergent_message', component: 'block_dixeo_designer', param: version},
+                {key: 'designer_ok', component: 'block_dixeo_designer'}
             ]).done(function(strings) {
                 Notification.alert(
                     strings[0],
@@ -1294,5 +1294,5 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         }
     };
 
-    return Editor;
+    return Designer;
 });

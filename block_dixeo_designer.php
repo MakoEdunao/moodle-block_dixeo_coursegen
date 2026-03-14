@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dixeo Course Generator block
+ * Dixeo Course Designer block
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 /**
- * The Dixeo Course Generator block class
+ * The Dixeo Course Designer block class
  */
-class block_dixeo_coursegen extends block_base {
+class block_dixeo_designer extends block_base {
     /**
      * Set the initial properties for the block
      */
     public function init() {
-        $this->title = get_string('blocktitle', 'block_dixeo_coursegen');
+        $this->title = get_string('blocktitle', 'block_dixeo_designer');
     }
 
     /**
@@ -60,7 +60,7 @@ class block_dixeo_coursegen extends block_base {
      * Instance specialisations (must have instance allow config true)
      */
     public function specialization() {
-        $this->title = !empty($this->config->title) ? $this->config->title : get_string('blocktitle', 'block_dixeo_coursegen');
+        $this->title = !empty($this->config->title) ? $this->config->title : get_string('blocktitle', 'block_dixeo_designer');
     }
 
     /**
@@ -81,7 +81,7 @@ class block_dixeo_coursegen extends block_base {
         require_once($CFG->libdir . '/filelib.php');
 
         // We can exit early if the current user doesn't have the capability to create courses.
-        if (!has_capability('block/dixeo_coursegen:create', $this->context)) {
+        if (!has_capability('block/dixeo_designer:create', $this->context)) {
             return null;
         }
 
@@ -98,7 +98,7 @@ class block_dixeo_coursegen extends block_base {
             'course_description' => $coursedescription,
             'job_id' => self::generate_job_id(),
         ];
-        $text = $OUTPUT->render_from_template('block_dixeo_coursegen/course_generator', $context);
+        $text = $OUTPUT->render_from_template('block_dixeo_designer/course_designer', $context);
 
         $this->content->text = $text;
 

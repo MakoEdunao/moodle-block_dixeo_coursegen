@@ -15,15 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * External API for retrieving course generation structure.
+ * External API for retrieving course design structure.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_dixeo_coursegen\external;
+namespace block_dixeo_designer\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -31,9 +31,9 @@ use core_external\external_single_structure;
 use core_external\external_value;
 
 /**
- * External API class for retrieving course generation structure.
+ * External API class for retrieving course design structure.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -72,14 +72,14 @@ final class get_structure extends external_api {
         require_login();
 
         // Get all versions ordered by time (oldest first)
-        $allversions = $DB->get_records('block_dixeo_coursegen_structure',
+        $allversions = $DB->get_records('block_dixeo_designer_structure',
             ['jobid' => $params['jobid']],
             'timecreated ASC',
             'id'
         );
 
         if (empty($allversions)) {
-            throw new \moodle_exception('structurenotfound', 'block_dixeo_coursegen');
+            throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
         }
 
         $totalversions = count($allversions);
@@ -95,11 +95,11 @@ final class get_structure extends external_api {
             $currentindex = $params['index'];
         }
 
-        $structure = $DB->get_record('block_dixeo_coursegen_structure', ['id' => $targetid], '*', MUST_EXIST);
+        $structure = $DB->get_record('block_dixeo_designer_structure', ['id' => $targetid], '*', MUST_EXIST);
 
         // Check user owns this structure (or has manage capability).
         if ($structure->userid != $USER->id) {
-            require_capability('block/dixeo_coursegen:manage', $context);
+            require_capability('block/dixeo_designer:manage', $context);
         }
 
         return [

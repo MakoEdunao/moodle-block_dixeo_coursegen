@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Privacy API implementation for block_dixeo_coursegen.
+ * Privacy API implementation for block_dixeo_designer.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_dixeo_coursegen\privacy;
+namespace block_dixeo_designer\privacy;
 
 use core_privacy\local\metadata\provider as metadata_provider;
 use core_privacy\local\metadata\collection;
 
 /**
- * Privacy provider implementation for the dixeo_coursegen block.
+ * Privacy provider implementation for the dixeo_designer block.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @copyright  2024 Your Name or Company
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

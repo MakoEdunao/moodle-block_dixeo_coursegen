@@ -14,9 +14,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * AMD module for course generator block.
+ * AMD module for course designer block.
  *
- * @module     block_dixeo_coursegen/poll
+ * @module     block_dixeo_designer/poll
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -59,7 +59,7 @@ define([
 
         init() {
             if (!this.taskid) {
-                Log.error('block_dixeo_coursegen/poll: missing data-taskid');
+                Log.error('block_dixeo_designer/poll: missing data-taskid');
                 return;
             }
             this.running = true;
@@ -103,7 +103,7 @@ define([
             }
 
             Ajax.call([{
-                methodname: 'block_dixeo_coursegen_get_status',
+                methodname: 'block_dixeo_designer_get_status',
                 args: {
                     taskid: this.taskid,
                     sesskey: M.cfg.sesskey
@@ -124,7 +124,7 @@ define([
                 return;
             }).catch((err) => {
                 // On error: show once and back off more aggressively.
-                Log.warn('block_dixeo_coursegen/poll error', err);
+                Log.warn('block_dixeo_designer/poll error', err);
                 Notification.exception(err);
                 this.interval = Math.min(this.interval * 2, MAX_INTERVAL_MS);
                 this.scheduleNext();

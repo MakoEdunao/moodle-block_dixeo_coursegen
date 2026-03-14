@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_dixeo_coursegen'
+ * Strings for component 'block_dixeo_designer'
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,9 +37,9 @@ $string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Dixeo-Kurse';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['descriptionorfilesrequired'] = 'Bitte geben Sie eine Kursbeschreibung ein oder laden Sie Dateien hoch, um den Kurs zu generieren.';
-$string['dixeo_coursegen:addinstance'] = 'Einen Dixeo-Kursgenerator-Block hinzufügen';
-$string['dixeo_coursegen:myaddinstance'] = 'Einen neuen Dixeo-Kursgenerator-Block zu meiner Übersicht hinzufügen';
-$string['dixeo_coursegen:create'] = 'Kurse mit dem Dixeo-Kursgenerator erstellen';
+$string['dixeo_designer:addinstance'] = 'Einen Dixeo-Kursdesigner-Block hinzufügen';
+$string['dixeo_designer:myaddinstance'] = 'Einen neuen Dixeo-Kursdesigner-Block zu meiner Übersicht hinzufügen';
+$string['dixeo_designer:create'] = 'Kurse mit dem Dixeo-Kursdesigner erstellen';
 $string['draganddrop'] = 'Dateien zum Hochladen hierher ziehen';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Geben Sie die URL und den API-Schlüssel der Dixeo-Plattform ein, um Ihre Website zu registrieren.';
 $string['error_generation_failed'] = 'Beim Erstellen des Kurses ist ein unerwarteter Fehler aufgetreten. Bitte versuchen Sie es erneut.';
@@ -54,13 +54,13 @@ $string['generating_course'] = 'Bitte warten Sie, wir bereiten Ihren Kurs vor. D
 $string['heading'] = 'Was möchten Sie heute unterrichten?';
 $string['heading2'] = 'Wir erstellen Ihren Kurs!';
 $string['invalidinput'] = 'Angaben erforderlich.';
-$string['myaddinstance'] = 'Einen neuen Dixeo-Kursgenerator-Block zu meiner Übersicht hinzufügen';
+$string['myaddinstance'] = 'Einen neuen Dixeo-Kursdesigner-Block zu meiner Übersicht hinzufügen';
 $string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Sie müssen Ihre Plattform registrieren, um den Kursgenerator zu nutzen.</span>
+<span class="needs-registration">Sie müssen Ihre Plattform registrieren, um den Kursdesigner zu nutzen.</span>
 <span class="needs-saving hidden">Speichern Sie zuerst Ihre Änderungen, bevor Sie mit der Registrierung fortfahren.</span>';
 $string['platformurl'] = 'Dixeo-Plattform-URL';
 $string['platformurl_desc'] = 'Geben Sie die Basis-URL der Dixeo-Plattform ein.';
-$string['pluginname'] = 'Dixeo-Kursgenerator';
+$string['pluginname'] = 'Dixeo-Kursdesigner';
 $string['privacy:metadata:email'] = 'E-Mail-Adresse der Nutzerin/des Nutzers beim Zugriff auf den LTI Consumer';
 $string['privacy:metadata:externalpurpose'] = 'Der LTI Consumer übermittelt Nutzerinformationen und Kontext an den LTI Tool Provider.';
 $string['privacy:metadata:firstname'] = 'Vorname der Nutzerin/des Nutzers beim Zugriff auf den LTI Consumer';
@@ -69,7 +69,7 @@ $string['privacy:metadata:userid'] = 'ID der Nutzerin/des Nutzers beim Zugriff a
 $string['prompt_placeholder'] = 'Geben Sie den gewünschten Kurs ein: Thema, Anzahl der Abschnitte und ggf. Quiz.';
 $string['register'] = 'Registrieren';
 $string['removefile'] = 'Datei entfernen';
-$string['settings'] = 'Dixeo-Kursgenerator';
+$string['settings'] = 'Dixeo-Kursdesigner';
 $string['step1'] = 'Eingabe wird geprüft';
 $string['step2'] = 'Thema wird analysiert';
 $string['step3'] = 'Module werden strukturiert';

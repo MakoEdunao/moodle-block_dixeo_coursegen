@@ -1,8 +1,8 @@
 ![Dixeo logo](pix/dixeo-logo.png)
 
-# Dixeo Course Generator for Moodle LMS
+# Dixeo Course Designer for Moodle LMS
 
-Effortlessly create complete Moodle courses using the power of AI. The **Dixeo Course Generator** helps administrators and educators turn a simple course description and optional supporting files into a fully functional, ready-to-use Moodle course in just a few clicks.
+Effortlessly create complete Moodle courses using the power of AI. The **Dixeo Course Designer** helps administrators and educators turn a simple course description and optional supporting files into a fully functional, ready-to-use Moodle course in just a few clicks.
 
 This plugin generates your course on Dixeo.com and automatically configures your Moodle platform to access it via LTI.
 
@@ -16,7 +16,7 @@ You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) t
   Automatically generate structured courses based on a short description.
 
 - **File Upload Support**  
-  Enrich the course generation by uploading relevant source files (e.g., PDFs, docs).
+  Enrich the course design by uploading relevant source files (e.g., PDFs, docs).
 
 - **Automatic LTI Module Integration**  
   The plugin sets up LTI modules for seamless access to the generated content.
@@ -29,7 +29,7 @@ You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) t
 ## ⚙️ Installation
 
 1. Download the plugin ZIP file.
-2. Extract and place the folder named `dixeo_coursegen` into the `/blocks` directory of your Moodle installation.
+2. Extract and place the folder named `dixeo_designer` into the `/blocks` directory of your Moodle installation.
 3. Log in to your Moodle site as an administrator.
 4. Navigate to **Site administration** — Moodle will detect the new plugin and walk you through the installation steps.
 
@@ -39,7 +39,7 @@ You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) t
 
 ![Dixeo settings](pix/dixeo-screen2.png)
 
-1. Go to **Site administration** > **Plugins** > **Blocks** > **Dixeo Course Generator**.
+1. Go to **Site administration** > **Plugins** > **Blocks** > **Dixeo Course Designer**.
 2. Enter the **API key** provided by Dixeo.
 3. Specify the **default category name** where generated courses will be created.
 4. Ensure the **LTI enrolment method** is enabled on your Moodle platform.
@@ -50,7 +50,7 @@ You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) t
 
 ![Dixeo settings](pix/dixeo-screen1.png)
 
-1. Add the **Dixeo Course Generator** block to your Moodle dashboard or course page.
+1. Add the **Dixeo Course Designer** block to your Moodle dashboard or course page.
 2. Provide a **course description** in the input box.
 3. *(Optional)* Upload any supporting documents to enhance content generation.
 4. Click the **Generate** button.
@@ -61,7 +61,7 @@ You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) t
 
 ## 🔐 Permissions
 
-Ensure that users have the `block/dixeo_coursegen:create` capability to access and use the plugin features.
+Ensure that users have the `block/dixeo_designer:create` capability to access and use the plugin features.
 
 ---
 

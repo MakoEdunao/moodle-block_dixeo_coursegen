@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_dixeo_coursegen'
+ * Strings for component 'block_dixeo_designer'
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,9 +37,9 @@ $string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Cursos Dixeo';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['descriptionorfilesrequired'] = 'Introduza uma descrição do curso ou carregue ficheiros para gerar o curso.';
-$string['dixeo_coursegen:addinstance'] = 'Adicionar um bloco Gerador de Cursos Dixeo';
-$string['dixeo_coursegen:myaddinstance'] = 'Adicionar um novo bloco Gerador de Cursos Dixeo ao meu painel';
-$string['dixeo_coursegen:create'] = 'Criar cursos com o Gerador de Cursos Dixeo';
+$string['dixeo_designer:addinstance'] = 'Adicionar um bloco Designer de Cursos Dixeo';
+$string['dixeo_designer:myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
+$string['dixeo_designer:create'] = 'Criar cursos com o Designer de Cursos Dixeo';
 $string['draganddrop'] = 'Arraste e largue os seus ficheiros para carregar';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Introduza o URL e a chave API da plataforma Dixeo para registar o seu site.';
 $string['error_generation_failed'] = 'Ocorreu um erro inesperado ao criar o curso. Tente novamente.';
@@ -54,13 +54,13 @@ $string['generating_course'] = 'Aguarde enquanto preparamos o seu curso. Este pr
 $string['heading'] = 'O que quer ensinar hoje?';
 $string['heading2'] = 'Estamos a construir o seu curso!';
 $string['invalidinput'] = 'Informação necessária.';
-$string['myaddinstance'] = 'Adicionar um novo bloco Gerador de Cursos Dixeo ao meu painel';
+$string['myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
 $string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Precisa de registar a sua plataforma para utilizar o gerador de cursos.</span>
+<span class="needs-registration">Precisa de registar a sua plataforma para utilizar o designer de cursos.</span>
 <span class="needs-saving hidden">Guarde primeiro as suas alterações antes de prosseguir com o registo.</span>';
 $string['platformurl'] = 'URL da plataforma Dixeo';
 $string['platformurl_desc'] = 'Introduza o URL base da plataforma Dixeo.';
-$string['pluginname'] = 'Gerador de Cursos Dixeo';
+$string['pluginname'] = 'Designer de Cursos Dixeo';
 $string['privacy:metadata:email'] = 'O endereço de e-mail do utilizador que acede ao consumidor LTI';
 $string['privacy:metadata:externalpurpose'] = 'O consumidor LTI fornece informações do utilizador e contexto ao fornecedor de ferramentas LTI.';
 $string['privacy:metadata:firstname'] = 'O primeiro nome do utilizador que acede ao consumidor LTI';
@@ -69,7 +69,7 @@ $string['privacy:metadata:userid'] = 'O ID do utilizador que acede ao consumidor
 $string['prompt_placeholder'] = 'Introduza o curso que pretende gerar: tema, número de secções e questionário se necessário.';
 $string['register'] = 'Registar';
 $string['removefile'] = 'Remover ficheiro';
-$string['settings'] = 'Gerador de Cursos Dixeo';
+$string['settings'] = 'Designer de Cursos Dixeo';
 $string['step1'] = 'A validar entrada';
 $string['step2'] = 'A analisar o tema';
 $string['step3'] = 'A estruturar os módulos';

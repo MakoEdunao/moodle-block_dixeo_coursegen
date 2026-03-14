@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'block_dixeo_coursegen'
+ * Strings for component 'block_dixeo_designer'
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -37,9 +37,9 @@ $string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Corsi Dixeo';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['descriptionorfilesrequired'] = 'Inserisci una descrizione del corso o carica dei file per generare il corso.';
-$string['dixeo_coursegen:addinstance'] = 'Aggiungi un blocco Generatore di Corsi Dixeo';
-$string['dixeo_coursegen:myaddinstance'] = 'Aggiungi un nuovo blocco Generatore di Corsi Dixeo alla mia dashboard';
-$string['dixeo_coursegen:create'] = 'Creare corsi con il Generatore di Corsi Dixeo';
+$string['dixeo_designer:addinstance'] = 'Aggiungi un blocco Progettatore di Corsi Dixeo';
+$string['dixeo_designer:myaddinstance'] = 'Aggiungi un nuovo blocco Progettatore di Corsi Dixeo alla mia dashboard';
+$string['dixeo_designer:create'] = 'Creare corsi con il Progettatore di Corsi Dixeo';
 $string['draganddrop'] = 'Trascina e rilascia i tuoi file per caricarli';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Inserisci l\'URL e la chiave API della piattaforma Dixeo per registrare il tuo sito.';
 $string['error_generation_failed'] = 'Si è verificato un errore imprevisto durante la creazione del corso. Riprova.';
@@ -54,13 +54,13 @@ $string['generating_course'] = 'Attendere mentre prepariamo il tuo corso. Questo
 $string['heading'] = 'Cosa vuoi insegnare oggi?';
 $string['heading2'] = 'Stiamo creando il tuo corso!';
 $string['invalidinput'] = 'Informazioni richieste.';
-$string['myaddinstance'] = 'Aggiungi un nuovo blocco Generatore di Corsi Dixeo alla mia dashboard';
+$string['myaddinstance'] = 'Aggiungi un nuovo blocco Progettatore di Corsi Dixeo alla mia dashboard';
 $string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Devi registrare la tua piattaforma per utilizzare il generatore di corsi.</span>
+<span class="needs-registration">Devi registrare la tua piattaforma per utilizzare il progettatore di corsi.</span>
 <span class="needs-saving hidden">Salva prima le modifiche per procedere con la registrazione.</span>';
 $string['platformurl'] = 'URL della piattaforma Dixeo';
 $string['platformurl_desc'] = 'Inserisci l\'URL base della piattaforma Dixeo.';
-$string['pluginname'] = 'Generatore di Corsi Dixeo';
+$string['pluginname'] = 'Progettatore di Corsi Dixeo';
 $string['privacy:metadata:email'] = 'L\'indirizzo email dell\'utente che accede al Consumer LTI';
 $string['privacy:metadata:externalpurpose'] = 'Il Consumer LTI fornisce informazioni sull\'utente e il contesto al Tool Provider LTI.';
 $string['privacy:metadata:firstname'] = 'Il nome dell\'utente che accede al Consumer LTI';
@@ -69,7 +69,7 @@ $string['privacy:metadata:userid'] = 'L\'ID dell\'utente che accede al Consumer 
 $string['prompt_placeholder'] = 'Inserisci il corso che vuoi generare: argomento, numero di sezioni e quiz se necessario.';
 $string['register'] = 'Registra';
 $string['removefile'] = 'Rimuovi file';
-$string['settings'] = 'Generatore di Corsi Dixeo';
+$string['settings'] = 'Progettatore di Corsi Dixeo';
 $string['step1'] = 'Validazione input';
 $string['step2'] = 'Analisi dell\'argomento';
 $string['step3'] = 'Strutturazione dei moduli';
@@ -80,38 +80,38 @@ $string['totaltoolarge'] = 'La dimensione totale dei file supera il limite di 50
 $string['uploaderror'] = 'Errore nel caricamento del file.';
 $string['view_course'] = 'Visualizza il tuo corso';
 
-// Editor strings
-$string['editor_loading'] = 'Caricamento struttura del corso...';
-$string['editor_invalid_data'] = 'Dati di struttura non validi';
-$string['editor_save'] = 'Salva';
-$string['editor_cancel'] = 'Annulla';
-$string['editor_reload'] = 'Ricarica';
-$string['editor_save_now'] = 'Salva ora';
-$string['editor_autosave_in'] = 'Salvataggio automatico tra:';
-$string['editor_version'] = 'Versione:';
-$string['editor_version_loading'] = 'Caricamento...';
-$string['editor_disabled'] = 'Disabilitato';
-$string['editor_edit'] = 'Modifica';
-$string['editor_duplicate'] = 'Duplica';
-$string['editor_delete'] = 'Elimina';
-$string['editor_confirm_delete'] = 'Conferma eliminazione';
-$string['editor_delete_module_confirm'] = 'Sei sicuro di voler eliminare questo modulo?';
-$string['editor_delete_section_confirm'] = 'Sei sicuro di voler eliminare questa sezione e tutti i suoi moduli?';
-$string['editor_reload_confirm'] = 'Ricaricare la struttura dal server? Le modifiche non salvate andranno perse.';
-$string['editor_unsaved_changes'] = 'Hai modifiche non salvate. Sei sicuro di voler uscire?';
-$string['editor_saving'] = 'Salvataggio...';
-$string['editor_saved'] = 'Salvato!';
-$string['editor_divergent_save'] = 'Salvataggio divergente';
-$string['editor_divergent_message'] = 'Stavi lavorando da una versione precedente. Le tue modifiche sono state salvate come versione {$a} per preservare la cronologia. Questo è un nuovo ramo dal tuo punto di partenza.';
-$string['editor_ok'] = 'OK';
-$string['editor_add_section'] = 'Aggiungi nuova sezione';
-$string['editor_add_activity'] = 'Aggiungi nuova attività';
-$string['editor_undo'] = 'Annulla';
-$string['editor_redo'] = 'Ripeti';
-$string['editor_new_section_title'] = 'Nuova sezione';
-$string['editor_new_section_summary'] = 'Descrivi di cosa tratta questa sezione';
-$string['editor_new_module_type'] = 'Pagina';
-$string['editor_new_module_title'] = 'Nuova pagina';
-$string['editor_new_module_hints'] = 'Descrivi di cosa tratta questa pagina';
-$string['editor_copy_suffix'] = ' (Copia)';
-$string['editor_change_activity_type'] = 'Cambia tipo di attività';
+// Designer strings
+$string['designer_loading'] = 'Caricamento struttura del corso...';
+$string['designer_invalid_data'] = 'Dati di struttura non validi';
+$string['designer_save'] = 'Salva';
+$string['designer_cancel'] = 'Annulla';
+$string['designer_reload'] = 'Ricarica';
+$string['designer_save_now'] = 'Salva ora';
+$string['designer_autosave_in'] = 'Salvataggio automatico tra:';
+$string['designer_version'] = 'Versione:';
+$string['designer_version_loading'] = 'Caricamento...';
+$string['designer_disabled'] = 'Disabilitato';
+$string['designer_edit'] = 'Modifica';
+$string['designer_duplicate'] = 'Duplica';
+$string['designer_delete'] = 'Elimina';
+$string['designer_confirm_delete'] = 'Conferma eliminazione';
+$string['designer_delete_module_confirm'] = 'Sei sicuro di voler eliminare questo modulo?';
+$string['designer_delete_section_confirm'] = 'Sei sicuro di voler eliminare questa sezione e tutti i suoi moduli?';
+$string['designer_reload_confirm'] = 'Ricaricare la struttura dal server? Le modifiche non salvate andranno perse.';
+$string['designer_unsaved_changes'] = 'Hai modifiche non salvate. Sei sicuro di voler uscire?';
+$string['designer_saving'] = 'Salvataggio...';
+$string['designer_saved'] = 'Salvato!';
+$string['designer_divergent_save'] = 'Salvataggio divergente';
+$string['designer_divergent_message'] = 'Stavi lavorando da una versione precedente. Le tue modifiche sono state salvate come versione {$a} per preservare la cronologia. Questo è un nuovo ramo dal tuo punto di partenza.';
+$string['designer_ok'] = 'OK';
+$string['designer_add_section'] = 'Aggiungi nuova sezione';
+$string['designer_add_activity'] = 'Aggiungi nuova attività';
+$string['designer_undo'] = 'Annulla';
+$string['designer_redo'] = 'Ripeti';
+$string['designer_new_section_title'] = 'Nuova sezione';
+$string['designer_new_section_summary'] = 'Descrivi di cosa tratta questa sezione';
+$string['designer_new_module_type'] = 'Pagina';
+$string['designer_new_module_title'] = 'Nuova pagina';
+$string['designer_new_module_hints'] = 'Descrivi di cosa tratta questa pagina';
+$string['designer_copy_suffix'] = ' (Copia)';
+$string['designer_change_activity_type'] = 'Cambia tipo di attività';

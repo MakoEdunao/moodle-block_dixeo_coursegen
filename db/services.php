@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Dixeo Course Generator block
+ * Dixeo Course Designer block
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2025 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -26,54 +26,54 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-    'block_dixeo_coursegen_generate_course' => [
-        'classname'   => 'block_dixeo_coursegen\\external\\generate_course',
+    'block_dixeo_designer_generate_course' => [
+        'classname'   => 'block_dixeo_designer\\external\\generate_course',
         'methodname'  => 'generate_course',
         'classpath'   => '',
-        'description' => 'Begins course generation.',
+        'description' => 'Begins course design.',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => 'block/dixeo_coursegen:create',
+        'capabilities' => 'block/dixeo_designer:create',
         'loginrequired' => true,
     ],
-    'block_dixeo_coursegen_get_status' => [
-        'classname'   => 'block_dixeo_coursegen\\external\\generation_status',
+    'block_dixeo_designer_get_status' => [
+        'classname'   => 'block_dixeo_designer\\external\\generation_status',
         'methodname'  => 'get_status',
         'classpath'   => '',
-        'description' => 'Return status for course generation.',
+        'description' => 'Return status for course design.',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => 'block/dixeo_coursegen:create',
+        'capabilities' => 'block/dixeo_designer:create',
         'loginrequired' => true,
     ],
-    'block_dixeo_coursegen_get_structure' => [
-        'classname'   => 'block_dixeo_coursegen\\external\\get_structure',
+    'block_dixeo_designer_get_structure' => [
+        'classname'   => 'block_dixeo_designer\\external\\get_structure',
         'methodname'  => 'get_structure',
         'classpath'   => '',
-        'description' => 'Get course generation structure by job ID',
+        'description' => 'Get course design structure by job ID',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => 'block/dixeo_coursegen:create',
+        'capabilities' => 'block/dixeo_designer:create',
         'loginrequired' => true,
     ],
-    'block_dixeo_coursegen_save_structure' => [
-        'classname'   => 'block_dixeo_coursegen\\external\\save_structure',
+    'block_dixeo_designer_save_structure' => [
+        'classname'   => 'block_dixeo_designer\\external\\save_structure',
         'methodname'  => 'save_structure',
         'classpath'   => '',
-        'description' => 'Save course generation structure (creates new version)',
+        'description' => 'Save course design structure (creates new version)',
         'type'        => 'write',
         'ajax'        => true,
-        'capabilities' => 'block/dixeo_coursegen:create',
+        'capabilities' => 'block/dixeo_designer:create',
         'loginrequired' => true,
     ],
-    'block_dixeo_coursegen_get_versions' => [
-        'classname'   => 'block_dixeo_coursegen\\external\\get_versions',
+    'block_dixeo_designer_get_versions' => [
+        'classname'   => 'block_dixeo_designer\\external\\get_versions',
         'methodname'  => 'get_versions',
         'classpath'   => '',
         'description' => 'Get all versions for a job',
         'type'        => 'read',
         'ajax'        => true,
-        'capabilities' => 'block/dixeo_coursegen:create',
+        'capabilities' => 'block/dixeo_designer:create',
         'loginrequired' => true,
     ],
 ];

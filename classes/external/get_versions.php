@@ -17,13 +17,13 @@
 /**
  * External API for retrieving all versions for a job.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @author     Josemaria Bolanos <admin@mako.digital>
  * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-namespace block_dixeo_coursegen\external;
+namespace block_dixeo_designer\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
@@ -34,7 +34,7 @@ use core_external\external_value;
 /**
  * External API class for retrieving all versions for a job.
  *
- * @package    block_dixeo_coursegen
+ * @package    block_dixeo_designer
  * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -70,20 +70,20 @@ final class get_versions extends external_api {
         require_login();
 
         // Get all versions for this job, ordered by time created (oldest first for history navigation)
-        $records = $DB->get_records('block_dixeo_coursegen_structure',
+        $records = $DB->get_records('block_dixeo_designer_structure',
             ['jobid' => $params['jobid']],
             'timecreated ASC',
             'id, version, timecreated, userid'
         );
 
         if (empty($records)) {
-            throw new \moodle_exception('structurenotfound', 'block_dixeo_coursegen');
+            throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
         }
 
         // Check user owns this structure (or has manage capability) - check first record
         $first = reset($records);
         if ($first->userid != $USER->id) {
-            require_capability('block/dixeo_coursegen:manage', $context);
+            require_capability('block/dixeo_designer:manage', $context);
         }
 
         $versions = [];
