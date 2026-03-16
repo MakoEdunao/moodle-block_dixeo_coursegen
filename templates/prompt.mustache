@@ -31,7 +31,6 @@
             <textarea id="course_description" name="course_description" class="form-control px-2 mb-2" placeholder="{{#str}} prompt_placeholder, block_dixeo_designer {{/str}}">{{course_description}}</textarea>
             <div class="dropzone-message">{{#str}} draganddrop, block_dixeo_designer {{/str}}</div>
             <input type="file" id="temp_course_files" name="temp_course_files[]" class="form-control d-none" multiple="">
-            <input type="file" id="course_files" name="course_files[]" class="form-control d-none" multiple="">
         </div>
         <div class="side-by-side">
             <label for="temp_course_files" class="label_course_files" title="{{#str}} attachfile, block_dixeo_designer {{/str}}">
@@ -44,13 +43,15 @@
                 {{/template_options}}
             </select>
             {{/has_template_options}}
-            <div id="file_names" class="mt-2"></div>
-            <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course, block_dixeo_designer {{/str}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="Logo">
+            <div id="file_names" class="mt-2{{^hasFiles}} d-none{{/hasFiles}}" data-uploading-text="{{uploading_files}}">{{> block_dixeo_designer/filenames }}</div>
+            {{^hide_generate_course}}
+            <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}" aria-label="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}">
+                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="">
             </button>
-            <button id="generate_course_structure" class="btn btn-primary text-white" title="{{#str}} generate_course, block_dixeo_designer {{/str}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="Logo">
-                <span>{{#str}} generate_course, block_dixeo_designer {{/str}}</span>
+            {{/hide_generate_course}}
+            <button id="generate_course_structure" class="btn btn-primary text-white" title="{{generate_structure_tooltip}}">
+                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="">
+                <span>{{generate_structure_label}}</span>
             </button>
         </div>
     </form>

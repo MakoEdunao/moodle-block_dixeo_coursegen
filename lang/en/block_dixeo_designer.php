@@ -35,6 +35,7 @@ $string['designacourse'] = 'Design a course';
 $string['dixeo_designer:addinstance'] = 'Add a Dixeo Course Designer block';
 $string['dixeo_designer:myaddinstance'] = 'Add a new Dixeo Course Designer block to my dashboard';
 $string['dixeo_designer:create'] = 'Create courses using Dixeo Course Designer';
+$string['manage'] = 'Manage Dixeo Course Designer';
 $string['myaddinstance'] = 'Add a new Dixeo Course Designer block to my dashboard';
 
 // Platform settings.
@@ -67,11 +68,23 @@ $string['heading'] = 'What do you want to teach today?';
 $string['heading2'] = 'We are building your course!';
 $string['prompt_placeholder'] = 'Enter the course you want to generate: topic, number of sections, and quiz if necessary.';
 $string['generate_course'] = 'Generate';
+$string['generate_course_tooltip'] = 'Generate course now';
+$string['generate_structure_btn'] = 'Generate';
+$string['generate_structure_tooltip'] = 'Generate course structure';
+$string['regenerate_structure_tooltip'] = 'Regenerate the course structure';
+$string['generatecoursestructure'] = 'Design the structure';
 $string['generate_another'] = 'Generate a new course';
 $string['descriptionorfilesrequired'] = 'Please enter a course description or upload files to generate the course.';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
 $string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
 $string['view_course'] = 'View your course';
+$string['resources'] = 'Resources';
+$string['designer_draft_course_name'] = '[Draft] New course';
+$string['task_cleanup_draft_courses'] = 'Delete draft courses older than 1 hour';
+$string['designer_default_file_prompt'] = 'Generate a course structure grounded in the uploaded files.';
+$string['designer_default_module_prompt'] = 'Generate the full learning content for this module.';
+$string['designer_filesyncfailed'] = 'Uploaded files could not be synchronized before module generation: {$a}';
+$string['designer_filesynctimeout'] = 'Uploaded files did not finish synchronizing in time for module generation.';
 $string['step1'] = 'Validating input';
 $string['step2'] = 'Analyzing subject';
 $string['step3'] = 'Structuring modules';
@@ -90,9 +103,11 @@ $string['filetoolarge'] = 'File is too large. Please upload a file smaller than 
 $string['filetypeinvalid'] = 'File type of {$a} is not supported. Supported extensions: .pptx, .docx, .pdf, .txt.';
 $string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload smaller files or remove one to continue.';
 $string['uploaderror'] = 'Error uploading file.';
+$string['uploading_files'] = 'Uploading…';
 
 // Designer interface.
 $string['designer_loading'] = 'Loading course structure...';
+$string['designer_regenerate'] = 'Regenerate';
 $string['designer_invalid_data'] = 'Invalid structure data';
 $string['designer_save'] = 'Save';
 $string['designer_cancel'] = 'Cancel';

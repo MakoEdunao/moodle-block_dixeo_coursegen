@@ -12,49 +12,53 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 namespace block_dixeo_designer;
 
 defined('MOODLE_INTERNAL') || die();
 
-use local_dixeo\api\exception\api_exception;
 use local_dixeo\external\service_factory;
 
 /**
- * Helper for course template prompt options.
+ * Thin helper for course template prompt options (UI only).
+ *
+ * All template list logic, cache and API normalisation live in local_dixeo.
+ * This class only calls local_dixeo and builds the select options for the block template.
  *
  * @package    block_dixeo_designer
  * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class course_template_helper {
+
     /**
-     * Returns remote course template choices from the API.
+     * Returns remote course template choices from local_dixeo (cached there).
      *
-     * @return array
+     * When the Dixeo API is not configured (e.g. during install), returns an empty list
+     * so settings and UI do not trigger API calls or debugging output.
+     *
+     * @return array Map of template id => label.
      */
     public static function get_remote_course_template_choices(): array {
-        try {
-            $templates = service_factory::get_course_template_service()->list_templates();
-            return self::normalise_templates($templates);
-        } catch (api_exception $e) {
-            debugging('Unable to load course templates from Dixeo API: ' . $e->getMessage(), DEBUG_DEVELOPER);
+        $service = service_factory::get_course_template_service();
+        if (!$service->is_configured()) {
             return [];
         }
+        return $service->get_cached_choices();
     }
 
     /**
      * Returns available course template choices including the empty option.
      *
-     * @return array
+     * @return array Map of value => label for the select.
      */
     public static function get_course_template_choices(): array {
         return ['' => get_string('coursetemplate_none', 'block_dixeo_designer')] + self::get_remote_course_template_choices();
     }
 
     /**
-     * Returns the configured course template id.
+     * Returns the configured course template id from block settings.
      *
      * @return string
      */
@@ -63,7 +67,7 @@ class course_template_helper {
     }
 
     /**
-     * Returns template options for the prompt select.
+     * Returns template options for the prompt select (value, label, selected).
      *
      * @param string|null $selectedtemplateid Selected template id.
      * @return array
@@ -85,38 +89,6 @@ class course_template_helper {
                 'label' => $label,
                 'selected' => ((string)$value === (string)$selectedtemplateid),
             ];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Normalises template API responses into select-ready items.
-     *
-     * @param array $templates Raw API response.
-     * @return array
-     */
-    private static function normalise_templates(array $templates): array {
-        if (isset($templates['data']) && is_array($templates['data'])) {
-            $templates = $templates['data'];
-        } else if (isset($templates['items']) && is_array($templates['items'])) {
-            $templates = $templates['items'];
-        }
-
-        $result = [];
-        foreach ($templates as $template) {
-            if (!is_array($template)) {
-                continue;
-            }
-
-            $value = (string)($template['id'] ?? $template['uuid'] ?? $template['templateId'] ?? '');
-            $label = trim((string)($template['name'] ?? $template['title'] ?? ''));
-
-            if ($value === '' || $label === '') {
-                continue;
-            }
-
-            $result[$value] = $label;
         }
 
         return $result;

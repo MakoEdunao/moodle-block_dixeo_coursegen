@@ -26,10 +26,8 @@ namespace block_dixeo_designer\external;
 
 use core_external\external_api;
 use core_external\external_function_parameters;
-use core_external\external_multiple_structure;
 use core_external\external_single_structure;
 use core_external\external_value;
-use block_dixeo_modulegen\helper\config;
 
 /**
  * External API class for retrieving the generation status of a course creation task.
@@ -55,14 +53,15 @@ final class generate_course extends external_api {
     }
 
     /**
-     * Retrieves the generation status for a given job ID.
+     * Start course generation: create draft course, sync files, submit structure job.
+     * Returns immediately with courseid and remotejobid for polling.
      *
      * @param string $job_id The unique identifier for the generation job.
      * @param string $description The course description.
      * @param string|null $templateid The selected template identifier.
      * @param string $sesskey The session key for security verification.
-     * @param bool $skip Whether to skip structure generation.
-     * @return array An associative array containing the status and the time it was updated.
+     * @param bool $skip Whether to skip creating the full course (structure-only; used when finalizing).
+     * @return array { courseid, remotejobid }
      */
     public static function generate_course(
         string $job_id,
@@ -71,7 +70,7 @@ final class generate_course extends external_api {
         string $sesskey,
         bool $skip = false
     ): array {
-        global $DB, $USER;
+        global $USER;
 
         self::validate_parameters(self::generate_course_parameters(), [
             'job_id' => $job_id,
@@ -87,43 +86,25 @@ final class generate_course extends external_api {
         require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
-        try {
-            $generator = new \block_dixeo_designer\course_designer($job_id, $description, $skip, null, $templateid);
-            $course = $generator->generate_course();
+        $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
+        $service = \local_dixeo\external\service_factory::get_course_designer_service($persistence);
+        $start = $service->start_generation($job_id, (int) $USER->id, $description, $templateid);
 
-            if (!$course) {
-                return [
-                    'courseid' => 0,
-                    'coursename' => '',
-                ];
-            }
-
-            return [
-                'courseid' => $course->id,
-                'coursename' => $course->fullname
-            ];
-        } catch (Exception $e) {
-            $debug = '';
-            if (debugging('', DEBUG_DEVELOPER)) {
-                $debug = '<br><br>Error:<br>' . $e->getMessage() . '<br><br>' . $e->getTraceAsString();
-            }
-
-            return [
-                'error' => get_string('error_generation_failed', 'block_dixeo_designer') . $debug,
-            ];
-        }
+        return [
+            'courseid' => $start->courseid,
+            'remotejobid' => $start->remotejobid,
+        ];
     }
 
     /**
-     * Returns the structure describing the generation status.
+     * Returns the structure describing the start generation response.
      *
-     * @return external_single_structure Structure containing the status and time updated.
+     * @return external_single_structure
      */
     public static function generate_course_returns(): external_single_structure {
         return new external_single_structure([
-            'courseid' => new external_value(PARAM_INT, 'Course ID', VALUE_OPTIONAL),
-            'coursename' => new external_value(PARAM_TEXT, 'Course name', VALUE_OPTIONAL),
-            'error' => new external_value(PARAM_TEXT, 'Error message', VALUE_OPTIONAL),
+            'courseid' => new external_value(PARAM_INT, 'Draft course ID'),
+            'remotejobid' => new external_value(PARAM_TEXT, 'Remote structure job ID for polling'),
         ]);
     }
 }

@@ -38,8 +38,8 @@
 }}
 {{#hasFiles}}
     {{#files}}
-        <div class="file-item">
-            <span class="mr-1 delete-icon" data-toggle="tooltip" title="{{#str}} removefile, block_dixeo_designer {{/str}}"><i class="fa fa-remove"></i></span> {{ name }} ({{ size }})
+        <div class="file-item" data-file-id="{{id}}">
+            <span class="mr-1 delete-icon" data-file-id="{{id}}" title="{{#str}} removefile, block_dixeo_designer {{/str}}" aria-label="{{#str}} removefile, block_dixeo_designer {{/str}}"><i class="fa fa-remove"></i></span> {{ name }} ({{ size }})
         </div>
     {{/files}}
     <p class="total-size mb-2">{{#str}} totalsize, block_dixeo_designer, {{ totalSize }}{{/str}} / {{ maxTotalSize }}</p>

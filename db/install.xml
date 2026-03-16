@@ -4,6 +4,26 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
+    <TABLE NAME="block_dixeo_designer_submission" COMMENT="Tracks the persisted submission state for a designer job">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="jobid" TYPE="char" LENGTH="36" NOTNULL="true" SEQUENCE="false" COMMENT="Unique job identifier (UUID-style)"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false" COMMENT="User who owns the submission"/>
+        <FIELD NAME="prompt" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Prompt used to generate or regenerate the structure"/>
+        <FIELD NAME="templateid" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Selected pedagogical template identifier"/>
+        <FIELD NAME="status" TYPE="char" LENGTH="30" NOTNULL="true" DEFAULT="draft" SEQUENCE="false" COMMENT="Submission lifecycle status"/>
+        <FIELD NAME="remotejobid" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Remote Dixeo job id for async operations"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false" COMMENT="Created Moodle course id once available"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="jobid_uk" TYPE="unique" FIELDS="jobid"/>
+        <KEY NAME="userid_fk" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id"/>
+        <KEY NAME="courseid_fk" TYPE="foreign" FIELDS="courseid" REFTABLE="course" REFFIELDS="id"/>
+      </KEYS>
+    </TABLE>
     <TABLE NAME="block_dixeo_designer_structure" COMMENT="Tracks the different versions of the course structure before creation">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>

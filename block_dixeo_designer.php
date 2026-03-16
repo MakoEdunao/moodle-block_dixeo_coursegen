@@ -76,7 +76,7 @@ class block_dixeo_designer extends block_base {
      * Gets the content for this block
      */
     public function get_content() {
-        global $OUTPUT, $COURSE, $CFG;
+        global $OUTPUT, $COURSE, $CFG, $USER;
 
         // Note: do NOT include files at the top of this file.
         require_once($CFG->libdir . '/filelib.php');
@@ -94,15 +94,17 @@ class block_dixeo_designer extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
-
-        $templateoptions = \block_dixeo_designer\course_template_helper::get_course_template_options();
-
-        $context = [
-            'course_description' => $coursedescription,
-            'job_id' => self::generate_job_id(),
-            'has_template_options' => !empty($templateoptions),
-            'template_options' => $templateoptions,
-        ];
+        $jobid = self::generate_job_id();
+        $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
+        $filecontext = \local_dixeo\external\service_factory::get_designer_submission_ui_service()
+            ->get_file_context($persistence, $jobid, (int) $USER->id);
+        $context = \block_dixeo_designer\submission_render_helper::build_prompt_context(
+            $jobid,
+            $coursedescription,
+            \block_dixeo_designer\course_template_helper::get_selected_course_template(),
+            $filecontext,
+            false
+        );
         $text = $OUTPUT->render_from_template('block_dixeo_designer/course_designer', $context);
 
         $this->content->text = $text;

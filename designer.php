@@ -27,16 +27,13 @@ require_once(__DIR__ . '/../../config.php');
 
 require_login();
 
-global $PAGE, $OUTPUT;
+global $PAGE, $OUTPUT, $USER;
 
 $jobid = optional_param('id', '', PARAM_TEXT);
 $hasexistingjob = ($jobid !== '');
-$coursedescription = optional_param('course_description', '', PARAM_TEXT);
-$templateid = optional_param(
-    'templateid',
-    \block_dixeo_designer\course_template_helper::get_selected_course_template(),
-    PARAM_TEXT
-);
+$submissionservice = new \block_dixeo_designer\submission_service();
+$persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
+$designeruiservice = \local_dixeo\external\service_factory::get_designer_submission_ui_service();
 
 if (!$hasexistingjob) {
     $jobid = sprintf(
@@ -52,6 +49,13 @@ if (!$hasexistingjob) {
     );
 }
 
+$submission = $submissionservice->get_or_create_submission($jobid, $USER->id);
+if ((int) $submission->userid !== (int) $USER->id) {
+    require_capability('block/dixeo_designer:manage', context_system::instance());
+}
+$coursedescription = optional_param('course_description', $submission->prompt ?? '', PARAM_TEXT);
+$templateid = optional_param('templateid', $submission->templateid ?? '', PARAM_TEXT);
+
 // Set up the page.
 $urlparams = [];
 if ($hasexistingjob) {
@@ -64,17 +68,18 @@ $PAGE->set_heading(''); // Empty heading (no page title)
 
 echo $OUTPUT->header();
 
-if (!$hasexistingjob) {
-    // Render the designer start page when opened from the Courses admin section.
-    $templateoptions = \block_dixeo_designer\course_template_helper::get_course_template_options($templateid);
+$filecontext = $designeruiservice->get_file_context($persistence, $jobid, (int) $USER->id);
+echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer',
+    \block_dixeo_designer\submission_render_helper::build_prompt_context(
+        $jobid,
+        $coursedescription,
+        $templateid,
+        $filecontext,
+        $hasexistingjob
+    )
+), 'block_dixeo_designer');
 
-    echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer', [
-        'course_description' => $coursedescription,
-        'job_id' => $jobid,
-        'has_template_options' => !empty($templateoptions),
-        'template_options' => $templateoptions,
-    ]), 'block_dixeo_designer');
-} else {
+if ($hasexistingjob) {
     // Render the structure designer for an existing job.
     echo $OUTPUT->render_from_template('block_dixeo_designer/review', [
         'jobid' => $jobid,

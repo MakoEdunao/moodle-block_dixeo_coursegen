@@ -15,23 +15,23 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version details
+ * Scheduled tasks for the Dixeo Course Designer block.
  *
  * @package    block_dixeo_designer
- * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Dixeo (contact@dixeo.com)
+ * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026031401;                 // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2023100909;                 // Requires this Moodle version.
-$plugin->component = 'block_dixeo_designer';   // Full name of the plugin (used for diagnostics).
-
-$plugin->dependencies = [
-    'local_dixeo' => 2026022301
+$tasks = [
+    [
+        'classname' => 'block_dixeo_designer\task\cleanup_draft_courses_task',
+        'blocking' => 0,
+        'minute' => '0',
+        'hour' => '*',
+        'day' => '*',
+        'dayofweek' => '*',
+        'month' => '*',
+    ],
 ];
-
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.2.0';

@@ -1,0 +1,117 @@
+<?php
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+namespace block_dixeo_designer;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_structure.php');
+
+use advanced_testcase;
+use block_dixeo_designer\external\get_structure;
+
+/**
+ * Tests for get_structure external (structure table access, no API mock).
+ *
+ * @package    block_dixeo_designer
+ * @category   test
+ * @copyright  2026 Dixeo
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @covers     \block_dixeo_designer\external\get_structure
+ */
+final class external_get_structure_test extends advanced_testcase {
+
+    /** @var \stdClass */
+    private $user;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->resetAfterTest(true);
+        $this->user = $this->getDataGenerator()->create_user();
+        $this->setUser($this->user);
+    }
+
+    public function test_get_structure_throws_when_no_structure(): void {
+        $this->expectException(\moodle_exception::class);
+        get_structure::get_structure('job-nonexistent', -1);
+    }
+
+    public function test_get_structure_returns_latest_version(): void {
+        global $DB;
+
+        $jobid = 'job-' . uniqid();
+        $structurejson = json_encode(['course_structure' => ['title' => 'Test Course', 'sections' => []]]);
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $this->user->id,
+            'description' => 'Desc',
+            'structure' => $structurejson,
+            'version' => '1.0',
+            'timecreated' => time() - 100,
+        ]);
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $this->user->id,
+            'description' => 'Desc 2',
+            'structure' => json_encode(['course_structure' => ['title' => 'Latest']]),
+            'version' => '2.0',
+            'timecreated' => time(),
+        ]);
+
+        $result = get_structure::get_structure($jobid, -1);
+
+        $this->assertArrayHasKey('structure', $result);
+        $this->assertArrayHasKey('version', $result);
+        $this->assertArrayHasKey('jobid', $result);
+        $this->assertArrayHasKey('index', $result);
+        $this->assertArrayHasKey('total', $result);
+        $this->assertSame(2, $result['total']);
+        $this->assertSame(1, $result['index']);
+        $decoded = json_decode($result['structure'], true);
+        $this->assertEquals('Latest', $decoded['course_structure']['title']);
+    }
+
+    public function test_get_structure_returns_specific_index(): void {
+        global $DB;
+
+        $jobid = 'job-' . uniqid();
+        $v1 = json_encode(['course_structure' => ['title' => 'First']]);
+        $v2 = json_encode(['course_structure' => ['title' => 'Second']]);
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $this->user->id,
+            'description' => '',
+            'structure' => $v1,
+            'version' => '1',
+            'timecreated' => 1000,
+        ]);
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $this->user->id,
+            'description' => '',
+            'structure' => $v2,
+            'version' => '2',
+            'timecreated' => 2000,
+        ]);
+
+        $result = get_structure::get_structure($jobid, 0);
+
+        $this->assertSame(0, $result['index']);
+        $decoded = json_decode($result['structure'], true);
+        $this->assertEquals('First', $decoded['course_structure']['title']);
+    }
+}

@@ -92,5 +92,31 @@ function xmldb_block_dixeo_designer_upgrade($oldversion) {
         upgrade_block_savepoint(true, 2026030302, 'dixeo_designer');
     }
 
+    if ($oldversion < 2026031400) {
+        $table = new xmldb_table('block_dixeo_designer_submission');
+
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('jobid', XMLDB_TYPE_CHAR, '36', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('prompt', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('templateid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('status', XMLDB_TYPE_CHAR, '30', null, XMLDB_NOTNULL, null, 'draft');
+        $table->add_field('remotejobid', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $table->add_field('courseid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('jobid_uk', XMLDB_KEY_UNIQUE, ['jobid']);
+        $table->add_key('userid_fk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+        $table->add_key('courseid_fk', XMLDB_KEY_FOREIGN, ['courseid'], 'course', ['id']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_block_savepoint(true, 2026031400, 'dixeo_designer');
+    }
+
     return true;
 }

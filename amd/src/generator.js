@@ -38,46 +38,65 @@ define([
     const generateCourse = generatorForm.querySelector('#generate_course');
     const generateStructure = generatorForm.querySelector('#generate_course_structure');
     const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
-    const courseFiles = generatorForm.querySelector('#course_files');
     const filesContainer = generatorForm.querySelector('#file_names');
-    const maxfilesize = 20 * 1024 * 1024; // 20 MB.
-    const maxtotalsize = 50 * 1024 * 1024; // 50 MB.
 
     return {
         init: function() {
             this.progress = 0;
-
             this.adjustDescriptionHeight();
             this.handleDragAndDrop();
+            this.bindDeleteHandlers();
 
-            // Trigger generation if course description is filled on page load.
-            if (courseDescription.value.trim() !== '') {
-                setTimeout(() => {
-                    generateStructure.click();
-                }, 1000);
-            }
-
-            // Add event listener to trigger generation on pressing Enter in the course description.
             courseDescription.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if (event.key === 'Enter' && !event.shiftKey && generateStructure) {
                     event.preventDefault();
                     generateStructure.click();
                 }
             });
 
-            // Add event listener to generate course button.
-            generateCourse.addEventListener('click', (event) => this.generateCourse(event, false));
-            // Add event listener to generate course structure button.
-            generateStructure.addEventListener('click', (event) => this.generateCourse(event, true));
+            if (generateCourse) {
+                generateCourse.addEventListener('click', (event) => this.generateCourse(event, false));
+            }
+            if (generateStructure) {
+                generateStructure.addEventListener('click', (event) => this.generateCourse(event, true));
+            }
+
+            const cancelBtn = generationContainer.querySelector('.btn-cancel-draft');
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', (event) => this.cancelDraft(event));
+            }
+        },
+        cancelDraft: function(event) {
+            event.preventDefault();
+            const self = this;
+            Ajax.call([{
+                methodname: 'block_dixeo_designer_cancel_draft',
+                args: {
+                    job_id: this.getJobId(),
+                    sesskey: M.cfg.sesskey
+                },
+            }])[0]
+            .then(function() {
+                self.clearPoll();
+                self.resetProgress();
+            })
+            .catch(function(err) {
+                self.clearPoll();
+                self.resetProgress();
+                Notification.alert('', err.message || 'Cancel failed');
+            });
+        },
+        getJobId: function() {
+            return generationContainer.dataset.job_id;
+        },
+        hasServerFiles: function() {
+            return Boolean(filesContainer && filesContainer.querySelector('.file-item'));
         },
         generateCourse: function(event, reviewStructure) {
             event.preventDefault();
 
-            let courseDescriptionValue = courseDescription.value.trim();
-            courseDescription.value = '';
-
-            // Check if the course description is filled or files are uploaded.
-            if (courseDescriptionValue === '' && courseFiles.files.length === 0) {
+            const courseDescriptionValue = courseDescription.value.trim();
+            if (courseDescriptionValue === '' && !this.hasServerFiles()) {
                 this.notify('invalidinput', 'descriptionorfilesrequired');
                 return;
             }
@@ -86,115 +105,153 @@ define([
                 this.startProgress();
             }
 
-            // for (let i = 0; i < courseFiles.files.length; i++) {
-            //     formdata.append('course_files[]', courseFiles.files[i]);
-            // }
+            // reviewStructure true = design only (no course), false = create full course. skip=1 means create course.
+            const createcourse = !reviewStructure;
 
             Ajax.call([{
                 methodname: 'block_dixeo_designer_generate_course',
                 args: {
-                    job_id: generationContainer.dataset.job_id,
+                    job_id: this.getJobId(),
                     description: courseDescriptionValue,
                     templateid: (templateSelect && templateSelect.value !== '') ? templateSelect.value : null,
                     skip: reviewStructure ? 0 : 1,
                     sesskey: M.cfg.sesskey
                 },
             }])[0]
-            .then(data => {
-                const courseid = data.courseid;
-                const coursename = data.coursename;
-
-                if (courseid == 0 && reviewStructure == true) {
-                    window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' +
-                        generationContainer.dataset.job_id;
-                    return;
-                }
-
-                this.finishProgress(courseid, coursename);
-
-                return;
+            .then(() => {
+                this.pollStructureStatus(createcourse);
             })
             .catch(async error => {
                 this.resetProgress();
+                this.clearPoll();
                 const errorTitle = await Str.get_string('error_title', 'block_dixeo_designer');
                 Notification.alert(errorTitle, error.message);
             });
         },
+        pollIntervalId: null,
+        clearPoll: function() {
+            if (this.pollIntervalId) {
+                clearInterval(this.pollIntervalId);
+                this.pollIntervalId = null;
+            }
+        },
+        pollStructureStatus: function(createcourse) {
+            const self = this;
+            const poll = function() {
+                Ajax.call([{
+                    methodname: 'block_dixeo_designer_get_structure_status',
+                    args: {
+                        job_id: self.getJobId(),
+                        sesskey: M.cfg.sesskey
+                    },
+                }])[0]
+                .then(function(data) {
+                    if (data.failed) {
+                        self.clearPoll();
+                        self.resetProgress();
+                        Notification.alert('', data.error || 'Generation failed');
+                        return;
+                    }
+                    if (data.completed) {
+                        self.clearPoll();
+                        if (createcourse) {
+                            Ajax.call([{
+                                methodname: 'block_dixeo_designer_finalize_course',
+                                args: {
+                                    job_id: self.getJobId(),
+                                    createcourse: true,
+                                    sesskey: M.cfg.sesskey
+                                },
+                            }])[0]
+                            .then(function(final) {
+                                self.finishProgress(final.courseid, final.coursename);
+                            })
+                            .catch(function(err) {
+                                self.resetProgress();
+                                Notification.alert('', err.message || 'Finalize failed');
+                            });
+                        } else {
+                            window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' + self.getJobId();
+                        }
+                        return;
+                    }
+                    if (data.progress >= 0 && data.progress <= 100) {
+                        self.setProgress(data.progress);
+                    }
+                })
+                .catch(function(err) {
+                    self.clearPoll();
+                    self.resetProgress();
+                    Notification.alert('', err.message || 'Status check failed');
+                });
+            };
+
+            poll();
+            this.pollIntervalId = setInterval(poll, 3000);
+        },
         adjustDescriptionHeight: function() {
-            // Adjust course description height.
             courseDescription.addEventListener('input', function() {
-            this.style.height = 'auto'; // Reset height
-            const maxHeight = parseFloat(getComputedStyle(this).lineHeight) * 9; // 9 lines max
-            this.style.overflowY = 'hidden';
+                this.style.height = 'auto';
+                const maxHeight = parseFloat(getComputedStyle(this).lineHeight) * 9;
+                this.style.overflowY = 'hidden';
 
-            if (this.scrollHeight > maxHeight) {
-                this.style.height = maxHeight + 'px';
-                this.style.overflowY = 'scroll';
+                if (this.scrollHeight > maxHeight) {
+                    this.style.height = maxHeight + 'px';
+                    this.style.overflowY = 'scroll';
+                } else {
+                    this.style.height = this.scrollHeight + 'px';
+                }
+            });
+            courseDescription.dispatchEvent(new Event('input'));
+        },
+        setFileNamesLoading: function(loading) {
+            if (!filesContainer) {
+                return;
+            }
+            const text = filesContainer.dataset.uploadingText || 'Uploading…';
+            if (loading) {
+                filesContainer.classList.remove('d-none');
+                filesContainer.classList.add('file-names-loading');
+                filesContainer.innerHTML = '<div class="file-names-loading-state">' +
+                    '<span class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></span>' +
+                    '<span class="file-names-loading-text">' + text + '</span></div>';
             } else {
-                this.style.height = this.scrollHeight + 'px';
+                filesContainer.classList.remove('file-names-loading');
             }
-        });
         },
-        clearAllFiles: function() {
-            let dataTransfer = new DataTransfer();
-            courseFiles.files = dataTransfer.files;
-            this.displayFileNames();
-        },
-        transferFiles: function(newFiles) {
-            // Validate files.
-            const allowedtypes = [
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                'application/pdf',
-                'text/plain'
-            ];
-
-            let totalSize = 0;
-            let existingFiles = Array.from(courseFiles.files);
-
-            // Include the size of files already added to courseFiles.
-            for (let file of existingFiles) {
-                totalSize += file.size;
+        transferFiles: async function(newFiles) {
+            if (!newFiles || newFiles.length === 0) {
+                return;
             }
 
-            for (let file of newFiles) {
-                // Check file type.
-                if (!allowedtypes.includes(file.type)) {
-                    this.notify('uploaderror', ['filetypeinvalid', file.name]);
-                    return;
-                }
-                // Check file size.
-                totalSize += file.size;
-                if (file.size > maxfilesize) {
-                    this.notify('uploaderror', ['filetoolarge', file.name]);
-                    return;
-                }
-                // Check total size.
-                if (totalSize > maxtotalsize) {
-                    this.notify('uploaderror', 'totaltoolarge');
-                    return;
-                }
-            }
+            const formData = new FormData();
+            formData.append('sesskey', M.cfg.sesskey);
+            formData.append('jobid', this.getJobId());
+            Array.from(newFiles).forEach((file) => formData.append('files[]', file));
 
-            // Combine existing files with new files.
-            for (let file of newFiles) {
-                // Check if file already exists.
-                if (!existingFiles.some(existingFile => existingFile.name === file.name && existingFile.size === file.size)) {
-                    existingFiles.push(file);
+            this.setFileNamesLoading(true);
+
+            try {
+                const response = await fetch(
+                    Config.wwwroot + '/blocks/dixeo_designer/upload_submission_files.php',
+                    {method: 'POST', body: formData}
+                );
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Upload failed');
                 }
-            }
 
-            // Add all files to DataTransfer
-            let dataTransfer = new DataTransfer();
-            for (let file of existingFiles) {
-                dataTransfer.items.add(file);
+                this.displayFileNames(data.context);
+            } catch (error) {
+                this.setFileNamesLoading(false);
+                filesContainer.innerHTML = '';
+                filesContainer.classList.add('d-none');
+                Notification.alert('', error.message || 'Upload failed');
+            } finally {
+                tempCourseFiles.value = '';
             }
-
-            courseFiles.files = dataTransfer.files;
-            this.displayFileNames();
         },
         handleDragAndDrop: function() {
-            // Drag over and leave over prompt form.
             let dragEnterCounter = 0;
             $('#prompt-form').bind({
                 dragenter: function(event) {
@@ -213,24 +270,23 @@ define([
                 },
             });
 
-            // Apply drop listeners to all child elements of prompt form.
             this.dropOnChildElements(promptForm);
-            // Move files from temp to course files.
-            tempCourseFiles.addEventListener('change', () => {
-                let newFiles = Array.from(tempCourseFiles.files);
-                this.transferFiles(newFiles);
-            });
+            tempCourseFiles.addEventListener('change', () => this.transferFiles(tempCourseFiles.files));
         },
         dropOnChildElements: function(node) {
             node.childNodes.forEach(child => {
+                if (child.nodeType !== Node.ELEMENT_NODE) {
+                    return;
+                }
+
                 this.dropOnChildElements(child);
 
-                child.addEventListener("dragover", (event) => {
+                child.addEventListener('dragover', (event) => {
                     event.preventDefault();
                     event.stopPropagation();
                 });
 
-                child.addEventListener("drop", (event) => {
+                child.addEventListener('drop', (event) => {
                     event.preventDefault();
                     event.stopPropagation();
                     promptContainer.classList.remove('drag-over');
@@ -242,8 +298,12 @@ define([
             });
         },
         startProgress: function() {
-            generateCourse.disabled = true;
-            generateStructure.disabled = true;
+            if (generateCourse) {
+                generateCourse.disabled = true;
+            }
+            if (generateStructure) {
+                generateStructure.disabled = true;
+            }
             promptContainer.classList.replace('d-block', 'd-none');
             generationContainer.classList.replace('d-none', 'd-block');
 
@@ -290,19 +350,20 @@ define([
             }, 3000);
         },
         resetProgress: function() {
-            generateCourse.disabled = false;
-            generateStructure.disabled = false;
+            this.clearPoll();
+            if (generateCourse) {
+                generateCourse.disabled = false;
+            }
+            if (generateStructure) {
+                generateStructure.disabled = false;
+            }
             promptContainer.classList.replace('d-none', 'd-block');
             generationContainer.classList.replace('d-block', 'd-none');
-
-            courseDescription.value = '';
 
             let successContainer = generatorForm.querySelector('#success_message_container');
             if (successContainer) {
                 successContainer.remove();
             }
-
-            this.clearAllFiles();
 
             this.setProgress(0);
         },
@@ -319,66 +380,55 @@ define([
                 }
             }
         },
-        displayFileNames: function() {
-            let contextFiles = [];
-            let totalSize = 0;
-            for (let i = 0; i < courseFiles.files.length; i++) {
-                const file = courseFiles.files[i];
-                totalSize += file.size;
-                contextFiles.push({
-                    name: file.name,
-                    size: this.formatFilesize(file.size),
-                });
-            }
-            let hasFiles = contextFiles.length > 0;
-            let context = {
-                hasFiles: hasFiles,
-                totalSize: this.formatFilesize(totalSize),
-                maxTotalSize: this.formatFilesize(maxtotalsize),
-                files: contextFiles
-            };
-
+        displayFileNames: function(context) {
             if (filesContainer) {
+                // Dispose any Bootstrap tooltips on current content to prevent stuck tooltips after DOM replace.
+                $(filesContainer).find('[data-toggle="tooltip"], [data-bs-toggle="tooltip"]').tooltip('dispose');
                 Template.render('block_dixeo_designer/filenames', context).then((html) => {
+                    filesContainer.classList.remove('file-names-loading');
                     filesContainer.innerHTML = html;
-
-                    let deleteIcons = filesContainer.querySelectorAll('.delete-icon');
-                    deleteIcons.forEach((deleteIcon, index) => {
-                        let that = this;
-                        let toDelete = courseFiles.files[index].name;
-
-                        deleteIcon.addEventListener('click', function() {
-                            // Remove file from display.
-                            let toolTipId = deleteIcon.getAttribute('aria-describedby');
-                            document.getElementById(toolTipId).remove();
-
-                            // Remove file from course files.
-                            let dataTransfer = new DataTransfer();
-                            for (let i = 0; i < courseFiles.files.length; i++) {
-                                if (courseFiles.files[i].name !== toDelete) {
-                                    dataTransfer.items.add(courseFiles.files[i]);
-                                }
-                            }
-
-                            courseFiles.files = dataTransfer.files;
-                            that.displayFileNames();
-                        });
-                    });
-
-                    return;
+                    if (context.hasFiles) {
+                        filesContainer.classList.remove('d-none');
+                    } else {
+                        filesContainer.classList.add('d-none');
+                    }
+                    this.bindDeleteHandlers();
                 }).catch((error) => {
                     Notification.exception(error);
                 });
             }
         },
-        formatFilesize: (size) => {
-            const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
-            let unitIndex = 0;
-            while (size >= 1024 && unitIndex < units.length - 1) {
-                size /= 1024;
-                unitIndex++;
+        bindDeleteHandlers: function() {
+            if (!filesContainer) {
+                return;
             }
-            return `${size.toFixed(1)} ${units[unitIndex]}`;
+
+            filesContainer.querySelectorAll('.delete-icon').forEach((deleteIcon) => {
+                deleteIcon.addEventListener('click', async() => {
+                    try {
+                        const response = await fetch(
+                            Config.wwwroot + '/blocks/dixeo_designer/delete_submission_file.php',
+                            {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+                                body: new URLSearchParams({
+                                    sesskey: M.cfg.sesskey,
+                                    jobid: this.getJobId(),
+                                    fileid: deleteIcon.dataset.fileId
+                                })
+                            }
+                        );
+                        const data = await response.json();
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Delete failed');
+                        }
+
+                        this.displayFileNames(data.context);
+                    } catch (error) {
+                        Notification.exception(error);
+                    }
+                });
+            });
         },
         notify: async function() {
             let strings = [];
@@ -391,6 +441,9 @@ define([
                         component: component,
                         param: arguments[i][1]
                     });
+                } else if (i === 1 && arguments[i]) {
+                    Notification.alert('', arguments[i]);
+                    return;
                 } else {
                     strings.push({
                         key: arguments[i],

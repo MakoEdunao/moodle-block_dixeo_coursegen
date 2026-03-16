@@ -31,7 +31,7 @@
     <h2 class="mb-4">{{#str}} heading2, block_dixeo_designer {{/str}}</h2>
     <div id="loader" class="justify-content-center align-items-center">
         <p>{{#str}} generating_course, block_dixeo_designer {{/str}}</p>
-        <object type="image/svg+xml" data="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-animated.svg" width="100" height="100"></object>
+        <object type="image/svg+xml" data="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-animated.svg" width="80" height="80"></object>
         <div class="s-progress s-progress__segmented">
             <div class="s-progress--bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75" style="width: 0%;"></div>
             <ol class="s-progress--segments">
@@ -62,6 +62,11 @@
                 </li>
                 <li></li>
             </ol>
+        </div>
+        <div class="cancel-btn">
+            <button type="button" class="btn btn-secondary btn-cancel-draft" data-action="cancel-draft">
+                {{#str}} designer_cancel, block_dixeo_designer {{/str}}
+            </button>
         </div>
     </div>
 </div>
