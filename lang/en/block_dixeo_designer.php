@@ -35,6 +35,7 @@ $string['designacourse'] = 'Design a course';
 $string['dixeo_designer:addinstance'] = 'Add a Dixeo Course Designer block';
 $string['dixeo_designer:myaddinstance'] = 'Add a new Dixeo Course Designer block to my dashboard';
 $string['dixeo_designer:create'] = 'Create courses using Dixeo Course Designer';
+$string['dixeo_designer:manage'] = 'Manage Dixeo Course Designer';
 $string['manage'] = 'Manage Dixeo Course Designer';
 $string['myaddinstance'] = 'Add a new Dixeo Course Designer block to my dashboard';
 
@@ -85,6 +86,7 @@ $string['designer_default_file_prompt'] = 'Generate a course structure grounded 
 $string['designer_default_module_prompt'] = 'Generate the full learning content for this module.';
 $string['designer_filesyncfailed'] = 'Uploaded files could not be synchronized before module generation: {$a}';
 $string['designer_filesynctimeout'] = 'Uploaded files did not finish synchronizing in time for module generation.';
+$string['designer_module_timeout'] = 'Module "{$a}" did not finish generating in time. The server may be busy; try again later or create the activity manually.';
 $string['step1'] = 'Validating input';
 $string['step2'] = 'Analyzing subject';
 $string['step3'] = 'Structuring modules';
@@ -92,7 +94,7 @@ $string['step4'] = 'Generating content';
 $string['step5'] = 'Finalizing details';
 $string['invalidinput'] = 'Information required.';
 $string['error_title'] = 'Oops!';
-$string['error_generation_failed'] = 'An unexpected error occurred while creating the course. Please try again.';
+$string['error_generation_failed'] = 'Course creation failed: {$a}. Please try again.';
 
 // File uploads.
 $string['attachfile'] = 'Attach a source document';

@@ -25,57 +25,128 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>A sua plataforma já está registada.';
-$string['apikey'] = 'Chave API Dixeo';
-$string['apikey_desc'] = "Introduza a chave API fornecida pela Dixeo para ativar a geração de cursos.";
-$string['attachfile'] = 'Anexar um documento de origem';
-$string['blocktitle'] = '';
-$string['categoryname'] = 'Categoria para os cursos criados';
-$string['categoryname_desc'] = 'Introduza o nome da categoria local onde os cursos serão criados.';
-$string['course_generated'] = 'O seu curso «<b> {$a} </b>» foi gerado com sucesso!';
-$string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
-$string['default_categoryname'] = 'Cursos Dixeo';
-$string['default_platformurl'] = 'https://dixeo.com';
-$string['descriptionorfilesrequired'] = 'Introduza uma descrição do curso ou carregue ficheiros para gerar o curso.';
+// General.
+$string['pluginname'] = 'Designer de Cursos Dixeo';
+$string['settings'] = 'Designer de Cursos Dixeo';
+$string['blocktitle'] = 'Designer de Cursos Dixeo';
+$string['designacourse'] = 'Conceber um curso';
+
+// Capabilities.
 $string['dixeo_designer:addinstance'] = 'Adicionar um bloco Designer de Cursos Dixeo';
 $string['dixeo_designer:myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
 $string['dixeo_designer:create'] = 'Criar cursos com o Designer de Cursos Dixeo';
-$string['draganddrop'] = 'Arraste e largue os seus ficheiros para carregar';
+$string['dixeo_designer:manage'] = 'Gerir o Designer de Cursos Dixeo';
+$string['manage'] = 'Gerir o Designer de Cursos Dixeo';
+$string['myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
+
+// Platform settings.
+$string['apikey'] = 'Chave API Dixeo';
+$string['apikey_desc'] = 'Introduza a chave API fornecida pela Dixeo para ativar a geração de cursos.';
+$string['platformurl'] = 'URL da plataforma Dixeo';
+$string['platformurl_desc'] = 'Introduza o URL base da plataforma Dixeo.';
+$string['categoryname'] = 'Categoria para os cursos criados';
+$string['categoryname_desc'] = 'Introduza o nome da categoria local onde os cursos serão criados.';
+$string['coursetemplate'] = 'Modelo de estrutura pedagógica';
+$string['coursetemplate_desc'] = 'Selecione o modelo de estrutura pedagógica utilizado pelo Designer de Cursos Dixeo.';
+$string['coursetemplate_none'] = 'Nenhum';
+$string['coursetemplate_template_alpha'] = 'Modelo Alpha';
+$string['coursetemplate_template_beta'] = 'Modelo Beta';
+$string['coursetemplate_template_gamma'] = 'Modelo Gamma';
+$string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
+$string['default_categoryname'] = 'Cursos Dixeo';
+$string['default_platformurl'] = 'https://dixeo.com';
+$string['register'] = 'Registar';
+$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>A sua plataforma já está registada.';
 $string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Introduza o URL e a chave API da plataforma Dixeo para registar o seu site.';
-$string['error_generation_failed'] = 'Ocorreu um erro inesperado ao criar o curso. Tente novamente.';
 $string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>Não foi possível registar a sua plataforma. Verifique o URL e a chave API.';
 $string['error_platform_not_registered'] = 'A sua plataforma não está registada na plataforma Dixeo. Peça ao seu administrador para concluir o registo aqui: {$a}';
-$string['error_title'] = 'Ups!';
-$string['filetoolarge'] = 'O ficheiro é demasiado grande. Carregue um ficheiro com menos de 20 MB.';
-$string['filetypeinvalid'] = 'O tipo de ficheiro {$a} não é suportado. Extensões suportadas: .pptx, .docx, .pdf, .txt.';
-$string['generate_another'] = 'Gerar um novo curso';
-$string['generate_course'] = 'Gerar';
-$string['generating_course'] = 'Aguarde enquanto preparamos o seu curso. Este processo pode demorar alguns minutos...';
-$string['heading'] = 'O que quer ensinar hoje?';
-$string['heading2'] = 'Estamos a construir o seu curso!';
-$string['invalidinput'] = 'Informação necessária.';
-$string['myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
 $string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
 <span class="needs-registration">Precisa de registar a sua plataforma para utilizar o designer de cursos.</span>
 <span class="needs-saving hidden">Guarde primeiro as suas alterações antes de prosseguir com o registo.</span>';
-$string['platformurl'] = 'URL da plataforma Dixeo';
-$string['platformurl_desc'] = 'Introduza o URL base da plataforma Dixeo.';
-$string['pluginname'] = 'Designer de Cursos Dixeo';
-$string['privacy:metadata:email'] = 'O endereço de e-mail do utilizador que acede ao consumidor LTI';
-$string['privacy:metadata:externalpurpose'] = 'O consumidor LTI fornece informações do utilizador e contexto ao fornecedor de ferramentas LTI.';
-$string['privacy:metadata:firstname'] = 'O primeiro nome do utilizador que acede ao consumidor LTI';
-$string['privacy:metadata:lastname'] = 'O apelido do utilizador que acede ao consumidor LTI';
-$string['privacy:metadata:userid'] = 'O ID do utilizador que acede ao consumidor LTI';
+
+// Course design flow.
+$string['heading'] = 'O que quer ensinar hoje?';
+$string['heading2'] = 'Estamos a construir o seu curso!';
 $string['prompt_placeholder'] = 'Introduza o curso que pretende gerar: tema, número de secções e questionário se necessário.';
-$string['register'] = 'Registar';
-$string['removefile'] = 'Remover ficheiro';
-$string['settings'] = 'Designer de Cursos Dixeo';
+$string['generate_course'] = 'Gerar';
+$string['generate_course_tooltip'] = 'Gerar curso agora';
+$string['generate_structure_btn'] = 'Gerar';
+$string['generate_structure_tooltip'] = 'Gerar estrutura do curso';
+$string['regenerate_structure_tooltip'] = 'Regenerar a estrutura do curso';
+$string['generatecoursestructure'] = 'Conceber a estrutura';
+$string['generate_another'] = 'Gerar um novo curso';
+$string['descriptionorfilesrequired'] = 'Introduza uma descrição do curso ou carregue ficheiros para gerar o curso.';
+$string['generating_course'] = 'Aguarde enquanto preparamos o seu curso. Este processo pode demorar alguns minutos...';
+$string['course_generated'] = 'O seu curso «<b> {$a} </b>» foi gerado com sucesso!';
+$string['view_course'] = 'Ver o seu curso';
+$string['resources'] = 'Recursos';
+$string['designer_draft_course_name'] = '[Rascunho] Novo curso';
+$string['task_cleanup_draft_courses'] = 'Eliminar rascunhos de cursos com mais de 1 hora';
+$string['designer_default_file_prompt'] = 'Gerar uma estrutura de curso baseada nos ficheiros carregados.';
+$string['designer_default_module_prompt'] = 'Gerar o conteúdo de aprendizagem completo para este módulo.';
+$string['designer_filesyncfailed'] = 'Os ficheiros carregados não puderam ser sincronizados antes da geração do módulo: {$a}';
+$string['designer_filesynctimeout'] = 'Os ficheiros carregados não terminaram de sincronizar a tempo para a geração do módulo.';
+$string['designer_module_timeout'] = 'O módulo «{$a}» não terminou de ser gerado a tempo. O servidor pode estar ocupado; tente novamente mais tarde ou crie a atividade manualmente.';
 $string['step1'] = 'A validar entrada';
 $string['step2'] = 'A analisar o tema';
 $string['step3'] = 'A estruturar os módulos';
 $string['step4'] = 'A gerar o conteúdo';
 $string['step5'] = 'A finalizar os detalhes';
+$string['invalidinput'] = 'Informação necessária.';
+$string['error_title'] = 'Ups!';
+$string['error_generation_failed'] = 'Falha ao criar o curso: {$a}. Tente novamente.';
+
+// File uploads.
+$string['attachfile'] = 'Anexar um documento de origem';
+$string['draganddrop'] = 'Arraste e largue os seus ficheiros para carregar';
+$string['removefile'] = 'Remover ficheiro';
 $string['totalsize'] = '<b>Tamanho total:</b> {$a}';
+$string['filetoolarge'] = 'O ficheiro é demasiado grande. Carregue um ficheiro com menos de 20 MB.';
+$string['filetypeinvalid'] = 'O tipo de ficheiro {$a} não é suportado. Extensões suportadas: .pptx, .docx, .pdf, .txt.';
 $string['totaltoolarge'] = 'O tamanho total dos ficheiros excede o limite de 50 MB. Carregue ficheiros mais pequenos ou remova um para continuar.';
 $string['uploaderror'] = 'Erro ao carregar o ficheiro.';
-$string['view_course'] = 'Ver o seu curso';
+$string['uploading_files'] = 'A carregar…';
+
+// Designer interface.
+$string['designer_loading'] = 'A carregar estrutura do curso...';
+$string['designer_regenerate'] = 'Regenerar';
+$string['designer_invalid_data'] = 'Dados de estrutura inválidos';
+$string['designer_save'] = 'Guardar';
+$string['designer_cancel'] = 'Cancelar';
+$string['designer_reload'] = 'Recarregar';
+$string['designer_save_now'] = 'Guardar agora';
+$string['designer_autosave_in'] = 'Auto-guardar em:';
+$string['designer_version'] = 'Versão:';
+$string['designer_version_loading'] = 'A carregar...';
+$string['designer_disabled'] = 'Desativado';
+$string['designer_edit'] = 'Editar';
+$string['designer_duplicate'] = 'Duplicar';
+$string['designer_delete'] = 'Eliminar';
+$string['designer_confirm_delete'] = 'Confirmar eliminação';
+$string['designer_delete_module_confirm'] = 'Tem a certeza de que deseja eliminar este módulo?';
+$string['designer_delete_section_confirm'] = 'Tem a certeza de que deseja eliminar esta secção e todos os seus módulos?';
+$string['designer_reload_confirm'] = 'Recarregar estrutura do servidor? As alterações não guardadas serão perdidas.';
+$string['designer_unsaved_changes'] = 'Tem alterações não guardadas. Tem a certeza de que deseja sair?';
+$string['designer_saving'] = 'A guardar...';
+$string['designer_saved'] = 'Guardado!';
+$string['designer_divergent_save'] = 'Guardar divergente';
+$string['designer_divergent_message'] = 'Estava a trabalhar a partir de uma versão anterior. As suas alterações foram guardadas como versão {$a} para preservar o histórico. Este é um novo ramo a partir do seu ponto de partida.';
+$string['designer_ok'] = 'OK';
+$string['designer_add_section'] = 'Adicionar nova secção';
+$string['designer_add_activity'] = 'Adicionar nova atividade';
+$string['designer_undo'] = 'Desfazer';
+$string['designer_redo'] = 'Refazer';
+$string['designer_new_section_title'] = 'Nova secção';
+$string['designer_new_section_summary'] = 'Descreva do que trata esta secção';
+$string['designer_new_module_type'] = 'Página';
+$string['designer_new_module_title'] = 'Nova página';
+$string['designer_new_module_hints'] = 'Descreva do que trata esta página';
+$string['designer_copy_suffix'] = ' (Cópia)';
+$string['designer_change_activity_type'] = 'Alterar tipo de atividade';
+
+// Privacy.
+$string['privacy:metadata:userid'] = 'O ID do utilizador que acede ao consumidor LTI';
+$string['privacy:metadata:email'] = 'O endereço de e-mail do utilizador que acede ao consumidor LTI';
+$string['privacy:metadata:firstname'] = 'O primeiro nome do utilizador que acede ao consumidor LTI';
+$string['privacy:metadata:lastname'] = 'O apelido do utilizador que acede ao consumidor LTI';
+$string['privacy:metadata:externalpurpose'] = 'O consumidor LTI fornece informações do utilizador e contexto ao fornecedor de ferramentas LTI.';
