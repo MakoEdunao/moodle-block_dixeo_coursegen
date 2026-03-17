@@ -79,6 +79,7 @@ $string['descriptionorfilesrequired'] = 'Bitte geben Sie eine Kursbeschreibung e
 $string['generating_course'] = 'Bitte warten Sie, wir bereiten Ihren Kurs vor. Dies kann einige Minuten dauern...';
 $string['course_generated'] = 'Ihr Kurs «<b> {$a} </b>» wurde erfolgreich erstellt!';
 $string['view_course'] = 'Kurs anzeigen';
+$string['create_course'] = 'Kurs erstellen';
 $string['resources'] = 'Ressourcen';
 $string['designer_draft_course_name'] = '[Entwurf] Neuer Kurs';
 $string['task_cleanup_draft_courses'] = 'Kursentwürfe älter als 1 Stunde löschen';
@@ -140,9 +141,12 @@ $string['designer_new_section_title'] = 'Neuer Abschnitt';
 $string['designer_new_section_summary'] = 'Beschreiben Sie, worum es in diesem Abschnitt geht';
 $string['designer_new_module_type'] = 'Seite';
 $string['designer_new_module_title'] = 'Neue Seite';
-$string['designer_new_module_hints'] = 'Beschreiben Sie, worum es auf dieser Seite geht';
+$string['designer_new_module_summary'] = 'Beschreiben Sie, worum es in dieser Aktivität geht';
+$string['designer_new_module_instructions'] = 'Fügen Sie Anweisungen für Lernende hinzu (optional)';
 $string['designer_copy_suffix'] = ' (Kopie)';
 $string['designer_change_activity_type'] = 'Aktivitätstyp ändern';
+$string['designer_expand_all'] = 'Alle aufklappen';
+$string['designer_collapse_all'] = 'Alle zuklappen';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'Die ID der Nutzerin/des Nutzers beim Zugriff auf den LTI Consumer';

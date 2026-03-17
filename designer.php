@@ -24,6 +24,7 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
+require_once($CFG->dirroot . '/local/dixeo/lib.php');
 
 require_login();
 
@@ -36,17 +37,7 @@ $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
 $designeruiservice = \local_dixeo\external\service_factory::get_designer_submission_ui_service();
 
 if (!$hasexistingjob) {
-    $jobid = sprintf(
-        '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0x0fff) | 0x4000,
-        mt_rand(0, 0x3fff) | 0x8000,
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff),
-        mt_rand(0, 0xffff)
-    );
+    $jobid = local_dixeo_generate_job_id();
 }
 
 $submission = $submissionservice->get_or_create_submission($jobid, $USER->id);
@@ -69,6 +60,8 @@ $PAGE->set_heading(''); // Empty heading (no page title)
 echo $OUTPUT->header();
 
 $filecontext = $designeruiservice->get_file_context($persistence, $jobid, (int) $USER->id);
+
+echo html_writer::start_div('dixeo-designer-block-wrapper');
 echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer',
     \block_dixeo_designer\submission_render_helper::build_prompt_context(
         $jobid,
@@ -77,7 +70,18 @@ echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course
         $filecontext,
         $hasexistingjob
     )
-), 'block_dixeo_designer');
+), 'block_dixeo_designer block-container');
+
+$toggletitle = get_string('toggle_tooltip_hide', 'block_dixeo_designer');
+echo html_writer::tag('button', html_writer::tag('i', '', ['class' => 'fa fa-chevron-up', 'aria-hidden' => 'true']), [
+    'type' => 'button',
+    'class' => 'dixeo-designer-block-toggle btn btn-sm btn-secondary',
+    'aria-expanded' => 'true',
+    'title' => $toggletitle,
+    'data-title-hide' => get_string('toggle_tooltip_hide', 'block_dixeo_designer'),
+    'data-title-show' => get_string('toggle_tooltip_show', 'block_dixeo_designer'),
+]);
+echo html_writer::end_div();
 
 if ($hasexistingjob) {
     // Render the structure designer for an existing job.
@@ -86,11 +90,10 @@ if ($hasexistingjob) {
         'loading' => get_string('designer_loading', 'block_dixeo_designer'),
         'save' => get_string('designer_save', 'block_dixeo_designer'),
         'cancel' => get_string('designer_cancel', 'block_dixeo_designer'),
-        'reload' => get_string('designer_reload', 'block_dixeo_designer'),
-        'save_now' => get_string('designer_save_now', 'block_dixeo_designer'),
-        'autosave_in' => get_string('designer_autosave_in', 'block_dixeo_designer'),
         'undo' => get_string('designer_undo', 'block_dixeo_designer'),
         'redo' => get_string('designer_redo', 'block_dixeo_designer'),
+        'create_course' => get_string('create_course', 'block_dixeo_designer'),
+        'config' => ['wwwroot' => $CFG->wwwroot],
     ]);
 }
 

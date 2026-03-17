@@ -124,6 +124,26 @@ class designer_persistence_adapter implements designer_persistence_interface {
     /**
      * @inheritdoc
      */
+    public function get_latest_structure(string $jobid): ?string {
+        global $DB;
+
+        $records = $DB->get_records(
+            'block_dixeo_designer_structure',
+            ['jobid' => $jobid],
+            'timecreated DESC',
+            'structure',
+            0,
+            1
+        );
+
+        $record = reset($records);
+
+        return $record ? $record->structure : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function add_files_to_submission(int $submissionid, int $userid, array $normalizedfiles): array {
         return $this->files->store_uploaded_files($submissionid, $userid, $normalizedfiles);
     }

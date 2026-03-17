@@ -47,10 +47,10 @@ final class external_get_structure_test extends advanced_testcase {
 
     public function test_get_structure_throws_when_no_structure(): void {
         $this->expectException(\moodle_exception::class);
-        get_structure::get_structure('job-nonexistent', -1);
+        get_structure::get_structure('job-nonexistent');
     }
 
-    public function test_get_structure_returns_latest_version(): void {
+    public function test_get_structure_returns_latest_record(): void {
         global $DB;
 
         $jobid = 'job-' . uniqid();
@@ -72,46 +72,12 @@ final class external_get_structure_test extends advanced_testcase {
             'timecreated' => time(),
         ]);
 
-        $result = get_structure::get_structure($jobid, -1);
+        $result = get_structure::get_structure($jobid);
 
         $this->assertArrayHasKey('structure', $result);
-        $this->assertArrayHasKey('version', $result);
         $this->assertArrayHasKey('jobid', $result);
-        $this->assertArrayHasKey('index', $result);
-        $this->assertArrayHasKey('total', $result);
-        $this->assertSame(2, $result['total']);
-        $this->assertSame(1, $result['index']);
+        $this->assertSame($jobid, $result['jobid']);
         $decoded = json_decode($result['structure'], true);
         $this->assertEquals('Latest', $decoded['course_structure']['title']);
-    }
-
-    public function test_get_structure_returns_specific_index(): void {
-        global $DB;
-
-        $jobid = 'job-' . uniqid();
-        $v1 = json_encode(['course_structure' => ['title' => 'First']]);
-        $v2 = json_encode(['course_structure' => ['title' => 'Second']]);
-        $DB->insert_record('block_dixeo_designer_structure', (object) [
-            'jobid' => $jobid,
-            'userid' => $this->user->id,
-            'description' => '',
-            'structure' => $v1,
-            'version' => '1',
-            'timecreated' => 1000,
-        ]);
-        $DB->insert_record('block_dixeo_designer_structure', (object) [
-            'jobid' => $jobid,
-            'userid' => $this->user->id,
-            'description' => '',
-            'structure' => $v2,
-            'version' => '2',
-            'timecreated' => 2000,
-        ]);
-
-        $result = get_structure::get_structure($jobid, 0);
-
-        $this->assertSame(0, $result['index']);
-        $decoded = json_decode($result['structure'], true);
-        $this->assertEquals('First', $decoded['course_structure']['title']);
     }
 }

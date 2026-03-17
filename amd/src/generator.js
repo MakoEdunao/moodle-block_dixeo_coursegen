@@ -65,6 +65,23 @@ define([
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', (event) => this.cancelDraft(event));
             }
+
+            const toggleBtn = document.querySelector('.dixeo-designer-block-toggle');
+            const blockContainer = document.querySelector('.block_dixeo_designer.block-container');
+            if (toggleBtn && blockContainer) {
+                toggleBtn.addEventListener('click', function() {
+                    const isHidden = blockContainer.classList.toggle('d-none');
+                    toggleBtn.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+                    toggleBtn.setAttribute('title', isHidden
+                        ? toggleBtn.getAttribute('data-title-show')
+                        : toggleBtn.getAttribute('data-title-hide'));
+                    const icon = toggleBtn.querySelector('i.fa');
+                    if (icon) {
+                        icon.classList.remove('fa-chevron-up', 'fa-chevron-down');
+                        icon.classList.add(isHidden ? 'fa-chevron-down' : 'fa-chevron-up');
+                    }
+                });
+            }
         },
         cancelDraft: function(event) {
             event.preventDefault();

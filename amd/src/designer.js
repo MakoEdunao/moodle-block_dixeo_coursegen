@@ -23,10 +23,10 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'],
-    function($, Ajax, Notification, Str, Templates) {
+define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates', 'core/config'],
+    function($, Ajax, Notification, Str, Templates, Config) {
 
-    /** Module type options for the type select: value (stored in JSON), label, icon. */
+    /** Module type options: value, label, icon. Filled from API (local_dixeo_get_module_types) with fallback. */
     var MODULE_TYPE_OPTIONS = [
         {value: 'Page', label: 'Page', icon: 'fa-file-alt'},
         {value: 'Text and Media area', label: 'Text and Media area', icon: 'fa-book'},
@@ -43,17 +43,13 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
     var Designer = {
         jobid: null,
-        version: '',
         structure: null,
+        /** In-memory undo history: array of structure snapshots */
+        history: [],
+        /** Index into history for current state */
         historyIndex: -1,
-        historyTotal: 0,
-        versions: [],
-        autoSaveInterval: null,
-        countdownInterval: null,
-        countdown: 60,
         currentlyEditing: null,
         hasUnsavedChanges: false,
-        autoSaveEnabled: false,
         pendingCollapseState: null,
 
         /**
@@ -62,18 +58,40 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          */
         init: function(jobid) {
             this.jobid = jobid;
-
-            // Show loading indicator initially
             this.showLoading();
-
-            // Load versions first to get history, then structure
-            this.loadVersions();
-
-            // Set up auto-save
-            this.startAutoSave();
-
-            // Set up event handlers
             this.setupEventHandlers();
+            this.setupFooterHandlers();
+
+            var self = this;
+            this.loadModuleTypes().then(function() {
+                self.loadStructure();
+            }).catch(function(err) {
+                Notification.exception(err);
+                self.showLoading();
+            });
+        },
+
+        /**
+         * Load module types from API (same as block_dixeo_modulegen), fallback to default list on error
+         */
+        loadModuleTypes: function() {
+            var self = this;
+            return Ajax.call([{
+                methodname: 'local_dixeo_get_module_types',
+                args: {}
+            }])[0].then(function(response) {
+                if (response.success && response.types && response.types.length > 0) {
+                    MODULE_TYPE_OPTIONS = response.types.map(function(t) {
+                        return {
+                            value: t.type,
+                            label: t.label || t.type,
+                            icon: self.getModuleIconFromType(t.type)
+                        };
+                    });
+                }
+            }).catch(function() {
+                // Keep default MODULE_TYPE_OPTIONS
+            });
         },
 
         /**
@@ -90,24 +108,21 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         },
 
         /**
-         * Load structure from server
-         * @param {number} index Optional history index (loads latest if -1 or not provided)
+         * Load structure from server (single latest version)
          */
-        loadStructure: function(index) {
+        loadStructure: function() {
             var self = this;
-            var loadIndex = (index !== undefined) ? index : -1;
 
             Ajax.call([{
                 methodname: 'block_dixeo_designer_get_structure',
                 args: {
-                    jobid: this.jobid,
-                    index: loadIndex
+                    jobid: this.jobid
                 },
                 done: function(response) {
-                    self.structure = JSON.parse(response.structure);
-                    self.version = response.version;
-                    self.historyIndex = response.index;
-                    self.historyTotal = response.total;
+                    var raw = JSON.parse(response.structure);
+                    self.structure = raw.course_structure || raw;
+                    self.history = [JSON.parse(JSON.stringify(self.structure))];
+                    self.historyIndex = 0;
                     self.renderStructure();
                     self.updateUndoRedoButtons();
                 },
@@ -118,67 +133,26 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         },
 
         /**
-         * Load all versions to track history
-         */
-        loadVersions: function() {
-            var self = this;
-
-            Ajax.call([{
-                methodname: 'block_dixeo_designer_get_versions',
-                args: {
-                    jobid: this.jobid
-                },
-                done: function(versions) {
-                    self.versions = versions;
-                    self.historyTotal = versions.length;
-                    // Load structure after versions are loaded
-                    self.loadStructure();
-                },
-                fail: function(error) {
-                    Notification.exception(error);
-                }
-            }]);
-        },
-
-        /**
-         * Save structure to server (creates new version)
+         * Save structure to server (used only when user clicks "Create course")
+         * @return {Promise}
          */
         saveStructure: function() {
             var self = this;
-
-            // Don't save if there are no unsaved changes
-            if (!this.hasUnsavedChanges) {
-                return;
-            }
-
-            // Show saving indicator
             this.showSavingIndicator();
 
-            Ajax.call([{
+            return Ajax.call([{
                 methodname: 'block_dixeo_designer_save_structure',
                 args: {
                     jobid: this.jobid,
-                    structure: JSON.stringify(this.structure),
-                    current_index: this.historyIndex
+                    structure: JSON.stringify(this.structure)
                 },
-                done: function(response) {
-                    self.version = response.version;
-                    self.historyIndex = response.index;
-                    self.historyTotal = response.total;
-                    // Reload versions list to update history
-                    self.loadVersions();
+                done: function() {
                     self.showSavedIndicator();
-
-                    // Disable auto-save after saving until a new modification is made
-                    self.clearModified();
-
-                    // Update undo/redo buttons
-                    self.updateUndoRedoButtons();
                 },
                 fail: function(error) {
                     Notification.exception(error);
                 }
-            }]);
+            }])[0];
         },
 
         /**
@@ -230,9 +204,10 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                                 index: moduleIdx,
                                 sectionIndex: sectionIdx,
                                 type: moduleType,
-                                typeUpper: moduleType.toUpperCase(),
+                                typeLabel: self.getModuleTypeLabel(moduleType),
                                 title: module.title || '',
-                                hints: module.hints || null,
+                                summary: module.summary || null,
+                                instructions: module.instructions || null,
                                 icon: iconClass,
                                 jobid: self.jobid,
                                 moduleTypeOptions: MODULE_TYPE_OPTIONS
@@ -254,7 +229,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 {key: 'designer_delete', component: 'block_dixeo_designer'},
                 {key: 'designer_add_section', component: 'block_dixeo_designer'},
                 {key: 'designer_add_activity', component: 'block_dixeo_designer'},
-                {key: 'designer_change_activity_type', component: 'block_dixeo_designer'}
+                {key: 'designer_change_activity_type', component: 'block_dixeo_designer'},
+                {key: 'designer_expand_all', component: 'block_dixeo_designer'},
+                {key: 'designer_collapse_all', component: 'block_dixeo_designer'}
             ]);
 
             stringsPromise.then(function(strings) {
@@ -264,7 +241,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                     delete: strings[2],
                     add_section: strings[3],
                     add_activity: strings[4],
-                    change_activity_type: strings[5]
+                    change_activity_type: strings[5],
+                    expand_all: strings[6],
+                    collapse_all: strings[7]
                 };
 
                 return Templates.render('block_dixeo_designer/course_structure', templateContext);
@@ -283,9 +262,42 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          * Set up event handlers after rendering
          */
         setupEventHandlersAfterRender: function() {
+            var self = this;
 
             // Set up collapse handlers
             this.setupCollapseHandlers();
+
+            // Collapse all / Expand all (only one link visible at a time; default: Expand all)
+            $('#link-expand-all').off('click').on('click', function(e) {
+                e.preventDefault();
+                $('.section-item').each(function() {
+                    var sectionIdx = $(this).data('section-idx');
+                    var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
+                    var toggleBtn = $('[data-target="#section-' + self.jobid + '-' + sectionIdx + '"]');
+                    if (!collapseTarget.hasClass('show')) {
+                        collapseTarget.addClass('show');
+                        toggleBtn.find('i').first().removeClass('fa-chevron-right').addClass('fa-chevron-down');
+                        toggleBtn.attr('aria-expanded', 'true').removeClass('collapsed');
+                    }
+                });
+                $('#link-expand-all').addClass('d-none');
+                $('#link-collapse-all').removeClass('d-none');
+            });
+            $('#link-collapse-all').off('click').on('click', function(e) {
+                e.preventDefault();
+                $('.section-item').each(function() {
+                    var sectionIdx = $(this).data('section-idx');
+                    var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
+                    var toggleBtn = $('[data-target="#section-' + self.jobid + '-' + sectionIdx + '"]');
+                    if (collapseTarget.hasClass('show')) {
+                        collapseTarget.removeClass('show');
+                        toggleBtn.find('i').first().removeClass('fa-chevron-down').addClass('fa-chevron-right');
+                        toggleBtn.attr('aria-expanded', 'false').addClass('collapsed');
+                    }
+                });
+                $('#link-collapse-all').addClass('d-none');
+                $('#link-expand-all').removeClass('d-none');
+            });
 
             // Set up editable handlers
             this.setupEditableHandlers();
@@ -307,7 +319,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         },
 
         /**
-         * Get Font Awesome icon class for module type
+         * Get Font Awesome icon class for module type (for display)
          * @param {string} type Module type
          * @return {string} Font Awesome icon class
          */
@@ -323,6 +335,51 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 }
             }
             return 'fa-file-alt';
+        },
+
+        /**
+         * Return human-readable label for a module type (same as dropdown).
+         * @param {string} type Module type value
+         * @return {string} Human-readable label
+         */
+        getModuleTypeLabel: function(type) {
+            if (!type) {
+                return '';
+            }
+            var t = type.toString();
+            var i;
+            for (i = 0; i < MODULE_TYPE_OPTIONS.length; i++) {
+                if (MODULE_TYPE_OPTIONS[i].value === t) {
+                    return MODULE_TYPE_OPTIONS[i].label;
+                }
+            }
+            return t;
+        },
+
+        /**
+         * Get icon for a type string (used when building options from API)
+         * @param {string} type Module type from API
+         * @return {string} Font Awesome icon class
+         */
+        getModuleIconFromType: function(type) {
+            var fallbackIcons = {
+                'page': 'fa-file-alt',
+                'text and media area': 'fa-book',
+                'glossary': 'fa-list-alt',
+                'slideshow': 'fa-images',
+                'url': 'fa-link',
+                'simple quiz': 'fa-question-circle',
+                'quiz': 'fa-check-square',
+                'h5p quiz': 'fa-puzzle-piece',
+                'flash cards': 'fa-id-card',
+                'crosswords': 'fa-th-large',
+                'find the words': 'fa-search'
+            };
+            if (!type) {
+                return 'fa-file-alt';
+            }
+            var t = type.toLowerCase();
+            return fallbackIcons[t] || 'fa-file-alt';
         },
 
         /**
@@ -506,8 +563,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 self.cancelEdit($element);
             });
 
-            // Save on Enter (except for hints and summaries which might be multi-line)
-            if (!$element.hasClass('module-hints') && !$element.hasClass('course-summary')) {
+            // Save on Enter (except for multi-line fields)
+            if (!$element.hasClass('module-summary') && !$element.hasClass('module-instructions') &&
+                    !$element.hasClass('course-summary')) {
                 $element.off('keydown').on('keydown', function(e) {
                     if (e.key === 'Enter') {
                         e.preventDefault();
@@ -532,9 +590,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Update structure in memory
             this.setValueByPath(this.structure, path, decodedValue);
-
-            // Mark as modified to enable auto-save
-            this.markAsModified();
+            this.pushHistory();
 
             // Clean up editing state
             this.cancelEdit($element);
@@ -552,6 +608,17 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             $element.removeAttr('contenteditable');
             $element.next('.edit-controls').hide().empty();
             this.currentlyEditing = null;
+        },
+
+        /**
+         * Push current structure to in-memory history (after an edit) and update undo/redo
+         */
+        pushHistory: function() {
+            this.history = this.history.slice(0, this.historyIndex + 1);
+            this.history.push(JSON.parse(JSON.stringify(this.structure)));
+            this.historyIndex = this.history.length - 1;
+            this.hasUnsavedChanges = true;
+            this.updateUndoRedoButtons();
         },
 
         /**
@@ -578,14 +645,6 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          */
         setupActionHandlers: function() {
             var self = this;
-
-            // Edit button (same as clicking the text)
-            $('.btn-edit-item').off('click').on('click', function(e) {
-                e.stopPropagation();
-                var $item = $(this).closest('.section-item, .module-item');
-                var $title = $item.find('.section-title, .module-title').first();
-                $title.click();
-            });
 
             // Copy button
             $('.btn-copy-item').off('click').on('click', function(e) {
@@ -689,16 +748,16 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 // Update structure
                 self.structure.sections[sectionIdx].modules[moduleIdx].type = value;
 
-                // Update UI: icon and type text (exclude chevron)
+                // Update UI: icon and type text (exclude chevron) – use human-readable label
                 $wrapper.find('.module-type-select-toggle i').not('.module-type-select-chevron')
                     .removeClass().addClass('fa ' + opt.icon + ' fa-2x');
                 var $moduleType = $wrapper.closest('.module-item').find('.module-type');
                 if ($moduleType.length) {
-                    $moduleType.text(value.toUpperCase());
+                    $moduleType.text(opt.label);
                 }
 
                 closeAllDropdowns();
-                self.markAsModified();
+                self.pushHistory();
             });
 
             $(document).off('click.module-type-select').on('click.module-type-select', function(e) {
@@ -763,9 +822,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
                 // Insert at the specified index
                 self.structure.sections.splice(index, 0, newSection);
-
-                // Mark as modified
-                self.markAsModified();
+                self.pushHistory();
 
                 // Store expanded state to restore after render
                 self.pendingCollapseState = expandedSections;
@@ -793,19 +850,19 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             Str.get_strings([
                 {key: 'designer_new_module_type', component: 'block_dixeo_designer'},
                 {key: 'designer_new_module_title', component: 'block_dixeo_designer'},
-                {key: 'designer_new_module_hints', component: 'block_dixeo_designer'}
+                {key: 'designer_new_module_summary', component: 'block_dixeo_designer'},
+                {key: 'designer_new_module_instructions', component: 'block_dixeo_designer'}
             ]).done(function(strings) {
                 var newModule = {
                     type: strings[0],
                     title: strings[1],
-                    hints: strings[2]
+                    summary: strings[2],
+                    instructions: strings[3]
                 };
 
                 // Insert at the specified index
                 self.structure.sections[sectionIndex].modules.splice(moduleIndex, 0, newModule);
-
-                // Mark as modified
-                self.markAsModified();
+                self.pushHistory();
 
                 // Store expanded state to restore after render (and ensure section is expanded)
                 expandedSections[sectionIndex] = true;
@@ -843,9 +900,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                     section.title = section.title + copySuffix;
                     self.structure.sections.splice(sectionIdx + 1, 0, section);
                 }
-
-                // Mark as having unsaved changes
-                self.markAsModified();
+                self.pushHistory();
 
                 // Store expanded state to restore after render
                 self.pendingCollapseState = expandedSections;
@@ -891,9 +946,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                                 var sectionIdx = $sectionItem.data('section-idx');
                                 self.structure.sections.splice(sectionIdx, 1);
                             }
-
-                            // Mark as having unsaved changes
-                            self.markAsModified();
+                            self.pushHistory();
 
                             // Store expanded state to restore after render
                             self.pendingCollapseState = expandedSections;
@@ -905,85 +958,65 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         },
 
         /**
-         * Mark structure as modified and enable auto-save
+         * Set up footer button handlers: Undo, Redo, Create course
          */
-        markAsModified: function() {
-            this.hasUnsavedChanges = true;
-            // Only enable auto-save and reset countdown on first change
-            if (!this.autoSaveEnabled) {
-                this.autoSaveEnabled = true;
-                this.countdown = 60;
-                $('#countdown-timer').text(this.countdown).removeClass('badge-secondary').addClass('badge-primary').show();
-                $('#autosave-label').show();
-            }
-        },
-
-        /**
-         * Start auto-save timer
-         */
-        startAutoSave: function() {
+        setupFooterHandlers: function() {
             var self = this;
 
-            // Hide countdown timer initially (will be shown when auto-save becomes active)
-            $('#countdown-timer').hide();
-            $('#autosave-label').hide();
-
-            // Countdown timer
-            this.countdownInterval = setInterval(function() {
-                if (self.autoSaveEnabled && self.hasUnsavedChanges) {
-                    self.countdown--;
-                    $('#countdown-timer').text(self.countdown);
-
-                    if (self.countdown <= 0) {
-                        self.saveStructure();
-                    }
-                }
-            }, 1000);
-
-            // Manual save button
-            $('#btn-save-now').on('click', function() {
-                if (self.hasUnsavedChanges) {
-                    self.saveStructure();
-                }
-            });
-
-            // Undo button
             $('#btn-undo').on('click', function() {
                 self.undo();
             });
 
-            // Redo button
             $('#btn-redo').on('click', function() {
                 self.redo();
             });
 
-            // Reload button
-            $('#btn-reload').on('click', function() {
-                Str.get_string('designer_reload_confirm', 'block_dixeo_designer').done(function(confirmMsg) {
-                    if (confirm(confirmMsg)) {
-                        self.hasUnsavedChanges = false;
-                        self.autoSaveEnabled = false;
-                        self.countdown = 60;
-                        // Hide the auto-save indicator
-                        $('#countdown-timer').hide();
-                        $('#autosave-label').hide();
-                        // Reload latest version
-                        self.loadStructure(-1);
-                    }
+            $('#btn-create-course').on('click', function() {
+                var $btn = $(this);
+                $btn.prop('disabled', true);
+                self.saveStructure().then(function() {
+                    return Ajax.call([{
+                        methodname: 'block_dixeo_designer_finalize_course',
+                        args: {
+                            job_id: self.jobid,
+                            createcourse: true,
+                            sesskey: M.cfg.sesskey
+                        }
+                    }])[0];
+                }).then(function(final) {
+                    self.finishProgress(final.courseid, final.coursename);
+                }).catch(function(err) {
+                    Notification.exception(err);
+                }).always(function() {
+                    $btn.prop('disabled', false);
                 });
             });
         },
 
         /**
-         * Clear modified flag (after save)
+         * Show success message after course creation and hide editor
+         * @param {number} courseid Created course id
+         * @param {string} coursename Created course name
          */
-        clearModified: function() {
-            this.hasUnsavedChanges = false;
-            this.autoSaveEnabled = false;
-            this.countdown = 60;
-            // Hide the auto-save indicator
-            $('#countdown-timer').hide();
-            $('#autosave-label').hide();
+        finishProgress: function(courseid, coursename) {
+            var context = {
+                courseid: courseid,
+                coursename: coursename,
+                wwwroot: Config.wwwroot
+            };
+            Templates.render('block_dixeo_designer/success_message', context).then(function(html) {
+                $('.course-structure-container').html(html);
+                $('.editor-toolbar-footer').addClass('d-none');
+            }).catch(function(error) {
+                Notification.exception(error);
+            });
+        },
+
+        /**
+         * Remove all drop insertion indicators (line/ghost box)
+         */
+        removeDropIndicators: function() {
+            $('#page-blocks-dixeo_designer-designer .drop-insertion-indicator').remove();
         },
 
         /**
@@ -1004,38 +1037,56 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             $('.section-item').on('dragend', function() {
                 $(this).removeClass('dragging');
-                $('.drag-over').removeClass('drag-over');
+                self.removeDropIndicators();
             });
 
             $('.section-item').on('dragover', function(e) {
                 e.preventDefault();
                 e.originalEvent.dataTransfer.dropEffect = 'move';
-                $(this).addClass('drag-over');
+                if ($(this).hasClass('dragging')) {
+                    return;
+                }
+                var $target = $(this);
+                var sectionIdx = $target.data('section-idx');
+                var offsetY = e.originalEvent.offsetY;
+                var height = $target.outerHeight();
+                var insertBefore = offsetY < height / 2;
+                var toIndex = insertBefore ? sectionIdx : sectionIdx + 1;
+                $target.data('drop-insert-index', toIndex);
+
+                self.removeDropIndicators();
+                var $indicator = $('<div class="drop-insertion-indicator" aria-hidden="true"></div>');
+                if (insertBefore) {
+                    $indicator.insertBefore($target);
+                } else {
+                    $indicator.insertAfter($target);
+                }
             });
 
-            $('.section-item').on('dragleave', function() {
-                $(this).removeClass('drag-over');
+            $('.section-item').on('dragleave', function(e) {
+                var $next = $(e.relatedTarget);
+                if (!$next.closest('.section-item').length) {
+                    self.removeDropIndicators();
+                }
             });
 
             $('.section-item').on('drop', function(e) {
                 e.preventDefault();
                 var type = e.originalEvent.dataTransfer.getData('type');
                 var fromIndex = parseInt(e.originalEvent.dataTransfer.getData('index'));
-                var toIndex = $(this).data('section-idx');
+                var toIndex = $(this).data('drop-insert-index');
+                if (toIndex === undefined) {
+                    toIndex = $(this).data('section-idx');
+                }
+                self.removeDropIndicators();
 
                 if (type === 'section' && fromIndex !== toIndex) {
-                    // Capture collapse state before re-rendering
                     var expandedSections = self.captureCollapseState();
-
-                    // Reorder sections
                     var section = self.structure.sections.splice(fromIndex, 1)[0];
                     self.structure.sections.splice(toIndex, 0, section);
-                    self.markAsModified();
-
-                    // Store expanded state to restore after render
+                    self.pushHistory();
                     var adjustedExpanded = self.adjustExpandedIndices(expandedSections, fromIndex, toIndex);
                     self.pendingCollapseState = adjustedExpanded;
-
                     self.renderStructure();
                 }
             });
@@ -1054,18 +1105,40 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             $('.module-item').on('dragend', function() {
                 $(this).removeClass('dragging');
-                $('.drag-over').removeClass('drag-over');
+                self.removeDropIndicators();
             });
 
             $('.module-item').on('dragover', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.originalEvent.dataTransfer.dropEffect = 'move';
-                $(this).addClass('drag-over');
+                if ($(this).hasClass('dragging')) {
+                    return;
+                }
+                var $target = $(this);
+                var toSectionIdx = $target.closest('.section-item').data('section-idx');
+                var moduleIdx = $target.data('module-idx');
+                var offsetY = e.originalEvent.offsetY;
+                var height = $target.outerHeight();
+                var insertBefore = offsetY < height / 2;
+                var toModuleIdx = insertBefore ? moduleIdx : moduleIdx + 1;
+                $target.data('drop-insert-section-index', toSectionIdx);
+                $target.data('drop-insert-module-index', toModuleIdx);
+
+                self.removeDropIndicators();
+                var $indicator = $('<div class="drop-insertion-indicator" aria-hidden="true"></div>');
+                if (insertBefore) {
+                    $indicator.insertBefore($target);
+                } else {
+                    $indicator.insertAfter($target);
+                }
             });
 
-            $('.module-item').on('dragleave', function() {
-                $(this).removeClass('drag-over');
+            $('.module-item').on('dragleave', function(e) {
+                var $next = $(e.relatedTarget);
+                if (!$next.closest('.module-item').length && !$next.closest('.modules-list').length) {
+                    self.removeDropIndicators();
+                }
             });
 
             $('.module-item').on('drop', function(e) {
@@ -1074,31 +1147,42 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 var type = e.originalEvent.dataTransfer.getData('type');
 
                 if (type === 'module') {
-                    // Capture collapse state before re-rendering
-                    var expandedSections = self.captureCollapseState();
+                    var toSectionIdx = $(this).data('drop-insert-section-index');
+                    var toModuleIdx = $(this).data('drop-insert-module-index');
+                    if (toSectionIdx === undefined) {
+                        toSectionIdx = $(this).closest('.section-item').data('section-idx');
+                        toModuleIdx = $(this).data('module-idx');
+                    }
+                    self.removeDropIndicators();
 
                     var fromSectionIdx = parseInt(e.originalEvent.dataTransfer.getData('sectionIndex'));
                     var fromModuleIdx = parseInt(e.originalEvent.dataTransfer.getData('moduleIndex'));
-                    var toSectionIdx = $(this).closest('.section-item').data('section-idx');
-                    var toModuleIdx = $(this).data('module-idx');
 
-                    // Move module
+                    var expandedSections = self.captureCollapseState();
                     var module = self.structure.sections[fromSectionIdx].modules.splice(fromModuleIdx, 1)[0];
                     self.structure.sections[toSectionIdx].modules.splice(toModuleIdx, 0, module);
-                    self.markAsModified();
-
-                    // Store expanded state to restore after render
+                    self.pushHistory();
                     self.pendingCollapseState = expandedSections;
-
                     self.renderStructure();
                 }
             });
 
-            // Allow dropping modules into empty sections or at the end
+            // Allow dropping modules at end of section (empty area of list)
             $('.modules-list').on('dragover', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 e.originalEvent.dataTransfer.dropEffect = 'move';
+                var $list = $(this);
+                self.removeDropIndicators();
+                var $indicator = $('<div class="drop-insertion-indicator" aria-hidden="true"></div>');
+                $indicator.appendTo($list);
+            });
+
+            $('.modules-list').on('dragleave', function(e) {
+                var $related = $(e.relatedTarget);
+                if (!$related.closest('.modules-list').is(this)) {
+                    self.removeDropIndicators();
+                }
             });
 
             $('.modules-list').on('drop', function(e) {
@@ -1107,21 +1191,17 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 var type = e.originalEvent.dataTransfer.getData('type');
 
                 if (type === 'module') {
-                    // Capture collapse state before re-rendering
-                    var expandedSections = self.captureCollapseState();
+                    var toSectionIdx = $(this).closest('.section-item').data('section-idx');
+                    self.removeDropIndicators();
 
                     var fromSectionIdx = parseInt(e.originalEvent.dataTransfer.getData('sectionIndex'));
                     var fromModuleIdx = parseInt(e.originalEvent.dataTransfer.getData('moduleIndex'));
-                    var toSectionIdx = $(this).closest('.section-item').data('section-idx');
 
-                    // Move module to end of section
+                    var expandedSections = self.captureCollapseState();
                     var module = self.structure.sections[fromSectionIdx].modules.splice(fromModuleIdx, 1)[0];
                     self.structure.sections[toSectionIdx].modules.push(module);
-                    self.markAsModified();
-
-                    // Store expanded state to restore after render
+                    self.pushHistory();
                     self.pendingCollapseState = expandedSections;
-
                     self.renderStructure();
                 }
             });
@@ -1149,94 +1229,40 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
         },
 
         /**
-         * Update undo/redo button states
+         * Update undo/redo button states (in-memory history only)
          */
         updateUndoRedoButtons: function() {
             var canUndo = this.historyIndex > 0;
-            var canRedo = this.historyIndex < this.historyTotal - 1;
+            var canRedo = this.history.length > 0 && this.historyIndex < this.history.length - 1;
 
             $('#btn-undo').prop('disabled', !canUndo);
             $('#btn-redo').prop('disabled', !canRedo);
         },
 
         /**
-         * Undo - load previous version in history
+         * Undo - restore previous state from in-memory history
          */
         undo: function() {
             if (this.historyIndex <= 0) {
-                return; // Already at oldest
+                return;
             }
-
-            // Check for unsaved changes
-            if (this.hasUnsavedChanges) {
-                var self = this;
-                Str.get_strings([
-                    {key: 'designer_reload_confirm', component: 'block_dixeo_designer'},
-                    {key: 'cancel', component: 'core'},
-                    {key: 'continue', component: 'core'}
-                ]).done(function(strings) {
-                    Notification.confirm(
-                        strings[0],
-                        '',
-                        strings[2],
-                        strings[1],
-                        function() {
-                            // User confirmed, discard changes and undo
-                            self.hasUnsavedChanges = false;
-                            self.autoSaveEnabled = false;
-                            self.countdown = 60;
-                            $('#countdown-timer').hide();
-                            $('#autosave-label').hide();
-                            self.showLoading();
-                            self.loadStructure(self.historyIndex - 1);
-                        }
-                    );
-                });
-            } else {
-                // No unsaved changes, undo immediately
-                this.showLoading();
-                this.loadStructure(this.historyIndex - 1);
-            }
+            this.historyIndex--;
+            this.structure = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+            this.renderStructure();
+            this.updateUndoRedoButtons();
         },
 
         /**
-         * Redo - load next version in history
+         * Redo - restore next state from in-memory history
          */
         redo: function() {
-            if (this.historyIndex >= this.historyTotal - 1) {
-                return; // Already at latest
+            if (this.historyIndex >= this.history.length - 1) {
+                return;
             }
-
-            // Check for unsaved changes
-            if (this.hasUnsavedChanges) {
-                var self = this;
-                Str.get_strings([
-                    {key: 'designer_reload_confirm', component: 'block_dixeo_designer'},
-                    {key: 'cancel', component: 'core'},
-                    {key: 'continue', component: 'core'}
-                ]).done(function(strings) {
-                    Notification.confirm(
-                        strings[0],
-                        '',
-                        strings[2],
-                        strings[1],
-                        function() {
-                            // User confirmed, discard changes and redo
-                            self.hasUnsavedChanges = false;
-                            self.autoSaveEnabled = false;
-                            self.countdown = 60;
-                            $('#countdown-timer').hide();
-                            $('#autosave-label').hide();
-                            self.showLoading();
-                            self.loadStructure(self.historyIndex + 1);
-                        }
-                    );
-                });
-            } else {
-                // No unsaved changes, redo immediately
-                this.showLoading();
-                this.loadStructure(this.historyIndex + 1);
-            }
+            this.historyIndex++;
+            this.structure = JSON.parse(JSON.stringify(this.history[this.historyIndex]));
+            this.renderStructure();
+            this.updateUndoRedoButtons();
         },
 
         /**

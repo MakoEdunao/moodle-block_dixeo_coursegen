@@ -29,6 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Dixeo Course Designer';
 $string['settings'] = 'Dixeo Course Designer';
 $string['blocktitle'] = 'Dixeo Course Designer';
+$string['toggle_prompt_hide'] = 'Hide prompt';
+$string['toggle_prompt_show'] = 'Show prompt';
+$string['toggle_tooltip_hide'] = 'Hide generation block';
+$string['toggle_tooltip_show'] = 'Display generation block';
 $string['designacourse'] = 'Design a course';
 
 // Capabilities.
@@ -79,6 +83,7 @@ $string['descriptionorfilesrequired'] = 'Please enter a course description or up
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
 $string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
 $string['view_course'] = 'View your course';
+$string['create_course'] = 'Create course';
 $string['resources'] = 'Resources';
 $string['designer_draft_course_name'] = '[Draft] New course';
 $string['task_cleanup_draft_courses'] = 'Delete draft courses older than 1 hour';
@@ -111,6 +116,7 @@ $string['uploading_files'] = 'Uploading…';
 $string['designer_loading'] = 'Loading course structure...';
 $string['designer_regenerate'] = 'Regenerate';
 $string['designer_invalid_data'] = 'Invalid structure data';
+$string['structurenotfound'] = 'Course structure not found. Generate a structure first or try again later.';
 $string['designer_save'] = 'Save';
 $string['designer_cancel'] = 'Cancel';
 $string['designer_reload'] = 'Reload';
@@ -140,9 +146,12 @@ $string['designer_new_section_title'] = 'New section';
 $string['designer_new_section_summary'] = 'Describe what this section is about';
 $string['designer_new_module_type'] = 'Page';
 $string['designer_new_module_title'] = 'New page';
-$string['designer_new_module_hints'] = 'Describe what this page is about';
+$string['designer_new_module_summary'] = 'Provide a 1–2 sentence description of what this module covers.';
+$string['designer_new_module_instructions'] = 'Add instructions for the AI. Describe what this module should contain. Include the topics to cover, preferred depth and tone, any examples or templates to include, and any specific formatting or structural requirements.';
 $string['designer_copy_suffix'] = ' (Copy)';
 $string['designer_change_activity_type'] = 'Change activity type';
+$string['designer_expand_all'] = 'Expand all';
+$string['designer_collapse_all'] = 'Collapse all';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'The ID of the user accessing the LTI Consumer';

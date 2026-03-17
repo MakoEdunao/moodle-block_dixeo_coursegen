@@ -44,15 +44,17 @@
             </select>
             {{/has_template_options}}
             <div id="file_names" class="mt-2{{^hasFiles}} d-none{{/hasFiles}}" data-uploading-text="{{uploading_files}}">{{> block_dixeo_designer/filenames }}</div>
-            {{^hide_generate_course}}
-            <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}" aria-label="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="">
-            </button>
-            {{/hide_generate_course}}
-            <button id="generate_course_structure" class="btn btn-primary text-white" title="{{generate_structure_tooltip}}">
-                <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="">
-                <span>{{generate_structure_label}}</span>
-            </button>
+            <div class="prompt-actions">
+                {{^hide_generate_course}}
+                <button id="generate_course" class="btn btn-primary" title="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}" aria-label="{{#str}} generate_course_tooltip, block_dixeo_designer {{/str}}">
+                    <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="">
+                </button>
+                {{/hide_generate_course}}
+                <button id="generate_course_structure" class="btn btn-primary text-white" title="{{generate_structure_tooltip}}">
+                    <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="">
+                    <span>{{generate_structure_label}}</span>
+                </button>
+            </div>
         </div>
     </form>
 </div>

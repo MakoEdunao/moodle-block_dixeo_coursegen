@@ -48,29 +48,23 @@ final class save_structure extends external_api {
         return new external_function_parameters([
             'jobid' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
             'structure' => new external_value(PARAM_RAW, 'JSON structure', VALUE_REQUIRED),
-            'current_index' => new external_value(PARAM_INT, 'Current history index user is working from', VALUE_REQUIRED),
         ]);
     }
 
     /**
-     * Save structure (creates new version)
+     * Save structure (single version per job; overwrites latest).
+     * Used only when user clicks "Create course" in the designer.
      *
      * @param string $jobid The job identifier
      * @param string $structure JSON structure data
-     * @param int $currentindex Current history index user is working from
      * @return array Save result
      */
-    public static function save_structure(
-        string $jobid,
-        string $structure,
-        int $currentindex = -1
-    ): array {
+    public static function save_structure(string $jobid, string $structure): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::save_structure_parameters(), [
             'jobid' => $jobid,
             'structure' => $structure,
-            'current_index' => $currentindex,
         ]);
 
         $context = \context_system::instance();
@@ -78,99 +72,44 @@ final class save_structure extends external_api {
 
         require_login();
 
-        // Get all versions ordered by time (oldest first)
-        $allversions = $DB->get_records('block_dixeo_designer_structure',
-            ['jobid' => $params['jobid']],
-            'timecreated ASC',
-            'id, userid, description'
-        );
-
-        if (empty($allversions)) {
-            throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
-        }
-
-        $totalversions = count($allversions);
-        $versionsarray = array_values($allversions);
-
-        // Check user owns this structure (or has manage capability)
-        $first = reset($versionsarray);
-        if ($first->userid != $USER->id) {
-            require_capability('block/dixeo_designer:manage', $context);
-        }
-
         // Validate JSON.
         $decoded = json_decode($params['structure']);
         if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
             throw new \moodle_exception('invalidjson', 'block_dixeo_designer');
         }
 
-        // Determine if we're saving from a previous state
-        $latestindex = $totalversions - 1;
-        $savingfromprevious = ($params['current_index'] >= 0 && $params['current_index'] < $latestindex);
+        $records = $DB->get_records(
+            'block_dixeo_designer_structure',
+            ['jobid' => $params['jobid']],
+            'timecreated DESC',
+            '*',
+            0,
+            1
+        );
 
-        // If saving from a previous state, delete all future versions
-        if ($savingfromprevious) {
-            $versionsToDelete = array_slice($versionsarray, $params['current_index'] + 1);
-            foreach ($versionsToDelete as $versionToDelete) {
-                $DB->delete_records('block_dixeo_designer_structure', ['id' => $versionToDelete->id]);
+        $latest = reset($records);
+
+        if ($latest) {
+            // Check user owns this structure (or has manage capability).
+            if ($latest->userid != $USER->id) {
+                require_capability('block/dixeo_designer:manage', $context);
             }
+            $DB->set_field('block_dixeo_designer_structure', 'structure', $params['structure'], ['id' => $latest->id]);
+            return ['success' => true];
         }
 
-        // Get the current version (or latest if index is invalid)
-        $currentversion = ($params['current_index'] >= 0 && $params['current_index'] < $totalversions)
-            ? $versionsarray[$params['current_index']]
-            : end($versionsarray);
-
-        // Create new version with timestamp as version identifier
-        $newversion = (string)time();
-
-        $newrecord = new \stdClass();
-        $newrecord->jobid = $params['jobid'];
-        $newrecord->userid = $USER->id;
-        $newrecord->description = $currentversion->description;
-        $newrecord->structure = $params['structure'];
-        $newrecord->version = $newversion;
-        $newrecord->timecreated = time();
-
-        $newid = $DB->insert_record('block_dixeo_designer_structure', $newrecord);
-
-        // Get new total count after deletion
-        $newtotal = $DB->count_records('block_dixeo_designer_structure', ['jobid' => $params['jobid']]);
-
-        return [
-            'id' => (int)$newid,
-            'version' => $newrecord->version,
-            'index' => $newtotal - 1, // New version is now the latest (last index)
-            'total' => $newtotal,
-            'success' => true,
+        // No record yet (e.g. designer opened before any structure saved); insert one.
+        $record = (object) [
+            'jobid' => $params['jobid'],
+            'userid' => $USER->id,
+            'description' => '',
+            'structure' => $params['structure'],
+            'version' => (string) time(),
+            'timecreated' => time(),
         ];
-    }
+        $DB->insert_record('block_dixeo_designer_structure', $record);
 
-    /**
-     * Bump version number (deprecated - kept for backward compatibility but not used)
-     *
-     * @param string $version Current version (e.g., "1.2")
-     * @param bool $major If true, bump major (1.2 -> 2.0); if false, bump minor (1.2 -> 1.3)
-     * @return string New version
-     */
-    private static function bump_version(string $version, bool $major = false): string {
-        // Parse version.
-        if (strpos($version, '.') === false) {
-            // Old integer format, convert to major.minor.
-            $version = $version . '.0';
-        }
-
-        list($maj, $min) = explode('.', $version, 2);
-        $maj = (int)$maj;
-        $min = (int)$min;
-
-        if ($major) {
-            // Bump major version, reset minor to 0.
-            return ($maj + 1) . '.0';
-        } else {
-            // Bump minor version.
-            return $maj . '.' . ($min + 1);
-        }
+        return ['success' => true];
     }
 
     /**
@@ -180,10 +119,6 @@ final class save_structure extends external_api {
      */
     public static function save_structure_returns(): external_single_structure {
         return new external_single_structure([
-            'id' => new external_value(PARAM_INT, 'New record ID'),
-            'version' => new external_value(PARAM_TEXT, 'New version identifier'),
-            'index' => new external_value(PARAM_INT, 'New index in history'),
-            'total' => new external_value(PARAM_INT, 'Total number of versions'),
             'success' => new external_value(PARAM_BOOL, 'Success status'),
         ]);
     }

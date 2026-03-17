@@ -47,23 +47,20 @@ final class get_structure extends external_api {
     public static function get_structure_parameters(): external_function_parameters {
         return new external_function_parameters([
             'jobid' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
-            'index' => new external_value(PARAM_INT, 'History index (optional, loads latest if not specified)', VALUE_DEFAULT, -1),
         ]);
     }
 
     /**
-     * Get structure by job ID
+     * Get the latest structure by job ID (no versioning; single structure per job).
      *
      * @param string $jobid The job identifier
-     * @param int $index Optional history index (loads latest if -1)
      * @return array Structure data
      */
-    public static function get_structure(string $jobid, int $index = -1): array {
+    public static function get_structure(string $jobid): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::get_structure_parameters(), [
             'jobid' => $jobid,
-            'index' => $index,
         ]);
 
         $context = \context_system::instance();
@@ -71,31 +68,37 @@ final class get_structure extends external_api {
 
         require_login();
 
-        // Get all versions ordered by time (oldest first)
-        $allversions = $DB->get_records('block_dixeo_designer_structure',
+        $records = $DB->get_records(
+            'block_dixeo_designer_structure',
             ['jobid' => $params['jobid']],
-            'timecreated ASC',
-            'id'
+            'timecreated DESC',
+            '*',
+            0,
+            1
         );
 
-        if (empty($allversions)) {
-            throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
+        $structure = reset($records);
+        if (!$structure) {
+            // No DB record yet (e.g. user just arrived from generator after structure generation).
+            // Fall back to completed job result from the API and persist it.
+            $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
+            $service = \local_dixeo\external\service_factory::get_course_designer_service($persistence);
+            $status = $service->get_structure_status($params['jobid'], (int) $USER->id);
+            if (!$status->completed || $status->result === null) {
+                throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
+            }
+            $result = $status->result;
+            if (is_string($result)) {
+                $decoded = json_decode($result, true);
+                $result = is_array($decoded) ? $decoded : ['course_structure' => ['title' => '', 'sections' => []]];
+            }
+            $persistence->save_structure_version($params['jobid'], (int) $USER->id, '', $result);
+            $structureJson = json_encode($result);
+            return [
+                'structure' => $structureJson,
+                'jobid' => $params['jobid'],
+            ];
         }
-
-        $totalversions = count($allversions);
-        $versionsarray = array_values($allversions);
-
-        if ($params['index'] === -1 || $params['index'] >= $totalversions) {
-            // Load latest version (last in array)
-            $targetid = $versionsarray[$totalversions - 1]->id;
-            $currentindex = $totalversions - 1;
-        } else {
-            // Load specific index
-            $targetid = $versionsarray[$params['index']]->id;
-            $currentindex = $params['index'];
-        }
-
-        $structure = $DB->get_record('block_dixeo_designer_structure', ['id' => $targetid], '*', MUST_EXIST);
 
         // Check user owns this structure (or has manage capability).
         if ($structure->userid != $USER->id) {
@@ -104,10 +107,7 @@ final class get_structure extends external_api {
 
         return [
             'structure' => $structure->structure,
-            'version' => $structure->version,
             'jobid' => $structure->jobid,
-            'index' => $currentindex,
-            'total' => $totalversions,
         ];
     }
 
@@ -119,10 +119,7 @@ final class get_structure extends external_api {
     public static function get_structure_returns(): external_single_structure {
         return new external_single_structure([
             'structure' => new external_value(PARAM_RAW, 'JSON structure'),
-            'version' => new external_value(PARAM_TEXT, 'Version identifier'),
             'jobid' => new external_value(PARAM_TEXT, 'Job ID'),
-            'index' => new external_value(PARAM_INT, 'Current index in history'),
-            'total' => new external_value(PARAM_INT, 'Total number of versions'),
         ]);
     }
 }

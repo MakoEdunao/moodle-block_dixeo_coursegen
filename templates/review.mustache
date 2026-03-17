@@ -18,16 +18,17 @@
     @template block_dixeo_designer/review
 
     Course structure review and designer page.
+    No versioning: changes are in-memory only; Undo/Redo use local history.
+    Only "Create course" persists the structure and proceeds to course creation.
 
     Context variables required for this template:
     * jobid - The job identifier
-    * version - Optional version to load (empty for latest)
 }}
 
-<div class="block_dixeo_designer">
+<div class="block_dixeo_designer designer-container">
 
     {{! Hidden structure data container }}
-    <input type="hidden" id="structure-data" data-jobid="{{jobid}}" data-version="{{version}}">
+    <input type="hidden" id="structure-data" data-jobid="{{jobid}}">
 
     {{! Course structure container (will be populated by JavaScript) }}
     <div class="course-structure-container">
@@ -43,35 +44,25 @@
         <button class="btn btn-secondary btn-sm cancel-edit">{{cancel}}</button>
     </div>
 
-    {{! Editor toolbar - Fixed footer }}
-    <div class="editor-toolbar-footer bg-light border-top p-3">
-        <div class="container-fluid d-flex align-items-center justify-content-between">
-            {{! Cancel button (left) }}
+    {{! Editor toolbar - Fixed footer: Cancel (left), Undo/Redo (center), Create course (right) }}
+    <div class="editor-toolbar-footer bg-light border-top p-2">
+        <div class="container-fluid editor-toolbar-footer-inner">
             <div class="editor-cancel">
                 <a href="{{config.wwwroot}}" class="btn btn-outline-secondary btn-sm" title="{{cancel}}">
                     <i class="fa fa-times" aria-hidden="true"></i><span class="btn-label">{{cancel}}</span>
                 </a>
             </div>
-
-            {{! Auto-save status and undo/redo (center) }}
-            <div class="autosave-status d-flex align-items-center justify-content-center">
-                <span id="autosave-label" class="me-2 text-muted" style="display: none;">{{autosave_in}} </span>
-                <span id="countdown-timer" class="badge badge-primary me-2" style="display: none;">60</span>
-            </div>
-
-            {{! Manual actions (right) }}
-            <div class="editor-actions">
+            <div class="editor-undo-redo">
                 <button id="btn-undo" class="btn btn-secondary btn-sm mx-1" disabled title="{{undo}}">
                     <i class="fa fa-undo" aria-hidden="true"></i><span class="btn-label">{{undo}}</span>
                 </button>
                 <button id="btn-redo" class="btn btn-secondary btn-sm mx-1" disabled title="{{redo}}">
                     <i class="fa fa-redo" aria-hidden="true"></i><span class="btn-label">{{redo}}</span>
                 </button>
-                <button id="btn-reload" class="btn btn-secondary btn-sm mx-1 ml-4" title="{{reload}}">
-                    <i class="fa fa-refresh" aria-hidden="true"></i><span class="btn-label">{{reload}}</span>
-                </button>
-                <button id="btn-save-now" class="btn btn-primary btn-sm mx-1" title="{{save_now}}">
-                    <i class="fa fa-save" aria-hidden="true"></i><span class="btn-label">{{save_now}}</span>
+            </div>
+            <div class="editor-actions">
+                <button id="btn-create-course" class="btn btn-primary btn-sm mx-1" title="{{create_course}}">
+                    <i class="fa fa-graduation-cap" aria-hidden="true"></i><span class="btn-label">{{create_course}}</span>
                 </button>
             </div>
         </div>

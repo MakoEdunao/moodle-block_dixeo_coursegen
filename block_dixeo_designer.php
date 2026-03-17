@@ -80,6 +80,7 @@ class block_dixeo_designer extends block_base {
 
         // Note: do NOT include files at the top of this file.
         require_once($CFG->libdir . '/filelib.php');
+        require_once($CFG->dirroot . '/local/dixeo/lib.php');
 
         // We can exit early if the current user doesn't have the capability to create courses.
         if (!has_capability('block/dixeo_designer:create', $this->context)) {
@@ -94,7 +95,7 @@ class block_dixeo_designer extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
-        $jobid = self::generate_job_id();
+        $jobid = local_dixeo_generate_job_id();
         $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
         $filecontext = \local_dixeo\external\service_factory::get_designer_submission_ui_service()
             ->get_file_context($persistence, $jobid, (int) $USER->id);
@@ -110,24 +111,5 @@ class block_dixeo_designer extends block_base {
         $this->content->text = $text;
 
         return $this->content;
-    }
-
-    /**
-     * Generate a unique job ID (UUID v4).
-     *
-     * @return string Generated job ID.
-     */
-    public function generate_job_id(): string {
-        return sprintf(
-            '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0x0fff) | 0x4000,
-            mt_rand(0, 0x3fff) | 0x8000,
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff),
-            mt_rand(0, 0xffff)
-        );
     }
 }
