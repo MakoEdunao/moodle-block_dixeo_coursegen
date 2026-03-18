@@ -65,7 +65,7 @@ final class adapter_test extends advanced_testcase {
         $this->assertEquals($this->user->id, $sub->userid);
         $this->assertEquals('My prompt', $sub->prompt);
         $this->assertEquals('tpl-1', $sub->templateid);
-        $this->assertEquals('draft', $sub->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_DRAFT, $sub->status);
         $this->assertNull($sub->courseid);
         $this->assertNull($sub->remotejobid);
         $this->assertNotEmpty($sub->id);
@@ -96,7 +96,7 @@ final class adapter_test extends advanced_testcase {
         $fetched = $this->submissions->get_submission($jobid);
         $this->assertEquals($course->id, $fetched->courseid);
         $this->assertEquals('remote-uuid-123', $fetched->remotejobid);
-        $this->assertEquals('generating_structure', $fetched->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE, $fetched->status);
     }
 
     public function test_attach_course(): void {
@@ -106,7 +106,7 @@ final class adapter_test extends advanced_testcase {
         $this->submissions->attach_course($sub, $course->id);
         $fetched = $this->submissions->get_submission($jobid);
         $this->assertEquals($course->id, $fetched->courseid);
-        $this->assertEquals('course_created', $fetched->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_COURSE_CREATED, $fetched->status);
     }
 
     public function test_clear_course(): void {
@@ -118,7 +118,7 @@ final class adapter_test extends advanced_testcase {
         $fetched = $this->submissions->get_submission($jobid);
         $this->assertNull($fetched->courseid);
         $this->assertNull($fetched->remotejobid);
-        $this->assertEquals('draft', $fetched->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_DRAFT, $fetched->status);
     }
 
     public function test_save_structure_version_inserts_record(): void {

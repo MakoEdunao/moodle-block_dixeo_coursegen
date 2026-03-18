@@ -18,6 +18,8 @@ namespace block_dixeo_designer\service;
 
 defined('MOODLE_INTERNAL') || die();
 
+use block_dixeo_designer\workflow_constants;
+
 /**
  * Creates and finalizes Moodle courses for the designer workflow (block-owned).
  *
@@ -46,6 +48,7 @@ class designer_course_creation_service {
         $categoryid = $this->resolve_category_id();
         $idnumber = self::IDNUMBER_DRAFT_PREFIX . gmdate('Ymd_His');
         $shortname = 'draft-' . gmdate('Ymd-His');
+        $defaultformat = get_config('moodlecourse', 'format') ?: 'topics';
 
         $candidate = $shortname;
         $suffix = 1;
@@ -63,7 +66,7 @@ class designer_course_creation_service {
             'idnumber' => $idnumber,
             'summary' => '',
             'summaryformat' => FORMAT_HTML,
-            'format' => 'topics',
+            'format' => $defaultformat,
             'lang' => '',
             'newsitems' => 0,
             'visible' => 1,
@@ -105,24 +108,40 @@ class designer_course_creation_service {
      * @param int $courseid
      * @param array $result Structure API result (course_structure.title, course_structure.sections, etc.)
      * @param int $userid
+     * @param string|null $jobid Optional job ID for progress reporting (Section X of Y).
      * @return \stdClass
      */
-    public function finalize_draft_course(int $courseid, array $result, int $userid): \stdClass {
+    public function finalize_draft_course(int $courseid, array $result, int $userid, ?string $jobid = null): \stdClass {
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/course/lib.php');
 
-        $data = $result['course_structure'] ?? [];
+        // API may return either:
+        // - a wrapper: { course_structure: { title, sections, ... } }
+        // - or the unwrapped course_structure itself (what the designer stores).
+        $data = $result['course_structure'] ?? $result;
         $sections = $data['sections'] ?? [];
         $title = $data['title'] ?? get_string('blocktitle', 'block_dixeo_designer');
+        $sectiontotal = count($sections);
+        $defaultformat = get_config('moodlecourse', 'format') ?: 'topics';
+
+        if ($jobid !== null && $jobid !== '') {
+            // UI expects generating content to start at 1/total (not 0/total).
+            $initialSectionIndex = $sectiontotal > 0 ? 1 : 0;
+            $this->set_finalize_progress($jobid, [
+                'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
+                'section_index' => $initialSectionIndex,
+                'section_total' => $sectiontotal,
+            ]);
+        }
 
         $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
         $course->fullname = $title;
         $course->shortname = $this->generate_unique_shortname($title);
         $course->summary = $data['summary'] ?? '';
         $course->summaryformat = FORMAT_HTML;
-        $course->format = $data['format'] ?? 'topics';
-        $course->numsections = count($sections);
+        $course->format = $defaultformat;
+        $course->numsections = $sectiontotal;
         $DB->update_record('course', $course);
 
         foreach (array_values($sections) as $index => $sectiondata) {
@@ -139,13 +158,37 @@ class designer_course_creation_service {
             $DB->update_record('course_sections', $section);
         }
 
-        $this->materialize_structure_modules($courseid, $sections);
+        $this->materialize_structure_modules($courseid, $sections, $jobid, $sectiontotal);
 
-        return $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        if ($jobid !== null && $jobid !== '') {
+            $this->set_finalize_progress($jobid, ['phase' => workflow_constants::FINALIZE_PHASE_FINALIZING]);
+            $this->set_finalize_progress($jobid, [
+                'phase' => workflow_constants::FINALIZE_PHASE_DONE,
+                'courseid' => (int) $course->id,
+                'coursename' => $course->fullname,
+            ]);
+        }
+
+        return $course;
     }
 
     /**
-     * Enable file sync for the draft course and wait for initial sync to complete.
+     * Why: `get_finalize_progress` polls this cache while module materialization
+     * runs, so the UI can show which section is currently being finalized.
+     *
+     * @param string $jobid
+     * @param array $data phase, section_index?, section_total?, courseid?, coursename?
+     * @return void
+     */
+    private function set_finalize_progress(string $jobid, array $data): void {
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $cache->set($jobid, $data);
+    }
+
+    /**
+     * Why: ensure the course has at least the initial synced assets before
+     * module materialization starts (prevents empty module inputs).
      *
      * Caller must copy submission files into the course before calling this.
      *
@@ -158,6 +201,22 @@ class designer_course_creation_service {
         $filesync->enable_sync($courseid, $userid);
         $filesync->trigger_sync($courseid);
         $this->wait_for_initial_file_sync($filesync, $courseid);
+    }
+
+    /**
+     * Why: trigger file sync asynchronously so the UI can poll progress while
+     * the designer continues with remote structure generation.
+     *
+     * Caller must copy submission files into the course before calling this.
+     *
+     * @param int $courseid
+     * @param int $userid
+     * @return void
+     */
+    public function enable_draft_file_sync(int $courseid, int $userid): void {
+        $filesync = \local_dixeo\external\service_factory::get_file_sync_service();
+        $filesync->enable_sync($courseid, $userid);
+        $filesync->trigger_sync($courseid);
     }
 
     /**
@@ -271,58 +330,123 @@ class designer_course_creation_service {
         throw new \moodle_exception('designer_filesynctimeout', 'block_dixeo_designer');
     }
 
-    private function materialize_structure_modules(int $courseid, array $sections): void {
+    /**
+     * @param int $courseid
+     * @param array $sections
+     * @param string|null $jobid For progress reporting (Section X of Y).
+     * @param int $sectiontotal Total number of sections.
+     */
+    private function materialize_structure_modules(int $courseid, array $sections, ?string $jobid, int $sectiontotal): void {
         $moduleservice = \local_dixeo\external\service_factory::get_module_generation_service();
         $jobservice = \local_dixeo\external\service_factory::get_job_service();
 
         foreach (array_values($sections) as $sectionindex => $sectiondata) {
             $sectionnumber = $sectionindex + 1;
+            if ($jobid !== null && $jobid !== '') {
+                $this->set_finalize_progress($jobid, [
+                    'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
+                    'section_index' => $sectionnumber,
+                    'section_total' => $sectiontotal,
+                ]);
+            }
             foreach (($sectiondata['modules'] ?? []) as $module) {
                 $modulename = $module['type'] ?? 'page';
                 $title = trim((string) ($module['title'] ?? ''));
                 $summary = trim((string) ($module['summary'] ?? ''));
                 $instructions = $this->build_module_instructions($module, $sectiondata);
 
-                $operation = $moduleservice->submit_fill_job_for_course(
+                $this->fill_single_module_from_structure(
+                    $moduleservice,
+                    $jobservice,
                     $modulename,
                     $instructions,
                     $courseid,
                     $sectionnumber,
-                    $title !== '' ? $title : get_string('designer_new_module_title', 'block_dixeo_designer'),
+                    $title,
                     $summary
                 );
-
-                $waitResult = $jobservice->wait_for_job($operation->jobid, 'fill_module');
-                if (!$waitResult->is_completed()) {
-                    throw new \moodle_exception(
-                        'designer_module_timeout',
-                        'block_dixeo_designer',
-                        '',
-                        $title !== '' ? $title : $modulename
-                    );
-                }
-
-                $result = \local_dixeo\external\create_module_from_job::execute(
-                    $operation->jobid,
-                    $courseid,
-                    $sectionnumber,
-                    null,
-                    $title !== '' ? $title : null,
-                    $summary !== '' ? format_text($summary, FORMAT_PLAIN) : null
-                );
-
-                if (empty($result['success'])) {
-                    $errmsg = !empty($result['errormessage']) ? $result['errormessage'] : 'Unknown error';
-                    $debuginfo = isset($result['errorcode']) ? $result['errorcode'] . ': ' . $errmsg : $errmsg;
-                    throw new \moodle_exception(
-                        'error_generation_failed',
-                        'block_dixeo_designer',
-                        '',
-                        $errmsg,
-                        $debuginfo
-                    );
-                }
             }
+        }
+    }
+
+    /**
+     * Fill a single module from the course structure.
+     *
+     * Failure is non-fatal: exceptions/timeouts are logged with debugging() and
+     * generation continues with the next module.
+     *
+     * @param \local_dixeo\service\module_generation_service $moduleservice
+     * @param \local_dixeo\service\job_service $jobservice
+     * @param string $modulename Module type (page, label, quiz, glossary).
+     * @param string $instructions AI instructions for content generation.
+     * @param int $courseid Draft course id.
+     * @param int $sectionnumber Section number (1-based).
+     * @param string $title Module title from structure (may be empty).
+     * @param string $summary Module summary from structure.
+     * @return void
+     */
+    private function fill_single_module_from_structure(
+        \local_dixeo\service\module_generation_service $moduleservice,
+        \local_dixeo\service\job_service $jobservice,
+        string $modulename,
+        string $instructions,
+        int $courseid,
+        int $sectionnumber,
+        string $title,
+        string $summary
+    ): void {
+        try {
+            $operation = $moduleservice->submit_fill_job_for_course(
+                $modulename,
+                $instructions,
+                $courseid,
+                $sectionnumber,
+                $title !== '' ? $title : get_string('designer_new_module_title', 'block_dixeo_designer'),
+                $summary
+            );
+
+            $waitResult = $jobservice->wait_for_job($operation->jobid, 'fill_module');
+            if (!$waitResult->is_completed()) {
+                // Skip this module; treat it as completed to allow the rest of the course.
+                $msg = 'Dixeo designer module fill did not complete in time. ' .
+                    'module=' . $modulename .
+                    ', section=' . $sectionnumber .
+                    ', title=' . ($title !== '' ? $title : '(empty title)') .
+                    ', jobid=' . (string) ($operation->jobid ?? '');
+                debugging($msg, DEBUG_DEVELOPER);
+                return;
+            }
+
+            $result = \local_dixeo\external\create_module_from_job::execute(
+                $operation->jobid,
+                $courseid,
+                $sectionnumber,
+                null,
+                $title !== '' ? $title : null,
+                $summary !== '' ? format_text($summary, FORMAT_PLAIN) : null
+            );
+
+            if (empty($result['success'])) {
+                $errmsg = !empty($result['errormessage'])
+                    ? $result['errormessage']
+                    : get_string('designer_unknown_error', 'block_dixeo_designer');
+                $msg = 'Dixeo designer module fill returned unsuccessful result. ' .
+                    'module=' . $modulename .
+                    ', section=' . $sectionnumber .
+                    ', title=' . ($title !== '' ? $title : '(empty title)') .
+                    ', error=' . $errmsg .
+                    ', jobid=' . (string) ($operation->jobid ?? '');
+                debugging($msg, DEBUG_DEVELOPER);
+                return;
+            }
+        } catch (\Throwable $e) {
+            // Do not block the whole course on a single module failure.
+            $msg = 'Dixeo designer module fill failed (skipping). ' .
+                'module=' . $modulename .
+                ', section=' . $sectionnumber .
+                ', title=' . ($title !== '' ? $title : '(empty title)') .
+                ', error=' . $e->getMessage();
+            debugging($msg, DEBUG_DEVELOPER);
         }
     }
 

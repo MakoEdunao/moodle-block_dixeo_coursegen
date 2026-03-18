@@ -12,24 +12,17 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Library functions for the Dixeo Designer block.
- *
- * @package    block_dixeo_designer
- * @copyright  2026 Dixeo
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace block_dixeo_designer\service;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Generate a unique job ID for designer submission tracking.
- * Used locally; the remote API returns its own job id (stored as remotejobid).
+ * Compatibility wrapper for {@see block_dixeo_designer\service\remote\dixeo_remote_adapter}.
  *
- * @return string Unique job ID (short string, not UUID).
+ * @deprecated Kept for backward compatibility during incremental refactors.
  */
-function block_dixeo_designer_generate_job_id(): string {
-    return 'd' . uniqid('', true);
+class dixeo_remote_adapter extends \block_dixeo_designer\service\remote\dixeo_remote_adapter {
 }
+

@@ -23,8 +23,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates', 'core/config'],
-    function($, Ajax, Notification, Str, Templates, Config) {
+define([
+    'jquery',
+    'core/ajax',
+    'core/notification',
+    'core/str',
+    'core/templates',
+    'core/config',
+    'block_dixeo_designer/progress_utils'
+], function($, Ajax, Notification, Str, Templates, Config, ProgressUtils) {
 
     /** Module type options: value, label, icon. Filled from API (local_dixeo_get_module_types) with fallback. */
     var MODULE_TYPE_OPTIONS = [
@@ -116,7 +123,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             Ajax.call([{
                 methodname: 'block_dixeo_designer_get_structure',
                 args: {
-                    jobid: this.jobid
+                    job_id: this.jobid
                 },
                 done: function(response) {
                     var raw = JSON.parse(response.structure);
@@ -143,7 +150,7 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             return Ajax.call([{
                 methodname: 'block_dixeo_designer_save_structure',
                 args: {
-                    jobid: this.jobid,
+                    job_id: this.jobid,
                     structure: JSON.stringify(this.structure)
                 },
                 done: function() {
@@ -272,12 +279,14 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 e.preventDefault();
                 $('.section-item').each(function() {
                     var sectionIdx = $(this).data('section-idx');
-                    var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
-                    var toggleBtn = $('[data-target="#section-' + self.jobid + '-' + sectionIdx + '"]');
-                    if (!collapseTarget.hasClass('show')) {
-                        collapseTarget.addClass('show');
-                        toggleBtn.find('i').first().removeClass('fa-chevron-right').addClass('fa-chevron-down');
-                        toggleBtn.attr('aria-expanded', 'true').removeClass('collapsed');
+                    var sectionId = 'section-' + self.jobid + '-' + sectionIdx;
+                    var collapseTarget = document.getElementById(sectionId);
+                    var toggleBtn = document.querySelector('[data-target="#' + sectionId + '"]');
+                    var $toggleBtn = toggleBtn ? $(toggleBtn) : $();
+                    if (collapseTarget && !collapseTarget.classList.contains('show')) {
+                        collapseTarget.classList.add('show');
+                        $toggleBtn.find('i').first().removeClass('fa-chevron-right').addClass('fa-chevron-down');
+                        $toggleBtn.attr('aria-expanded', 'true').removeClass('collapsed');
                     }
                 });
                 $('#link-expand-all').addClass('d-none');
@@ -287,12 +296,14 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 e.preventDefault();
                 $('.section-item').each(function() {
                     var sectionIdx = $(this).data('section-idx');
-                    var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
-                    var toggleBtn = $('[data-target="#section-' + self.jobid + '-' + sectionIdx + '"]');
-                    if (collapseTarget.hasClass('show')) {
-                        collapseTarget.removeClass('show');
-                        toggleBtn.find('i').first().removeClass('fa-chevron-down').addClass('fa-chevron-right');
-                        toggleBtn.attr('aria-expanded', 'false').addClass('collapsed');
+                    var sectionId = 'section-' + self.jobid + '-' + sectionIdx;
+                    var collapseTarget = document.getElementById(sectionId);
+                    var toggleBtn = document.querySelector('[data-target="#' + sectionId + '"]');
+                    var $toggleBtn = toggleBtn ? $(toggleBtn) : $();
+                    if (collapseTarget && collapseTarget.classList.contains('show')) {
+                        collapseTarget.classList.remove('show');
+                        $toggleBtn.find('i').first().removeClass('fa-chevron-down').addClass('fa-chevron-right');
+                        $toggleBtn.attr('aria-expanded', 'false').addClass('collapsed');
                     }
                 });
                 $('#link-collapse-all').addClass('d-none');
@@ -419,8 +430,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             var expandedSections = {};
             $('.section-item').each(function() {
                 var sectionIdx = $(this).data('section-idx');
-                var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
-                expandedSections[sectionIdx] = collapseTarget.hasClass('show');
+                var sectionId = 'section-' + self.jobid + '-' + sectionIdx;
+                var collapseTarget = document.getElementById(sectionId);
+                expandedSections[sectionIdx] = Boolean(collapseTarget && collapseTarget.classList.contains('show'));
             });
             return expandedSections;
         },
@@ -476,13 +488,16 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             var self = this;
             Object.keys(expandedSections).forEach(function(sectionIdx) {
                 if (expandedSections[sectionIdx]) {
-                    var collapseTarget = $('#section-' + self.jobid + '-' + sectionIdx);
-                    var toggleButton = $('[data-target="#section-' + self.jobid + '-' + sectionIdx + '"]');
-                    var icon = toggleButton.find('i');
-
-                    collapseTarget.addClass('show');
+                    var sectionId = 'section-' + self.jobid + '-' + sectionIdx;
+                    var collapseTarget = document.getElementById(sectionId);
+                    var toggleButton = document.querySelector('[data-target="#' + sectionId + '"]');
+                    var $toggleButton = toggleButton ? $(toggleButton) : $();
+                    if (collapseTarget) {
+                        collapseTarget.classList.add('show');
+                    }
+                    var icon = $toggleButton.find('i');
                     icon.removeClass('fa-chevron-right').addClass('fa-chevron-down');
-                    toggleButton.attr('aria-expanded', 'true').removeClass('collapsed');
+                    $toggleButton.attr('aria-expanded', 'true').removeClass('collapsed');
                 }
             });
         },
@@ -494,9 +509,17 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
             $('[data-toggle="collapse"]').off('click').on('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                var target = $($(this).data('target'));
+                var targetSel = $(this).data('target');
+                var targetId = (targetSel && typeof targetSel === 'string' && targetSel.indexOf('#') === 0)
+                    ? targetSel.slice(1)
+                    : null;
+                var targetEl = targetId ? document.getElementById(targetId) : null;
+                var target = targetEl ? $(targetEl) : $();
                 var icon = $(this).find('i');
 
+                if (!target.length) {
+                    return;
+                }
                 if (target.hasClass('show')) {
                     target.removeClass('show');
                     icon.removeClass('fa-chevron-down').addClass('fa-chevron-right');
@@ -971,26 +994,311 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
                 self.redo();
             });
 
-            $('#btn-create-course').on('click', function() {
+            $('#btn-create-course').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
                 var $btn = $(this);
                 $btn.prop('disabled', true);
-                self.saveStructure().then(function() {
-                    return Ajax.call([{
-                        methodname: 'block_dixeo_designer_finalize_course',
-                        args: {
-                            job_id: self.jobid,
-                            createcourse: true,
-                            sesskey: M.cfg.sesskey
-                        }
-                    }])[0];
-                }).then(function(final) {
-                    self.finishProgress(final.courseid, final.coursename);
-                }).catch(function(err) {
-                    Notification.exception(err);
-                }).always(function() {
-                    $btn.prop('disabled', false);
-                });
+                self.startCreateCourseProgress();
             });
+        },
+
+        finalizePollIntervalId: null,
+        clearFinalizePoll: function() {
+            if (this.finalizePollIntervalId) {
+                clearInterval(this.finalizePollIntervalId);
+                this.finalizePollIntervalId = null;
+            }
+        },
+
+        /**
+         * When "Create course" is clicked: hide block, show progress at 40%, save structure, fire finalize, poll progress.
+         */
+        startCreateCourseProgress: function() {
+            var self = this;
+
+            // Avoid unwanted navigation prompts and counteract click-driven scroll jumps.
+            var scrollY = window.scrollY || 0;
+            self.hasUnsavedChanges = false;
+            self.suppressBeforeUnload = true;
+
+            // Read sessionStorage "return to" state so "Generate new course"
+            // redirects to the correct destination for this job.
+            try {
+                var storedReturnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
+                var storedJobId = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_JOBID_KEY);
+                var currentJobId = String(self.jobid || '');
+
+                // Only overwrite the stored redirect if it doesn't match the current job.
+                // This keeps the "return to dashboard" behavior when we navigated to
+                // designer.php from the dashboard, but still fixes stale values
+                // when the user starts directly on designer.php.
+                if (!storedReturnTo || storedJobId !== currentJobId) {
+                    sessionStorage.setItem(ProgressUtils.SESSION_RETURN_TO_KEY, window.location.href);
+                    sessionStorage.setItem(ProgressUtils.SESSION_RETURN_TO_JOBID_KEY, currentJobId);
+                }
+            } catch (e) {
+                // Ignore storage failures.
+            }
+
+            // Lock the UI during course population (same backdrop as Regenerate).
+            self.lockDesignerUI();
+
+            // Ensure only one polling loop runs, and prevent duplicate "success" rendering.
+            self.finalizeProgressCompleted = false;
+            self.clearFinalizePoll();
+
+            requestAnimationFrame(function() {
+                window.scrollTo(0, scrollY);
+            });
+
+            // Use the shared prompt-block generation UI (same markup as generator.js).
+            var generatorForm = document.getElementById('edai_course_designer_form');
+            var promptContainer = generatorForm ? generatorForm.querySelector('.prompt-container') : null;
+            var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
+
+            if (promptContainer && generationContainer) {
+                promptContainer.classList.replace('d-block', 'd-none');
+                generationContainer.classList.remove('d-none');
+                generationContainer.classList.add('d-block');
+            }
+
+            // Step 1 label depends on whether there are submission files.
+            // If there are no files, we should show "Processing prompt".
+            var fileNamesEl = generatorForm ? generatorForm.querySelector('#file_names') : null;
+            var hasFiles = Boolean(
+                fileNamesEl &&
+                !fileNamesEl.classList.contains('d-none') &&
+                fileNamesEl.querySelector('.file-item')
+            );
+            if (!hasFiles) {
+                Str.get_string('step_processing_prompt', 'block_dixeo_designer').then(function(label) {
+                    self.setGenerationStepLabel(1, label);
+                });
+            }
+
+            // Start at 40% so finalization progress aligns with the progress bar phases.
+            self.setGenerationProgress(40);
+            self.updateGenerationActiveStepFromProgress();
+
+            // Start polling immediately so the progress bar and "Generating content"
+            // counters update even if saveStructure is slow/hanging.
+            self.pollDesignerFinalizeProgress();
+
+            // Silent save (no "Saved!" toaster) before finalizing the course.
+            Ajax.call([{
+                methodname: 'block_dixeo_designer_save_structure',
+                args: {
+                    job_id: self.jobid,
+                    structure: JSON.stringify(self.structure)
+                }
+            }])[0].then(function() {
+                Ajax.call([{
+                    methodname: 'block_dixeo_designer_finalize_course',
+                    args: {
+                        job_id: self.jobid,
+                        createcourse: true,
+                        sesskey: M.cfg.sesskey
+                    }
+                }])[0].catch(function(err) {
+                    self.clearFinalizePoll();
+                    self.unlockDesignerUI();
+
+                    // Restore shared UI.
+                    if (promptContainer && generationContainer) {
+                        promptContainer.classList.replace('d-none', 'd-block');
+                        generationContainer.classList.replace('d-block', 'd-none');
+                    }
+                    $('#btn-create-course').prop('disabled', false);
+                    Notification.exception(err);
+                });
+            }).catch(function(err) {
+                self.clearFinalizePoll();
+                self.unlockDesignerUI();
+
+                if (promptContainer && generationContainer) {
+                    promptContainer.classList.replace('d-none', 'd-block');
+                    generationContainer.classList.replace('d-block', 'd-none');
+                }
+                $('#btn-create-course').prop('disabled', false);
+                Notification.exception(err);
+            });
+        },
+
+        pollDesignerFinalizeProgress: function() {
+            var self = this;
+            var pollInFlight = false;
+            var poll = function() {
+                if (pollInFlight) {
+                    return;
+                }
+                pollInFlight = true;
+                Ajax.call([{
+                    methodname: 'block_dixeo_designer_get_finalize_progress',
+                    args: {
+                        job_id: self.jobid,
+                        sesskey: M.cfg.sesskey
+                    }
+                }])[0].then(function(data) {
+                    if (data.phase === ProgressUtils.PHASE_GENERATING_CONTENT && data.section_total > 0) {
+                        var total = Number(data.section_total) || 0;
+                        var sectionIndex = Number(data.section_index) || 0;
+                        // Label should show the currently in-progress section (1-based).
+                        var current = Math.min(total, Math.max(1, sectionIndex));
+                        // Progress bar should reflect completed sections only.
+                        var completed = Math.max(0, current - 1);
+                        var pct = 40 + 40 * (completed / total);
+                        self.setGenerationProgress(pct);
+                        self.updateGenerationActiveStepFromProgress();
+                        Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
+                            current: current,
+                            total: total
+                        }).then(function(str) {
+                            self.setGenerationStepLabel(3, str);
+                        });
+                    } else if (data.phase === ProgressUtils.PHASE_FINALIZING) {
+                        self.setGenerationProgress(80);
+                        self.updateGenerationActiveStepFromProgress();
+                    } else if (data.phase === ProgressUtils.PHASE_DONE && data.courseid) {
+                        // Avoid rendering/locking twice if multiple poll loops are active.
+                        if (self.finalizeProgressCompleted) {
+                            return;
+                        }
+                        self.finalizeProgressCompleted = true;
+                        self.clearFinalizePoll();
+                        self.setGenerationProgress(100);
+                        self.updateGenerationActiveStepFromProgress();
+                        self.finishProgress(data.courseid, data.coursename);
+                        $('#btn-create-course').prop('disabled', false);
+                        self.unlockDesignerUI();
+                    }
+                }).catch(function() {}).then(function() {
+                    pollInFlight = false;
+                });
+            };
+            poll();
+            this.finalizePollIntervalId = setInterval(poll, 2000);
+        },
+
+        /**
+         * Shared generation progress helpers (use the prompt block markup).
+         *
+         * @param {number} progress Progress percentage (0-100).
+         */
+        setGenerationProgress: function(progress) {
+            var generatorForm = document.getElementById('edai_course_designer_form');
+            var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
+            if (!generationContainer) {
+                return;
+            }
+            var p = Math.min(100, Math.max(0, progress));
+            var $bar = $(generationContainer).find('.s-progress--bar');
+            if ($bar.length) {
+                $bar.css('width', p + '%').attr('aria-valuenow', p);
+                $bar.toggleClass('done', p >= 100);
+            }
+            this.generationProgress = p;
+        },
+        updateGenerationActiveStepFromProgress: function() {
+            var p = this.generationProgress ?? 0;
+            var step = ProgressUtils.getActiveStepFromProgress(p);
+
+            var generatorForm = document.getElementById('edai_course_designer_form');
+            var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
+            if (!generationContainer) {
+                return;
+            }
+
+            $(generationContainer).find('.generation-step').removeClass('active')
+                .filter('[data-step="' + step + '"]').addClass('active');
+        },
+        setGenerationStepLabel: function(step, text) {
+            var generatorForm = document.getElementById('edai_course_designer_form');
+            var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
+            if (!generationContainer) {
+                return;
+            }
+            $(generationContainer).find('.generation-step[data-step="' + step + '"]').text(text || '');
+        },
+
+        /**
+         * Lock/unlock the UI with the same backdrop used by Regenerate.
+         */
+        designerUiLockEl: null,
+        designerUiLockUpdateHandler: null,
+        lockDesignerUI: function() {
+            if (this.designerUiLockEl) {
+                return;
+            }
+
+            var wrapper = document.querySelector('.dixeo-designer-block-wrapper');
+            var blockContainer = document.querySelector('.dixeo-designer-block-wrapper .block_dixeo_designer.block-container');
+            var editorFooter = document.querySelector('#page-blocks-dixeo_designer-designer .editor-toolbar-footer');
+            if (!wrapper || !editorFooter) {
+                return;
+            }
+
+            var anchor = blockContainer || wrapper;
+            var rectAnchor = anchor.getBoundingClientRect();
+
+            var el = document.createElement('div');
+            el.className = 'dixeo-designer-ui-lock-backdrop';
+            el.setAttribute('aria-hidden', 'true');
+            el.style.top = rectAnchor.bottom + 'px';
+            document.body.appendChild(el);
+            this.designerUiLockEl = el;
+
+            var self = this;
+            var updateTop = function() {
+                if (!self.designerUiLockEl) {
+                    return;
+                }
+                var r = anchor.getBoundingClientRect();
+                self.designerUiLockEl.style.top = r.bottom + 'px';
+            };
+
+            var ticking = false;
+            this.designerUiLockUpdateHandler = function() {
+                if (ticking) {
+                    return;
+                }
+                ticking = true;
+                requestAnimationFrame(function() {
+                    ticking = false;
+                    updateTop();
+                });
+            };
+
+            window.addEventListener('resize', this.designerUiLockUpdateHandler);
+            window.addEventListener('scroll', this.designerUiLockUpdateHandler, true);
+        },
+        unlockDesignerUI: function() {
+            if (!this.designerUiLockEl) {
+                return;
+            }
+            if (this.designerUiLockUpdateHandler) {
+                window.removeEventListener('resize', this.designerUiLockUpdateHandler);
+                window.removeEventListener('scroll', this.designerUiLockUpdateHandler, true);
+            }
+            this.designerUiLockEl.remove();
+            this.designerUiLockEl = null;
+            this.designerUiLockUpdateHandler = null;
+        },
+
+        setDesignerProgress: function(progress) {
+            var p = Math.min(100, Math.max(0, progress));
+            var $bar = $('#designer-finalize-progress .s-progress--bar');
+            if ($bar.length) {
+                $bar.css('width', p + '%').attr('aria-valuenow', p);
+                $bar.toggleClass('done', p >= 100);
+            }
+        },
+        setDesignerActiveStep: function(step) {
+            $('#designer-finalize-progress .generation-step').removeClass('active')
+                .filter('[data-step="' + step + '"]').addClass('active');
+        },
+        setDesignerStepLabel: function(step, text) {
+            $('#designer-finalize-progress .generation-step[data-step="' + step + '"]').text(text || '');
         },
 
         /**
@@ -999,17 +1307,70 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
          * @param {string} coursename Created course name
          */
         finishProgress: function(courseid, coursename) {
+            var self = this;
+            var generatorForm = document.getElementById('edai_course_designer_form');
+            var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
+            if (!generationContainer) {
+                return;
+            }
+
+            var successHost = generationContainer.parentElement;
+            if (!successHost) {
+                return;
+            }
+
+            // Clear old success message if present.
+            var existing = successHost.querySelector('#success_message_container');
+            if (existing) {
+                existing.remove();
+            }
+
+            // Compute redirect for "Generate new course".
+            // Prefer the original page where generation was initiated (stored in sessionStorage).
+            // If that original page was the designer, go to a fresh designer.php (no id).
+            var returnTo = null;
+            try {
+                returnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
+            } catch (e) {
+                returnTo = null;
+            }
+
+            var freshDesignerUrl = Config.wwwroot + '/blocks/dixeo_designer/designer.php';
+            var currentIsDesignerPage = window.location.pathname.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
+            var returnToIsDesigner = returnTo && returnTo.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
+
+            var generateAnotherUrl;
+            if (returnTo) {
+                generateAnotherUrl = returnToIsDesigner ? freshDesignerUrl : returnTo;
+            } else {
+                generateAnotherUrl = currentIsDesignerPage ? freshDesignerUrl : (Config.wwwroot + '/my/');
+            }
+
             var context = {
                 courseid: courseid,
                 coursename: coursename,
-                wwwroot: Config.wwwroot
+                wwwroot: Config.wwwroot,
+                generate_another_url: generateAnotherUrl
             };
-            Templates.render('block_dixeo_designer/success_message', context).then(function(html) {
-                $('.course-structure-container').html(html);
-                $('.editor-toolbar-footer').addClass('d-none');
-            }).catch(function(error) {
-                Notification.exception(error);
-            });
+
+            Templates.render('block_dixeo_designer/success_message', context)
+                .then(function(html) {
+                    successHost.insertAdjacentHTML('beforeend', html);
+                    generationContainer.classList.replace('d-block', 'd-none');
+                    $('.editor-toolbar-footer').addClass('d-none');
+
+                    // Prevent "unsaved changes" prompt on navigation to the next page.
+                    var anotherBtn = successHost.querySelector('.button_generate_another');
+                    if (anotherBtn) {
+                        anotherBtn.addEventListener('click', function() {
+                            self.hasUnsavedChanges = false;
+                            self.suppressBeforeUnload = true;
+                        });
+                    }
+                })
+                .catch(function(error) {
+                    Notification.exception(error);
+                });
         },
 
         /**
@@ -1215,6 +1576,9 @@ define(['jquery', 'core/ajax', 'core/notification', 'core/str', 'core/templates'
 
             // Cleanup on page unload
             $(window).on('beforeunload', function() {
+                if (self.suppressBeforeUnload) {
+                    return;
+                }
                 if (self.hasUnsavedChanges) {
                     // Note: beforeunload message is browser-controlled, but we set it anyway
                     return self.unsavedChangesMessage || 'You have unsaved changes. Are you sure you want to leave?';

@@ -40,13 +40,13 @@ use core_external\external_value;
 final class save_structure extends external_api {
 
     /**
-     * Returns description of save_structure parameters
+     * Why: Moodle external APIs require explicit parameter metadata for WS calls.
      *
      * @return external_function_parameters
      */
     public static function save_structure_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'jobid' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
+            'job_id' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
             'structure' => new external_value(PARAM_RAW, 'JSON structure', VALUE_REQUIRED),
         ]);
     }
@@ -55,15 +55,15 @@ final class save_structure extends external_api {
      * Save structure (single version per job; overwrites latest).
      * Used only when user clicks "Create course" in the designer.
      *
-     * @param string $jobid The job identifier
+     * @param string $job_id The job identifier
      * @param string $structure JSON structure data
      * @return array Save result
      */
-    public static function save_structure(string $jobid, string $structure): array {
+    public static function save_structure(string $job_id, string $structure): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::save_structure_parameters(), [
-            'jobid' => $jobid,
+            'job_id' => $job_id,
             'structure' => $structure,
         ]);
 
@@ -73,14 +73,14 @@ final class save_structure extends external_api {
         require_login();
 
         // Validate JSON.
-        $decoded = json_decode($params['structure']);
-        if ($decoded === null && json_last_error() !== JSON_ERROR_NONE) {
+        $decoded = json_decode($params['structure'], true);
+        if (!is_array($decoded)) {
             throw new \moodle_exception('invalidjson', 'block_dixeo_designer');
         }
 
         $records = $DB->get_records(
             'block_dixeo_designer_structure',
-            ['jobid' => $params['jobid']],
+            ['jobid' => $params['job_id']],
             'timecreated DESC',
             '*',
             0,
@@ -100,7 +100,7 @@ final class save_structure extends external_api {
 
         // No record yet (e.g. designer opened before any structure saved); insert one.
         $record = (object) [
-            'jobid' => $params['jobid'],
+            'jobid' => $params['job_id'],
             'userid' => $USER->id,
             'description' => '',
             'structure' => $params['structure'],
@@ -113,7 +113,7 @@ final class save_structure extends external_api {
     }
 
     /**
-     * Returns description of save_structure return value
+     * Why: Moodle external APIs require explicit return metadata for WS calls.
      *
      * @return external_single_structure
      */

@@ -33,32 +33,19 @@
         <p>{{#str}} generating_course, block_dixeo_designer {{/str}}</p>
         <object type="image/svg+xml" data="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-animated.svg" width="80" height="80"></object>
         <div class="s-progress s-progress__segmented">
-            <div class="s-progress--bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="75" style="width: 0%;"></div>
-            <ol class="s-progress--segments">
-                <li>
-                    <span class="generation-step">
-                        {{#str}} step1, block_dixeo_designer {{/str}}
-                    </span>
+            <div class="s-progress--bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width: 0%;"></div>
+            <ol class="s-progress--segments" data-steps="4">
+                <li class="s-progress--segment-20">
+                    <span class="generation-step" data-step="1">{{#str}} step_uploading_files, block_dixeo_designer {{/str}}</span>
                 </li>
-                <li>
-                    <span class="generation-step">
-                        {{#str}} step2, block_dixeo_designer {{/str}}
-                    </span>
+                <li class="s-progress--segment-20">
+                    <span class="generation-step" data-step="2">{{#str}} step_generating_structure, block_dixeo_designer {{/str}}</span>
                 </li>
-                <li>
-                    <span class="generation-step">
-                        {{#str}} step3, block_dixeo_designer {{/str}}
-                    </span>
+                <li class="s-progress--segment-40">
+                    <span class="generation-step" data-step="3">{{#str}} step_generating_content, block_dixeo_designer {{/str}}</span>
                 </li>
-                <li>
-                    <span class="generation-step">
-                        {{#str}} step4, block_dixeo_designer {{/str}}
-                    </span>
-                </li>
-                <li>
-                    <span class="generation-step">
-                        {{#str}} step5, block_dixeo_designer {{/str}}
-                    </span>
+                <li class="s-progress--segment-20">
+                    <span class="generation-step" data-step="4">{{#str}} step_finalizing_details, block_dixeo_designer {{/str}}</span>
                 </li>
                 <li></li>
             </ol>

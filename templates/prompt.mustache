@@ -50,7 +50,10 @@
                     <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/lightning.svg" alt="">
                 </button>
                 {{/hide_generate_course}}
-                <button id="generate_course_structure" class="btn btn-primary text-white" title="{{generate_structure_tooltip}}">
+                <button id="generate_course_structure"
+                    class="btn btn-primary text-white"
+                    title="{{generate_structure_tooltip}}"
+                    data-existing-job="{{is_existing_job}}">
                     <img src="{{config.wwwroot}}/blocks/dixeo_designer/pix/dixeo-white.svg" alt="">
                     <span>{{generate_structure_label}}</span>
                 </button>

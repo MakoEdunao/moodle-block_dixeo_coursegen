@@ -40,27 +40,27 @@ use core_external\external_value;
 final class get_structure extends external_api {
 
     /**
-     * Returns description of get_structure parameters
+     * Why: Moodle external APIs require explicit parameter metadata for WS calls.
      *
      * @return external_function_parameters
      */
     public static function get_structure_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'jobid' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
+            'job_id' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
         ]);
     }
 
     /**
      * Get the latest structure by job ID (no versioning; single structure per job).
      *
-     * @param string $jobid The job identifier
+     * @param string $job_id The job identifier
      * @return array Structure data
      */
-    public static function get_structure(string $jobid): array {
+    public static function get_structure(string $job_id): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::get_structure_parameters(), [
-            'jobid' => $jobid,
+            'job_id' => $job_id,
         ]);
 
         $context = \context_system::instance();
@@ -70,7 +70,7 @@ final class get_structure extends external_api {
 
         $records = $DB->get_records(
             'block_dixeo_designer_structure',
-            ['jobid' => $params['jobid']],
+            ['jobid' => $params['job_id']],
             'timecreated DESC',
             '*',
             0,
@@ -82,7 +82,7 @@ final class get_structure extends external_api {
             // No DB record yet (e.g. user just arrived from generator after structure generation).
             // Fall back to completed job result from the API and persist it.
             $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
-            $status = $service->get_structure_status($params['jobid'], (int) $USER->id);
+            $status = $service->get_structure_status($params['job_id'], (int) $USER->id);
             if (!$status->completed || $status->result === null) {
                 throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
             }
@@ -92,11 +92,11 @@ final class get_structure extends external_api {
                 $result = is_array($decoded) ? $decoded : ['course_structure' => ['title' => '', 'sections' => []]];
             }
             $structures = new \block_dixeo_designer\structure_repository();
-            $structures->save_structure_version($params['jobid'], (int) $USER->id, '', $result);
+            $structures->save_structure_version($params['job_id'], (int) $USER->id, '', $result);
             $structureJson = json_encode($result);
             return [
                 'structure' => $structureJson,
-                'jobid' => $params['jobid'],
+                'job_id' => $params['job_id'],
             ];
         }
 
@@ -107,19 +107,19 @@ final class get_structure extends external_api {
 
         return [
             'structure' => $structure->structure,
-            'jobid' => $structure->jobid,
+            'job_id' => $structure->jobid,
         ];
     }
 
     /**
-     * Returns description of get_structure return value
+     * Why: Moodle external APIs require explicit return metadata for WS calls.
      *
      * @return external_single_structure
      */
     public static function get_structure_returns(): external_single_structure {
         return new external_single_structure([
             'structure' => new external_value(PARAM_RAW, 'JSON structure'),
-            'jobid' => new external_value(PARAM_TEXT, 'Job ID'),
+            'job_id' => new external_value(PARAM_TEXT, 'Job ID'),
         ]);
     }
 }

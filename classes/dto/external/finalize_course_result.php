@@ -14,24 +14,33 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Version details
- *
- * @package    block_dixeo_designer
- * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Dixeo (contact@dixeo.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace block_dixeo_designer\dto\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026031404;                 // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2023100909;                 // Requires this Moodle version.
-$plugin->component = 'block_dixeo_designer';   // Full name of the plugin (used for diagnostics).
+/**
+ * DTO for block_dixeo_designer finalize_course external response.
+ */
+final class finalize_course_result {
+    public function __construct(
+        public int $courseid,
+        public string $coursename
+    ) {
+    }
 
-$plugin->dependencies = [
-    'local_dixeo' => 2026022301
-];
+    public static function from_course(?object $course): self {
+        if ($course === null) {
+            return new self(0, '');
+        }
 
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.2.0';
+        return new self((int) ($course->id ?? 0), (string) ($course->fullname ?? ''));
+    }
+
+    public function to_array(): array {
+        return [
+            'courseid' => $this->courseid,
+            'coursename' => $this->coursename,
+        ];
+    }
+}
+

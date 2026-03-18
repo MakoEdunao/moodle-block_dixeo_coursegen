@@ -92,14 +92,17 @@ $string['designer_default_module_prompt'] = 'Generate the full learning content 
 $string['designer_filesyncfailed'] = 'Uploaded files could not be synchronized before module generation: {$a}';
 $string['designer_filesynctimeout'] = 'Uploaded files did not finish synchronizing in time for module generation.';
 $string['designer_module_timeout'] = 'Module "{$a}" did not finish generating in time. The server may be busy; try again later or create the activity manually.';
-$string['step1'] = 'Validating input';
-$string['step2'] = 'Analyzing subject';
-$string['step3'] = 'Structuring modules';
-$string['step4'] = 'Generating content';
-$string['step5'] = 'Finalizing details';
+$string['step_uploading_files'] = 'Processing files';
+$string['step_generating_structure'] = 'Generating structure';
+$string['uploading_files_to_server'] = 'Uploading files to server…';
+$string['step_generating_content'] = 'Generating content';
+$string['step_finalizing_details'] = 'Finalizing details';
+$string['section_progress'] = 'Section {$a->current} of {$a->total}';
 $string['invalidinput'] = 'Information required.';
 $string['error_title'] = 'Oops!';
 $string['error_generation_failed'] = 'Course creation failed: {$a}. Please try again.';
+$string['designer_unknown_error'] = 'Unknown error';
+$string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
 // File uploads.
 $string['attachfile'] = 'Attach a source document';
@@ -111,6 +114,9 @@ $string['filetypeinvalid'] = 'File type of {$a} is not supported. Supported exte
 $string['totaltoolarge'] = 'Total file size exceeds the 50MB limit. Upload smaller files or remove one to continue.';
 $string['uploaderror'] = 'Error uploading file.';
 $string['uploading_files'] = 'Uploading…';
+$string['step_uploading_files_count'] = 'Processing files ({$a->current}/{$a->total})';
+$string['step_generating_content_count'] = 'Generating content ({$a->current}/{$a->total})';
+$string['step_processing_prompt'] = 'Processing prompt';
 
 // Designer interface.
 $string['designer_loading'] = 'Loading course structure...';

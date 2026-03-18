@@ -48,7 +48,7 @@ final class submission_service_test extends advanced_testcase {
     public function test_get_or_create_submission_creates_new(): void {
         $sub = $this->service->get_or_create_submission('job-' . uniqid(), $this->user->id);
         $this->assertInstanceOf(\stdClass::class, $sub);
-        $this->assertEquals('draft', $sub->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_DRAFT, $sub->status);
         $this->assertNotEmpty($sub->id);
     }
 
@@ -76,11 +76,11 @@ final class submission_service_test extends advanced_testcase {
         $sub = $this->service->get_submission($jobid);
         $this->assertEquals($course->id, $sub->courseid);
         $this->assertEquals('remote-123', $sub->remotejobid);
-        $this->assertEquals('generating_structure', $sub->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE, $sub->status);
 
         $this->service->attach_course($sub, $course->id);
         $sub = $this->service->get_submission($jobid);
-        $this->assertEquals('course_created', $sub->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_COURSE_CREATED, $sub->status);
     }
 
     public function test_clear_course_resets_draft_state(): void {
@@ -93,7 +93,7 @@ final class submission_service_test extends advanced_testcase {
         $sub = $this->service->get_submission($jobid);
         $this->assertNull($sub->courseid);
         $this->assertNull($sub->remotejobid);
-        $this->assertEquals('draft', $sub->status);
+        $this->assertEquals(workflow_constants::SUBMISSION_STATUS_DRAFT, $sub->status);
     }
 
     public function test_save_submission_throws_when_wrong_user(): void {
@@ -103,5 +103,25 @@ final class submission_service_test extends advanced_testcase {
 
         $this->expectException(\required_capability_exception::class);
         $this->service->save_submission($jobid, $other->id, 'Hack', null);
+    }
+
+    public function test_delete_submission_deletes_only_for_given_user(): void {
+        global $DB;
+
+        $jobid = 'job-' . uniqid();
+        $this->service->save_submission($jobid, $this->user->id, 'P', null);
+
+        $other = $this->getDataGenerator()->create_user();
+        $this->service->delete_submission($jobid, $other->id);
+
+        $this->assertTrue(
+            $DB->record_exists('block_dixeo_designer_submission', ['jobid' => $jobid, 'userid' => $this->user->id])
+        );
+
+        $this->service->delete_submission($jobid, $this->user->id);
+
+        $this->assertFalse(
+            $DB->record_exists('block_dixeo_designer_submission', ['jobid' => $jobid, 'userid' => $this->user->id])
+        );
     }
 }

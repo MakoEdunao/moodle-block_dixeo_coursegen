@@ -20,47 +20,47 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
-use block_dixeo_designer\dto\external\finalize_course_result;
+use block_dixeo_designer\dto\external\start_generation_result;
+
+defined('MOODLE_INTERNAL') || die();
 
 /**
- * Finalize draft course after structure is ready (rename, sections, materialize).
- *
- * @package    block_dixeo_designer
- * @copyright  2026 Dixeo
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * Prepare generation: create draft course and start async file sync.
  */
-final class finalize_course extends external_api {
-
+final class start_generation extends external_api {
     /**
      * Why: Moodle external APIs require explicit parameter metadata for WS calls.
      *
      * @return external_function_parameters
      */
-    public static function finalize_course_parameters(): external_function_parameters {
+    public static function start_generation_parameters(): external_function_parameters {
         return new external_function_parameters([
             'job_id' => new external_value(PARAM_TEXT, 'Job id', VALUE_REQUIRED),
-            'createcourse' => new external_value(PARAM_BOOL, 'Create full course (false = structure only)', VALUE_REQUIRED),
+            'description' => new external_value(PARAM_TEXT, 'Course description', VALUE_REQUIRED),
+            'templateid' => new external_value(PARAM_TEXT, 'Course template id', VALUE_DEFAULT, null, NULL_ALLOWED),
             'sesskey' => new external_value(PARAM_RAW, 'Session key', VALUE_REQUIRED),
         ]);
     }
 
     /**
-     * Finalize a draft course after structure generation.
+     * Prepare generation: create draft course, copy submission files into it, and trigger async file sync.
      *
      * @param string $job_id Job identifier.
-     * @param bool $createcourse When false, finalize only structure (no course creation).
+     * @param string $description Course description / instructions.
+     * @param string|null $templateid Optional template id.
      * @param string $sesskey Session key.
      * @return array {
      *     courseid: int,
-     *     coursename: string
+     *     noop: bool
      * }
      */
-    public static function finalize_course(string $job_id, bool $createcourse, string $sesskey): array {
+    public static function start_generation(string $job_id, string $description, ?string $templateid, string $sesskey): array {
         global $USER;
 
-        self::validate_parameters(self::finalize_course_parameters(), [
+        self::validate_parameters(self::start_generation_parameters(), [
             'job_id' => $job_id,
-            'createcourse' => $createcourse,
+            'description' => $description,
+            'templateid' => $templateid,
             'sesskey' => $sesskey,
         ]);
 
@@ -69,14 +69,10 @@ final class finalize_course extends external_api {
         require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
-        // Release the session lock early so concurrent polling requests
-        // (get_finalize_progress) can return while this long-running request runs.
-        \core\session\manager::write_close();
-
         $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
-        $course = $service->finalize_course($job_id, (int) $USER->id, $createcourse);
+        $start = $service->prepare_generation($job_id, (int) $USER->id, $description, $templateid);
 
-        return finalize_course_result::from_course($course)->to_array();
+        return start_generation_result::from_service($start)->to_array();
     }
 
     /**
@@ -84,10 +80,11 @@ final class finalize_course extends external_api {
      *
      * @return external_single_structure
      */
-    public static function finalize_course_returns(): external_single_structure {
+    public static function start_generation_returns(): external_single_structure {
         return new external_single_structure([
-            'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'coursename' => new external_value(PARAM_TEXT, 'Course name'),
+            'courseid' => new external_value(PARAM_INT, 'Draft course ID'),
+            'noop' => new external_value(PARAM_BOOL, 'When true, file sync + remote structure generation can be skipped'),
         ]);
     }
 }
+

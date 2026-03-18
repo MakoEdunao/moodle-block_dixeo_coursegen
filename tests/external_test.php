@@ -23,12 +23,16 @@ require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/generate_c
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_structure_status.php');
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/finalize_course.php');
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/cancel_draft.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_finalize_progress.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/save_structure.php');
 
 use advanced_testcase;
 use block_dixeo_designer\external\generate_course;
 use block_dixeo_designer\external\get_structure_status;
 use block_dixeo_designer\external\finalize_course;
 use block_dixeo_designer\external\cancel_draft;
+use block_dixeo_designer\external\get_finalize_progress;
+use block_dixeo_designer\external\save_structure;
 use block_dixeo_designer\service\designer_service;
 use block_dixeo_designer\service\designer_service_factory;
 
@@ -43,6 +47,8 @@ use block_dixeo_designer\service\designer_service_factory;
  * @covers     \block_dixeo_designer\external\get_structure_status
  * @covers     \block_dixeo_designer\external\finalize_course
  * @covers     \block_dixeo_designer\external\cancel_draft
+ * @covers     \block_dixeo_designer\external\get_finalize_progress
+ * @covers     \block_dixeo_designer\external\save_structure
  */
 final class external_test extends advanced_testcase {
 
@@ -200,5 +206,109 @@ final class external_test extends advanced_testcase {
 
         $this->expectException(\required_capability_exception::class);
         generate_course::generate_course('job-1', 'D', null, sesskey(), false);
+    }
+
+    public function test_get_finalize_progress_returns_empty_when_cache_missing(): void {
+        $result = get_finalize_progress::get_finalize_progress('job-no-cache-' . uniqid(), $this->sesskey);
+
+        $this->assertSame('', $result['phase']);
+        $this->assertSame(0, $result['section_index']);
+        $this->assertSame(0, $result['section_total']);
+        $this->assertSame(0, $result['courseid']);
+        $this->assertSame('', $result['coursename']);
+    }
+
+    public function test_get_finalize_progress_returns_data_from_cache(): void {
+        $jobid = '5f38d9aa-f40c-4992-9727-982f050ff9fd';
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $cache->set($jobid, [
+            'phase' => 'generating_content',
+            'section_index' => 2,
+            'section_total' => 5,
+            'courseid' => 0,
+            'coursename' => '',
+        ]);
+
+        $result = get_finalize_progress::get_finalize_progress($jobid, $this->sesskey);
+
+        $this->assertSame('generating_content', $result['phase']);
+        $this->assertSame(2, $result['section_index']);
+        $this->assertSame(5, $result['section_total']);
+        $this->assertSame(0, $result['courseid']);
+        $this->assertSame('', $result['coursename']);
+    }
+
+    public function test_get_finalize_progress_returns_done_with_course(): void {
+        $jobid = 'job-done-' . uniqid();
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $cache->set($jobid, [
+            'phase' => 'done',
+            'courseid' => 99,
+            'coursename' => 'My Created Course',
+        ]);
+
+        $result = get_finalize_progress::get_finalize_progress($jobid, $this->sesskey);
+
+        $this->assertSame('done', $result['phase']);
+        $this->assertSame(99, $result['courseid']);
+        $this->assertSame('My Created Course', $result['coursename']);
+    }
+
+    public function test_get_finalize_progress_requires_sesskey(): void {
+        $_POST['sesskey'] = 'wrong';
+        $this->expectException(\moodle_exception::class);
+        get_finalize_progress::get_finalize_progress('job-1', 'wrong');
+    }
+
+    public function test_get_finalize_progress_requires_create_capability(): void {
+        $other = $this->getDataGenerator()->create_user();
+        $this->setUser($other);
+
+        $this->expectException(\required_capability_exception::class);
+        get_finalize_progress::get_finalize_progress('job-1', sesskey());
+    }
+
+    public function test_save_structure_inserts_new_record(): void {
+        $jobid = 'job-save-' . uniqid();
+        $structure = json_encode(['course_structure' => ['title' => 'New Course', 'sections' => []]]);
+
+        $result = save_structure::save_structure($jobid, $structure);
+
+        $this->assertTrue($result['success']);
+
+        global $DB;
+        $records = $DB->get_records('block_dixeo_designer_structure', ['jobid' => $jobid]);
+        $this->assertCount(1, $records);
+        $record = reset($records);
+        $this->assertEquals($this->user->id, $record->userid);
+        $decoded = json_decode($record->structure, true);
+        $this->assertEquals('New Course', $decoded['course_structure']['title']);
+    }
+
+    public function test_save_structure_updates_existing_record(): void {
+        global $DB;
+
+        $jobid = 'job-update-' . uniqid();
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $this->user->id,
+            'description' => '',
+            'structure' => json_encode(['course_structure' => ['title' => 'Old']]),
+            'version' => '1',
+            'timecreated' => time(),
+        ]);
+
+        $result = save_structure::save_structure($jobid, json_encode(['course_structure' => ['title' => 'Updated']]));
+
+        $this->assertTrue($result['success']);
+        $records = $DB->get_records('block_dixeo_designer_structure', ['jobid' => $jobid]);
+        $this->assertCount(1, $records);
+        $decoded = json_decode(reset($records)->structure, true);
+        $this->assertEquals('Updated', $decoded['course_structure']['title']);
+    }
+
+    public function test_save_structure_throws_on_invalid_json(): void {
+        $this->expectException(\moodle_exception::class);
+        save_structure::save_structure('job-1', 'not valid json{');
     }
 }

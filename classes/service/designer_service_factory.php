@@ -30,6 +30,9 @@ class designer_service_factory {
     /** @var designer_service|null Test instance for unit tests. */
     private static ?designer_service $testinstance = null;
 
+    /** @var dixeo_remote_adapter|null Test remote adapter for unit tests. */
+    private static ?dixeo_remote_adapter $testremoteapi = null;
+
     /**
      * Get a designer_service instance.
      *
@@ -39,7 +42,7 @@ class designer_service_factory {
         if (self::$testinstance !== null) {
             return self::$testinstance;
         }
-        return new designer_service();
+        return new designer_service(null, null, null, null, self::$testremoteapi);
     }
 
     /**
@@ -53,11 +56,22 @@ class designer_service_factory {
     }
 
     /**
+     * Set a test remote adapter used when the test designer_service is not overridden.
+     *
+     * @param dixeo_remote_adapter|null $adapter
+     * @return void
+     */
+    public static function set_test_remote_adapter(?dixeo_remote_adapter $adapter): void {
+        self::$testremoteapi = $adapter;
+    }
+
+    /**
      * Reset to default state (call in test tearDown).
      *
      * @return void
      */
     public static function reset(): void {
         self::$testinstance = null;
+        self::$testremoteapi = null;
     }
 }

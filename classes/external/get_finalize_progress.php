@@ -12,7 +12,7 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 namespace block_dixeo_designer\external;
 
@@ -20,47 +20,45 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
-use block_dixeo_designer\dto\external\finalize_course_result;
+use block_dixeo_designer\dto\external\finalize_progress_result;
 
 /**
- * Finalize draft course after structure is ready (rename, sections, materialize).
+ * Get finalize course progress (phase, Section X of Y) for UI polling.
  *
  * @package    block_dixeo_designer
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-final class finalize_course extends external_api {
+final class get_finalize_progress extends external_api {
 
     /**
      * Why: Moodle external APIs require explicit parameter metadata for WS calls.
      *
      * @return external_function_parameters
      */
-    public static function finalize_course_parameters(): external_function_parameters {
+    public static function get_finalize_progress_parameters(): external_function_parameters {
         return new external_function_parameters([
             'job_id' => new external_value(PARAM_TEXT, 'Job id', VALUE_REQUIRED),
-            'createcourse' => new external_value(PARAM_BOOL, 'Create full course (false = structure only)', VALUE_REQUIRED),
             'sesskey' => new external_value(PARAM_RAW, 'Session key', VALUE_REQUIRED),
         ]);
     }
 
     /**
-     * Finalize a draft course after structure generation.
+     * Poll finalize progress for a job.
      *
      * @param string $job_id Job identifier.
-     * @param bool $createcourse When false, finalize only structure (no course creation).
      * @param string $sesskey Session key.
      * @return array {
+     *     phase: string,
+     *     section_index: int,
+     *     section_total: int,
      *     courseid: int,
      *     coursename: string
      * }
      */
-    public static function finalize_course(string $job_id, bool $createcourse, string $sesskey): array {
-        global $USER;
-
-        self::validate_parameters(self::finalize_course_parameters(), [
+    public static function get_finalize_progress(string $job_id, string $sesskey): array {
+        self::validate_parameters(self::get_finalize_progress_parameters(), [
             'job_id' => $job_id,
-            'createcourse' => $createcourse,
             'sesskey' => $sesskey,
         ]);
 
@@ -69,14 +67,20 @@ final class finalize_course extends external_api {
         require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
-        // Release the session lock early so concurrent polling requests
-        // (get_finalize_progress) can return while this long-running request runs.
-        \core\session\manager::write_close();
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $data = $cache->get($job_id);
 
-        $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
-        $course = $service->finalize_course($job_id, (int) $USER->id, $createcourse);
+        if ($data === false || !is_array($data)) {
+            return finalize_progress_result::from_cache_array([
+                'phase' => '',
+                'section_index' => 0,
+                'section_total' => 0,
+                'courseid' => 0,
+                'coursename' => '',
+            ])->to_array();
+        }
 
-        return finalize_course_result::from_course($course)->to_array();
+        return finalize_progress_result::from_cache_array($data)->to_array();
     }
 
     /**
@@ -84,10 +88,13 @@ final class finalize_course extends external_api {
      *
      * @return external_single_structure
      */
-    public static function finalize_course_returns(): external_single_structure {
+    public static function get_finalize_progress_returns(): external_single_structure {
         return new external_single_structure([
-            'courseid' => new external_value(PARAM_INT, 'Course ID'),
-            'coursename' => new external_value(PARAM_TEXT, 'Course name'),
+            'phase' => new external_value(PARAM_TEXT, 'Phase: generating_content, finalizing, done'),
+            'section_index' => new external_value(PARAM_INT, 'Current section (1-based)'),
+            'section_total' => new external_value(PARAM_INT, 'Total sections'),
+            'courseid' => new external_value(PARAM_INT, 'Course ID when done'),
+            'coursename' => new external_value(PARAM_TEXT, 'Course name when done'),
         ]);
     }
 }

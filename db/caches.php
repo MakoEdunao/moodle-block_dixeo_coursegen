@@ -15,7 +15,7 @@
 // along with Moodle. If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Library functions for the Dixeo Designer block.
+ * Cache definitions for block_dixeo_designer.
  *
  * @package    block_dixeo_designer
  * @copyright  2026 Dixeo
@@ -24,12 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Generate a unique job ID for designer submission tracking.
- * Used locally; the remote API returns its own job id (stored as remotejobid).
- *
- * @return string Unique job ID (short string, not UUID).
- */
-function block_dixeo_designer_generate_job_id(): string {
-    return 'd' . uniqid('', true);
-}
+$definitions = [
+    'finalize_progress' => [
+        'mode' => \cache_store::MODE_APPLICATION,
+        'simplekeys' => false,
+        'simpledata' => false,
+        'ttl' => 600,
+    ],
+];

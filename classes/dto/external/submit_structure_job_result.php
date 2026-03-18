@@ -14,24 +14,32 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Version details
- *
- * @package    block_dixeo_designer
- * @author     Josemaria Bolanos <admin@mako.digital>
- * @copyright  2025 Dixeo (contact@dixeo.com)
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace block_dixeo_designer\dto\external;
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2026031404;                 // The current plugin version (Date: YYYYMMDDXX).
-$plugin->requires  = 2023100909;                 // Requires this Moodle version.
-$plugin->component = 'block_dixeo_designer';   // Full name of the plugin (used for diagnostics).
+/**
+ * DTO for block_dixeo_designer submit_structure_job external response.
+ */
+final class submit_structure_job_result {
+    public function __construct(
+        public string $remotejobid,
+        public int $courseid
+    ) {
+    }
 
-$plugin->dependencies = [
-    'local_dixeo' => 2026022301
-];
+    public static function from_service(object $result): self {
+        return new self(
+            (string) ($result->remotejobid ?? ''),
+            (int) ($result->courseid ?? 0)
+        );
+    }
 
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = 'v1.2.0';
+    public function to_array(): array {
+        return [
+            'remotejobid' => $this->remotejobid,
+            'courseid' => $this->courseid,
+        ];
+    }
+}
+

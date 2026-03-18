@@ -20,6 +20,7 @@ use core_external\external_api;
 use core_external\external_function_parameters;
 use core_external\external_single_structure;
 use core_external\external_value;
+use block_dixeo_designer\dto\external\cancel_draft_result;
 
 /**
  * Cancel draft course and reset submission so user can generate again.
@@ -30,6 +31,11 @@ use core_external\external_value;
  */
 final class cancel_draft extends external_api {
 
+    /**
+     * Why: Moodle external APIs require explicit parameter metadata for WS calls.
+     *
+     * @return external_function_parameters
+     */
     public static function cancel_draft_parameters(): external_function_parameters {
         return new external_function_parameters([
             'job_id' => new external_value(PARAM_TEXT, 'Job id', VALUE_REQUIRED),
@@ -37,6 +43,13 @@ final class cancel_draft extends external_api {
         ]);
     }
 
+    /**
+     * Cancel draft course generation and reset submission state so user can regenerate.
+     *
+     * @param string $job_id Job identifier.
+     * @param string $sesskey Session key.
+     * @return array { success: bool }
+     */
     public static function cancel_draft(string $job_id, string $sesskey): array {
         global $USER;
 
@@ -53,9 +66,14 @@ final class cancel_draft extends external_api {
         $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
         $ok = $service->cancel_draft($job_id, (int) $USER->id);
 
-        return ['success' => $ok];
+        return cancel_draft_result::from_bool($ok)->to_array();
     }
 
+    /**
+     * Why: Moodle external APIs require explicit return metadata for WS calls.
+     *
+     * @return external_single_structure
+     */
     public static function cancel_draft_returns(): external_single_structure {
         return new external_single_structure([
             'success' => new external_value(PARAM_BOOL, 'Whether cancel succeeded'),

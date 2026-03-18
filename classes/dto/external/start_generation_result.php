@@ -12,24 +12,34 @@
 // GNU General Public License for more details.
 //
 // You should have received a copy of the GNU General Public License
-// along with Moodle. If not, see <http://www.gnu.org/licenses/>.
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Library functions for the Dixeo Designer block.
- *
- * @package    block_dixeo_designer
- * @copyright  2026 Dixeo
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+namespace block_dixeo_designer\dto\external;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Generate a unique job ID for designer submission tracking.
- * Used locally; the remote API returns its own job id (stored as remotejobid).
- *
- * @return string Unique job ID (short string, not UUID).
+ * DTO for block_dixeo_designer start_generation external response.
  */
-function block_dixeo_designer_generate_job_id(): string {
-    return 'd' . uniqid('', true);
+final class start_generation_result {
+    public function __construct(
+        public int $courseid,
+        public bool $noop
+    ) {
+    }
+
+    public static function from_service(object $start): self {
+        return new self(
+            (int) ($start->courseid ?? 0),
+            (bool) ($start->noop ?? false)
+        );
+    }
+
+    public function to_array(): array {
+        return [
+            'courseid' => $this->courseid,
+            'noop' => $this->noop,
+        ];
+    }
 }
+

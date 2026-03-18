@@ -22,6 +22,7 @@ use block_dixeo_designer\submission_repository;
 use block_dixeo_designer\submission_service;
 use block_dixeo_designer\submission_file_service;
 use block_dixeo_designer\structure_repository;
+use block_dixeo_designer\workflow_constants;
 
 /**
  * Designer workflow: start generation, poll status, finalize or cancel.
@@ -44,26 +45,33 @@ class designer_service {
     private structure_repository $structures;
 
     /** @var designer_course_creation_service */
-    private $coursecreation;
+    private designer_course_creation_service $coursecreation;
+
+    /** @var dixeo_remote_adapter */
+    private dixeo_remote_adapter $remoteapi;
 
     /**
-     * Constructor.
+     * Why: Allow controlled dependency injection (unit tests + workflow orchestration)
+     * without tightly coupling the designer workflow to specific persistence/adapters.
      *
      * @param submission_service|null $submissions
      * @param submission_file_service|null $files
      * @param structure_repository|null $structures
      * @param designer_course_creation_service|null $coursecreation
+     * @param dixeo_remote_adapter|null $remoteapi
      */
     public function __construct(
         ?submission_service $submissions = null,
         ?submission_file_service $files = null,
         ?structure_repository $structures = null,
-        ?designer_course_creation_service $coursecreation = null
+        ?designer_course_creation_service $coursecreation = null,
+        ?dixeo_remote_adapter $remoteapi = null
     ) {
         $this->submissions = $submissions ?? new submission_service();
         $this->files = $files ?? new submission_file_service();
         $this->structures = $structures ?? new structure_repository();
         $this->coursecreation = $coursecreation ?? new designer_course_creation_service();
+        $this->remoteapi = $remoteapi ?? new dixeo_remote_adapter();
     }
 
     /**
@@ -77,7 +85,7 @@ class designer_service {
      */
     public function start_generation(string $jobid, int $userid, string $description, ?string $templateid): object {
         $submission = $this->submissions->save_submission($jobid, $userid, $description, $templateid);
-        $this->submissions->mark_status($submission, 'generating_structure');
+        $this->submissions->mark_status($submission, workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE);
 
         $course = $this->coursecreation->create_draft_course($userid);
         $this->submissions->set_draft_and_remote_job($submission, (int) $course->id, null);
@@ -92,12 +100,10 @@ class designer_service {
                 $instructions = get_string('designer_default_file_prompt', 'block_dixeo_designer');
             }
 
-            $struct = \local_dixeo\external\service_factory::get_course_structure_service();
-            $op = $struct->submit_generate(
+            $op = $this->remoteapi->submit_course_structure_generation(
                 $instructions,
                 $templateid,
-                null,
-                (string) $course->id
+                (int) $course->id
             );
             $this->submissions->set_draft_and_remote_job($submission, (int) $course->id, $op->jobid);
 
@@ -113,6 +119,163 @@ class designer_service {
     }
 
     /**
+     * Prepare generation: create draft course, copy submission files into it, and trigger async file sync.
+     * Why: we only submit the remote structure generation after file sync
+     * has started/completed, so the UI can poll file-sync progress first.
+     *
+     * @param string $jobid
+     * @param int $userid
+     * @param string $description
+     * @param string|null $templateid
+     * @return object { courseid: int, noop?: bool }
+     */
+    public function prepare_generation(string $jobid, int $userid, string $description, ?string $templateid): object {
+        $existing = $this->submissions->get_submission($jobid);
+        $existingCourseId = ($existing && (int) $existing->userid === (int) $userid && !empty($existing->courseid))
+            ? (int) $existing->courseid
+            : null;
+
+        $oldPrompt = $existing->prompt ?? null;
+        $oldTemplateId = $existing->templateid ?? null;
+
+        $submission = $this->submissions->save_submission($jobid, $userid, $description, $templateid);
+        $this->submissions->mark_status($submission, workflow_constants::SUBMISSION_STATUS_SYNCING_FILES);
+
+        $newPrompt = $submission->prompt ?? null;
+        $newTemplateId = $submission->templateid ?? null;
+
+        // Compute a deterministic manifest hash of the submission files.
+        // Used to decide if we can reuse the existing draft course/vector store
+        // without forcing a re-copy + re-sync.
+        $submissionFiles = $this->files->get_files((int) $submission->id);
+        $submissionFilesHash = $this->compute_file_manifest_hash($submissionFiles);
+
+        if ($existingCourseId !== null) {
+            $courseAiRepo = new \local_dixeo\repository\course_ai_repository();
+            $courseAi = $courseAiRepo->get_by_courseid($existingCourseId);
+
+            $storedFileHash = $courseAi->filehash ?? null;
+            $fileManifestUnchanged = $storedFileHash !== null && hash_equals((string) $storedFileHash, $submissionFilesHash);
+
+            $syncStatus = $courseAi->syncstatus ?? null;
+            $fileSyncReady = in_array((string) $syncStatus, ['synchronized', 'none'], true);
+
+            // Reuse the existing draft course when the vector-store input is unchanged.
+            if ($fileManifestUnchanged && $fileSyncReady) {
+                $this->submissions->set_draft_and_remote_job($submission, $existingCourseId, null);
+
+                $promptTemplateUnchanged = ($oldPrompt === $newPrompt) && ($oldTemplateId === $newTemplateId);
+                $structureExists = $this->structures->get_latest_structure($jobid) !== null;
+
+                // Fast-path: identical prompt/template/files + structure already saved => no remote calls.
+                if ($promptTemplateUnchanged && $structureExists) {
+                    $this->submissions->mark_status($submission, workflow_constants::SUBMISSION_STATUS_NOOP_GENERATION);
+                    return (object) [
+                        'courseid' => (int) $existingCourseId,
+                        'noop' => true,
+                    ];
+                }
+
+                return (object) [
+                    'courseid' => (int) $existingCourseId,
+                    'noop' => false,
+                ];
+            }
+        }
+
+        // Fallback to the current behavior (new draft course) when we cannot safely reuse.
+        $course = $this->coursecreation->create_draft_course($userid);
+        $this->submissions->set_draft_and_remote_job($submission, (int) $course->id, null);
+
+        try {
+            $this->files->copy_files_to_course_resources((int) $submission->id, (int) $course->id, $userid);
+            $this->coursecreation->enable_draft_file_sync((int) $course->id, $userid);
+
+            return (object) [
+                'courseid' => (int) $course->id,
+                'noop' => false,
+            ];
+        } catch (\Throwable $e) {
+            $this->coursecreation->delete_draft_course((int) $course->id);
+            $this->submissions->clear_course($submission);
+            throw $e;
+        }
+    }
+
+    /**
+     * Poll file sync status for the draft course associated with this job.
+     *
+     * @param string $jobid
+     * @param int $userid
+     * @return object { status, progresspercent, filestotal, filescompleted, errormessage }
+     */
+    public function get_filesync_status(string $jobid, int $userid): object {
+        $submission = $this->submissions->get_submission($jobid);
+        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
+            return (object) [
+                'status' => 'none',
+                'progresspercent' => null,
+                'filestotal' => null,
+                'filescompleted' => null,
+                'errormessage' => null,
+            ];
+        }
+
+        return $this->remoteapi->get_file_sync_progress((int) $submission->courseid);
+    }
+
+    /**
+     * Submit the remote structure generation job after file sync has started/completed.
+     *
+     * @param string $jobid
+     * @param int $userid
+     * @return object { remotejobid: string, courseid: int }
+     */
+    public function submit_structure_generation(string $jobid, int $userid): object {
+        $submission = $this->submissions->get_submission($jobid);
+        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
+            throw new \moodle_exception('invalidinput', 'block_dixeo_designer');
+        }
+
+        // No-op regenerate fast-path:
+        // If prepare_generation detected identical submission inputs, skip any remote
+        // structure job submission and let get_structure_status return the saved structure.
+        if (!empty($submission->status) && $submission->status === workflow_constants::SUBMISSION_STATUS_NOOP_GENERATION) {
+            $this->submissions->mark_status($submission, workflow_constants::SUBMISSION_STATUS_NOOP_COMPLETED);
+            return (object) [
+                'remotejobid' => '',
+                'courseid' => (int) $submission->courseid,
+            ];
+        }
+
+        $instructions = trim((string) ($submission->prompt ?? ''));
+        if ($instructions === '') {
+            $instructions = get_string('designer_default_file_prompt', 'block_dixeo_designer');
+        }
+        if (\core_text::strlen($instructions) < workflow_constants::MIN_INSTRUCTIONS_LEN) {
+            // The remote API requires instructions >= 20 characters.
+            // If the user-provided prompt/description is too short, fall back to
+            // the default file-based prompt to avoid remote validation errors.
+            $defaultprompt = get_string('designer_default_file_prompt', 'block_dixeo_designer');
+            $instructions = trim($instructions . ' ' . $defaultprompt);
+        }
+
+        $op = $this->remoteapi->submit_course_structure_generation(
+            $instructions,
+            $submission->templateid ?? null,
+            (int) $submission->courseid
+        );
+
+        $this->submissions->set_draft_and_remote_job($submission, (int) $submission->courseid, $op->jobid);
+        $this->submissions->mark_status($submission, workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE);
+
+        return (object) [
+            'remotejobid' => $op->jobid,
+            'courseid' => (int) $submission->courseid,
+        ];
+    }
+
+    /**
      * Get the status of the remote structure generation job.
      *
      * @param string $jobid
@@ -121,6 +284,23 @@ class designer_service {
      */
     public function get_structure_status(string $jobid, int $userid): object {
         $submission = $this->submissions->get_submission($jobid);
+        if ($submission && (int) $submission->userid === $userid && ($submission->status ?? '') === workflow_constants::SUBMISSION_STATUS_NOOP_COMPLETED) {
+            $structureJson = $this->structures->get_latest_structure($jobid);
+            if ($structureJson !== null) {
+                $decoded = json_decode($structureJson, true);
+                $result = is_array($decoded) ? $decoded : null;
+
+                return (object) [
+                    'status' => 'completed',
+                    'progress' => 100,
+                    'completed' => true,
+                    'failed' => false,
+                    'result' => $result,
+                    'error' => null,
+                ];
+            }
+        }
+
         if (!$submission || (int) $submission->userid !== $userid || empty($submission->remotejobid)) {
             return (object) [
                 'status' => 'unknown',
@@ -132,7 +312,7 @@ class designer_service {
             ];
         }
 
-        $jobstatus = \local_dixeo\external\service_factory::get_job_service()->get_job_status($submission->remotejobid);
+        $jobstatus = $this->remoteapi->get_job_status($submission->remotejobid);
         $result = $jobstatus->result;
         if (is_string($result)) {
             $decoded = json_decode($result, true);
@@ -168,7 +348,7 @@ class designer_service {
             $result = json_decode($structureJson, true);
             $result = is_array($result) ? $result : [];
         } else {
-            $jobstatus = \local_dixeo\external\service_factory::get_job_service()->get_job_status($submission->remotejobid);
+            $jobstatus = $this->remoteapi->get_job_status($submission->remotejobid);
             if (!$jobstatus->is_completed() || empty($jobstatus->result)) {
                 return null;
             }
@@ -187,9 +367,21 @@ class designer_service {
         $course = $this->coursecreation->finalize_draft_course(
             (int) $submission->courseid,
             $result,
-            $userid
+            $userid,
+            $jobid
         );
+
+        // Defensive guard: if course finalization did not produce a course,
+        // do not attach/delete the submission.
+        if (!$course || empty($course->id)) {
+            return null;
+        }
+
         $this->submissions->attach_course($submission, (int) $course->id);
+
+        // After a successful generation, delete the submission so revisiting
+        // the designer with the same id results in a clean designer.
+        $this->submissions->delete_submission($jobid, $userid);
 
         return $course;
     }
@@ -214,24 +406,34 @@ class designer_service {
     }
 
     /**
-     * Upload submission files to the remote API (vector store by jobid).
+     * Why: Push local uploaded files into the remote vector-store so subsequent
+     * structure generation can access the same inputs.
      *
      * @param int $submissionid
      * @param string $jobid
      * @return void
      */
     private function sync_submission_files_to_remote(int $submissionid, string $jobid): void {
-        $client = \local_dixeo\external\service_factory::get_client();
         $files = $this->files->get_files($submissionid);
+        $this->remoteapi->sync_files_to_remote($jobid, $files);
+    }
 
-        try {
-            $client->delete_files($jobid);
-        } catch (\Throwable $e) {
-            // Ignore so first-time uploads work.
+    /**
+     * Compute SHA-256 hash of the submission files manifest.
+     * Mirrors local_dixeo file_sync_service::compute_file_manifest_hash().
+     *
+     * @param \stored_file[] $files
+     * @return string
+     */
+    private function compute_file_manifest_hash(array $files): string {
+        $entries = [];
+
+        foreach ($files as $file) {
+            $entries[] = $file->get_contenthash() . '|' . $file->get_filename();
         }
 
-        if (!empty($files)) {
-            $client->upload_files($jobid, $files);
-        }
+        sort($entries);
+
+        return hash('sha256', implode("\n", $entries));
     }
 }

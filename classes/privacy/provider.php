@@ -32,7 +32,7 @@ use core_privacy\local\metadata\collection;
  * Privacy provider implementation for the dixeo_designer block.
  *
  * @package    block_dixeo_designer
- * @copyright  2024 Your Name or Company
+ * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements metadata_provider {

@@ -88,14 +88,16 @@ $string['designer_default_module_prompt'] = 'Den vollständigen Lerninhalt für 
 $string['designer_filesyncfailed'] = 'Die hochgeladenen Dateien konnten vor der Modulgenerierung nicht synchronisiert werden: {$a}';
 $string['designer_filesynctimeout'] = 'Die hochgeladenen Dateien wurden nicht rechtzeitig für die Modulgenerierung synchronisiert.';
 $string['designer_module_timeout'] = 'Das Modul „{$a}“ wurde nicht rechtzeitig generiert. Der Server könnte ausgelastet sein; versuchen Sie es später erneut oder erstellen Sie die Aktivität manuell.';
-$string['step1'] = 'Eingabe wird geprüft';
-$string['step2'] = 'Thema wird analysiert';
-$string['step3'] = 'Module werden strukturiert';
-$string['step4'] = 'Inhalt wird generiert';
-$string['step5'] = 'Details werden fertiggestellt';
+$string['step_uploading_files'] = 'Dateien werden verarbeitet';
+$string['step_generating_structure'] = 'Struktur wird generiert';
+$string['uploading_files_to_server'] = 'Dateien werden zum Server hochgeladen…';
+$string['step_generating_content'] = 'Inhalt wird generiert';
+$string['step_finalizing_details'] = 'Details werden fertiggestellt';
+$string['section_progress'] = 'Abschnitt {$a->current} von {$a->total}';
 $string['invalidinput'] = 'Angaben erforderlich.';
 $string['error_title'] = 'Hoppla!';
 $string['error_generation_failed'] = 'Kurserstellung fehlgeschlagen: {$a}. Bitte versuchen Sie es erneut.';
+$string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
 // File uploads.
 $string['attachfile'] = 'Quelldokument anhängen';
@@ -107,6 +109,9 @@ $string['filetypeinvalid'] = 'Der Dateityp {$a} wird nicht unterstützt. Unterst
 $string['totaltoolarge'] = 'Die Gesamtgröße der Dateien überschreitet das Limit von 50 MB. Laden Sie kleinere Dateien hoch oder entfernen Sie eine Datei.';
 $string['uploaderror'] = 'Fehler beim Hochladen der Datei.';
 $string['uploading_files'] = 'Wird hochgeladen…';
+$string['step_uploading_files_count'] = 'Dateien werden verarbeitet ({$a->current}/{$a->total})';
+$string['step_generating_content_count'] = 'Inhalt wird generiert ({$a->current}/{$a->total})';
+$string['step_processing_prompt'] = 'Processing prompt';
 
 // Designer interface.
 $string['designer_loading'] = 'Kursstruktur wird geladen...';

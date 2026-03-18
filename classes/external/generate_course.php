@@ -32,8 +32,8 @@ use core_external\external_value;
 /**
  * External API class for retrieving the generation status of a course creation task.
  *
- * @package    blocks_dixeo_designer
- * @copyright  2024 Your Name or Organization
+ * @package    block_dixeo_designer
+ * @copyright  2026 Dixeo (contact@dixeo.com)
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class generate_course extends external_api {
@@ -53,8 +53,9 @@ final class generate_course extends external_api {
     }
 
     /**
-     * Start course generation: create draft course, sync files, submit structure job.
-     * Returns immediately with courseid and remotejobid for polling.
+     * Why: generation is asynchronous. We start the draft + file sync, submit
+     * the remote structure job, then return identifiers so the UI can poll
+     * progress without blocking.
      *
      * @param string $job_id The unique identifier for the generation job.
      * @param string $description The course description.

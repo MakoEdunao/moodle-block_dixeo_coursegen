@@ -88,14 +88,16 @@ $string['designer_default_module_prompt'] = 'Gerar o conteúdo de aprendizagem c
 $string['designer_filesyncfailed'] = 'Os ficheiros carregados não puderam ser sincronizados antes da geração do módulo: {$a}';
 $string['designer_filesynctimeout'] = 'Os ficheiros carregados não terminaram de sincronizar a tempo para a geração do módulo.';
 $string['designer_module_timeout'] = 'O módulo «{$a}» não terminou de ser gerado a tempo. O servidor pode estar ocupado; tente novamente mais tarde ou crie a atividade manualmente.';
-$string['step1'] = 'A validar entrada';
-$string['step2'] = 'A analisar o tema';
-$string['step3'] = 'A estruturar os módulos';
-$string['step4'] = 'A gerar o conteúdo';
-$string['step5'] = 'A finalizar os detalhes';
+$string['step_uploading_files'] = 'A processar ficheiros';
+$string['step_generating_structure'] = 'A gerar estrutura';
+$string['uploading_files_to_server'] = 'A enviar ficheiros para o servidor…';
+$string['step_generating_content'] = 'A gerar conteúdo';
+$string['step_finalizing_details'] = 'A finalizar detalhes';
+$string['section_progress'] = 'Secção {$a->current} de {$a->total}';
 $string['invalidinput'] = 'Informação necessária.';
 $string['error_title'] = 'Ups!';
 $string['error_generation_failed'] = 'Falha ao criar o curso: {$a}. Tente novamente.';
+$string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
 // File uploads.
 $string['attachfile'] = 'Anexar um documento de origem';
@@ -107,6 +109,9 @@ $string['filetypeinvalid'] = 'O tipo de ficheiro {$a} não é suportado. Extens�
 $string['totaltoolarge'] = 'O tamanho total dos ficheiros excede o limite de 50 MB. Carregue ficheiros mais pequenos ou remova um para continuar.';
 $string['uploaderror'] = 'Erro ao carregar o ficheiro.';
 $string['uploading_files'] = 'A carregar…';
+$string['step_uploading_files_count'] = 'A processar ficheiros ({$a->current}/{$a->total})';
+$string['step_generating_content_count'] = 'A gerar conteúdo ({$a->current}/{$a->total})';
+$string['step_processing_prompt'] = 'Processing prompt';
 
 // Designer interface.
 $string['designer_loading'] = 'A carregar estrutura do curso...';

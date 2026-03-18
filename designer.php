@@ -35,11 +35,23 @@ $hasexistingjob = ($jobid !== '');
 $submissionservice = new \block_dixeo_designer\submission_service();
 $designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
 
+// If the job id exists but the submission was deleted after successful generation,
+// show a clean designer and an error message (no review UI).
+$submissionExpired = false;
+$submission = null;
+
 if (!$hasexistingjob) {
     $jobid = block_dixeo_designer_generate_job_id();
+} else {
+    $submission = $submissionservice->get_submission($jobid);
+    if ($submission === null) {
+        $submissionExpired = true;
+        $hasexistingjob = false;
+        $jobid = block_dixeo_designer_generate_job_id();
+    }
 }
 
-$submission = $submissionservice->get_or_create_submission($jobid, $USER->id);
+$submission = $submission ?: $submissionservice->get_or_create_submission($jobid, $USER->id);
 if ((int) $submission->userid !== (int) $USER->id) {
     require_capability('block/dixeo_designer:manage', context_system::instance());
 }
@@ -57,6 +69,13 @@ $PAGE->set_title(get_string('pluginname', 'block_dixeo_designer'));
 $PAGE->set_heading(''); // Empty heading (no page title)
 
 echo $OUTPUT->header();
+
+if ($submissionExpired) {
+    echo html_writer::div(
+        'This course generation has expired. Please start a new generation.',
+        'alert alert-danger mt-3'
+    );
+}
 
 $filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
 

@@ -41,27 +41,28 @@ use core_external\external_value;
 final class get_versions extends external_api {
 
     /**
-     * Returns description of get_versions parameters
+     * Why: Moodle external APIs require explicit parameter metadata for WS calls.
      *
      * @return external_function_parameters
      */
     public static function get_versions_parameters(): external_function_parameters {
         return new external_function_parameters([
-            'jobid' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
+            'job_id' => new external_value(PARAM_TEXT, 'Job ID', VALUE_REQUIRED),
         ]);
     }
 
     /**
-     * Get all versions for a job
+     * Why: The designer UI needs a history list so users can view earlier
+     * structure drafts for the same job (versioning is persisted per job).
      *
-     * @param string $jobid The job identifier
+     * @param string $job_id The job identifier
      * @return array Array of version objects
      */
-    public static function get_versions(string $jobid): array {
+    public static function get_versions(string $job_id): array {
         global $DB, $USER;
 
         $params = self::validate_parameters(self::get_versions_parameters(), [
-            'jobid' => $jobid,
+            'job_id' => $job_id,
         ]);
 
         $context = \context_system::instance();
@@ -69,9 +70,10 @@ final class get_versions extends external_api {
 
         require_login();
 
-        // Get all versions for this job, ordered by time created (oldest first for history navigation)
+        // Why: order by creation time so history navigation is stable and intuitive
+        // (oldest first).
         $records = $DB->get_records('block_dixeo_designer_structure',
-            ['jobid' => $params['jobid']],
+            ['jobid' => $params['job_id']],
             'timecreated ASC',
             'id, version, timecreated, userid'
         );
@@ -80,7 +82,8 @@ final class get_versions extends external_api {
             throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
         }
 
-        // Check user owns this structure (or has manage capability) - check first record
+        // Why: prevent leaking other users' stored structures; capability gate is
+        // sufficient when the user is not the owner.
         $first = reset($records);
         if ($first->userid != $USER->id) {
             require_capability('block/dixeo_designer:manage', $context);
@@ -101,7 +104,7 @@ final class get_versions extends external_api {
     }
 
     /**
-     * Returns description of get_versions return value
+     * Why: Moodle external APIs require explicit return metadata for WS calls.
      *
      * @return external_multiple_structure
      */

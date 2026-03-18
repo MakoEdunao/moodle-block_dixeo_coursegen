@@ -75,8 +75,8 @@ final class external_get_structure_test extends advanced_testcase {
         $result = get_structure::get_structure($jobid);
 
         $this->assertArrayHasKey('structure', $result);
-        $this->assertArrayHasKey('jobid', $result);
-        $this->assertSame($jobid, $result['jobid']);
+        $this->assertArrayHasKey('job_id', $result);
+        $this->assertSame($jobid, $result['job_id']);
         $decoded = json_decode($result['structure'], true);
         $this->assertEquals('Latest', $decoded['course_structure']['title']);
     }

@@ -62,7 +62,7 @@ class submission_repository {
             'userid' => $userid,
             'prompt' => null,
             'templateid' => null,
-            'status' => 'draft',
+            'status' => workflow_constants::SUBMISSION_STATUS_DRAFT,
             'remotejobid' => null,
             'courseid' => null,
             'timecreated' => $now,
@@ -84,5 +84,19 @@ class submission_repository {
 
         $submission->timemodified = time();
         $DB->update_record(self::TABLE, $submission);
+    }
+
+    /**
+     * Delete a submission by job id (only for the given user).
+     *
+     * @param string $jobid
+     * @param int $userid
+     * @return bool True when at least one row was deleted.
+     */
+    public function delete_by_jobid(string $jobid, int $userid): bool {
+        global $DB;
+
+        $deleted = $DB->delete_records(self::TABLE, ['jobid' => $jobid, 'userid' => $userid]);
+        return $deleted > 0;
     }
 }

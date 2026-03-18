@@ -37,7 +37,8 @@ class designer_submission_ui_service {
     private submission_file_service $files;
 
     /**
-     * Constructor.
+     * Why: allow unit tests and higher-level workflow services to inject
+     * persistence/file-store dependencies.
      *
      * @param submission_service|null $submissions
      * @param submission_file_service|null $files

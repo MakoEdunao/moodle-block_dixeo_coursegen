@@ -30,7 +30,8 @@ class submission_service {
     private submission_repository $repository;
 
     /**
-     * Constructor.
+     * Why: allow unit tests to inject a mock repository, keeping persistence logic
+     * separate from workflow state transitions.
      *
      * @param submission_repository|null $repository
      */
@@ -110,7 +111,7 @@ class submission_service {
      */
     public function attach_course(\stdClass $submission, int $courseid): void {
         $submission->courseid = $courseid;
-        $submission->status = 'course_created';
+        $submission->status = workflow_constants::SUBMISSION_STATUS_COURSE_CREATED;
         $this->repository->update($submission);
     }
 
@@ -125,7 +126,7 @@ class submission_service {
     public function set_draft_and_remote_job(\stdClass $submission, int $courseid, ?string $remotejobid): void {
         $submission->courseid = $courseid;
         $submission->remotejobid = $remotejobid;
-        $submission->status = 'generating_structure';
+        $submission->status = workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE;
         $this->repository->update($submission);
     }
 
@@ -138,7 +139,18 @@ class submission_service {
     public function clear_course(\stdClass $submission): void {
         $submission->courseid = null;
         $submission->remotejobid = null;
-        $submission->status = 'draft';
+        $submission->status = workflow_constants::SUBMISSION_STATUS_DRAFT;
         $this->repository->update($submission);
+    }
+
+    /**
+     * Delete a submission after successful generation.
+     *
+     * @param string $jobid
+     * @param int $userid
+     * @return bool True when at least one row was deleted.
+     */
+    public function delete_submission(string $jobid, int $userid): bool {
+        return $this->repository->delete_by_jobid($jobid, $userid);
     }
 }
