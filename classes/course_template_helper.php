@@ -23,8 +23,7 @@ use local_dixeo\external\service_factory;
 /**
  * Thin helper for course template prompt options (UI only).
  *
- * All template list logic, cache and API normalisation live in local_dixeo.
- * This class only calls local_dixeo and builds the select options for the block template.
+ * Template list and cache live in local_dixeo course_template_service.
  *
  * @package    block_dixeo_designer
  * @copyright  2026 Dixeo (contact@dixeo.com)

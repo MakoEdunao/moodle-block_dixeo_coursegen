@@ -24,7 +24,7 @@
  */
 
 require_once(__DIR__ . '/../../config.php');
-require_once($CFG->dirroot . '/local/dixeo/lib.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/lib.php');
 
 require_login();
 
@@ -33,11 +33,10 @@ global $PAGE, $OUTPUT, $USER;
 $jobid = optional_param('id', '', PARAM_TEXT);
 $hasexistingjob = ($jobid !== '');
 $submissionservice = new \block_dixeo_designer\submission_service();
-$persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-$designeruiservice = \local_dixeo\external\service_factory::get_designer_submission_ui_service();
+$designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
 
 if (!$hasexistingjob) {
-    $jobid = local_dixeo_generate_job_id();
+    $jobid = block_dixeo_designer_generate_job_id();
 }
 
 $submission = $submissionservice->get_or_create_submission($jobid, $USER->id);
@@ -59,7 +58,7 @@ $PAGE->set_heading(''); // Empty heading (no page title)
 
 echo $OUTPUT->header();
 
-$filecontext = $designeruiservice->get_file_context($persistence, $jobid, (int) $USER->id);
+$filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
 
 echo html_writer::start_div('dixeo-designer-block-wrapper');
 echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer',

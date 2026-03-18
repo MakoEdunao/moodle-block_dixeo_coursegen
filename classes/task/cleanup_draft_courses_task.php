@@ -40,8 +40,7 @@ class cleanup_draft_courses_task extends \core\task\scheduled_task {
      * Delete draft courses older than 1 hour (delegates to local_dixeo).
      */
     public function execute(): void {
-        $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-        $creation = new \local_dixeo\service\designer_course_creation_service($persistence);
+        $creation = new \block_dixeo_designer\service\designer_course_creation_service();
         $deleted = $creation->cleanup_draft_courses_older_than(3600);
         if ($deleted > 0) {
             mtrace("[block_dixeo_designer] Deleted {$deleted} draft course(s).");

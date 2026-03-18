@@ -36,9 +36,8 @@ try {
         throw new moodle_exception('uploaderror', 'block_dixeo_designer');
     }
 
-    $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-    $service = \local_dixeo\external\service_factory::get_designer_submission_ui_service();
-    $filecontext = $service->store_uploaded_files($persistence, $jobid, (int) $USER->id, $files);
+    $service = new \block_dixeo_designer\service\designer_submission_ui_service();
+    $filecontext = $service->store_uploaded_files($jobid, (int) $USER->id, $files);
 
     echo json_encode([
         'success' => true,

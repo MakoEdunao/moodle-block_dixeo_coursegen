@@ -52,8 +52,7 @@ final class finalize_course extends external_api {
         require_capability('block/dixeo_designer:create', $context);
         require_sesskey();
 
-        $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-        $service = \local_dixeo\external\service_factory::get_course_designer_service($persistence);
+        $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
         $course = $service->finalize_course($job_id, (int) $USER->id, $createcourse);
 
         if ($course === null) {

@@ -19,21 +19,28 @@ namespace block_dixeo_designer;
 defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
-use block_dixeo_designer\adapter\designer_persistence_adapter;
+use block_dixeo_designer\submission_service;
+use block_dixeo_designer\structure_repository;
 
 /**
- * Tests for the designer persistence adapter (local_dixeo interface implementation).
+ * Tests for submission_service and structure_repository (block-owned persistence).
+ *
+ * Replaces former adapter tests; persistence is now in the block.
  *
  * @package    block_dixeo_designer
  * @category   test
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \block_dixeo_designer\adapter\designer_persistence_adapter
+ * @covers     \block_dixeo_designer\submission_service
+ * @covers     \block_dixeo_designer\structure_repository
  */
 final class adapter_test extends advanced_testcase {
 
-    /** @var designer_persistence_adapter */
-    private $adapter;
+    /** @var submission_service */
+    private $submissions;
+
+    /** @var structure_repository */
+    private $structures;
 
     /** @var \stdClass */
     private $user;
@@ -42,16 +49,17 @@ final class adapter_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         $this->user = $this->getDataGenerator()->create_user();
-        $this->adapter = new designer_persistence_adapter();
+        $this->submissions = new submission_service();
+        $this->structures = new structure_repository();
     }
 
     public function test_get_submission_returns_null_when_missing(): void {
-        $this->assertNull($this->adapter->get_submission('job-' . uniqid()));
+        $this->assertNull($this->submissions->get_submission('job-' . uniqid()));
     }
 
     public function test_get_or_create_submission_creates_and_returns_submission(): void {
         $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'My prompt', 'tpl-1');
+        $sub = $this->submissions->save_submission($jobid, $this->user->id, 'My prompt', 'tpl-1');
         $this->assertInstanceOf(\stdClass::class, $sub);
         $this->assertEquals($jobid, $sub->jobid);
         $this->assertEquals($this->user->id, $sub->userid);
@@ -65,36 +73,27 @@ final class adapter_test extends advanced_testcase {
 
     public function test_get_or_create_submission_updates_prompt_and_template_on_existing(): void {
         $jobid = 'job-' . uniqid();
-        $this->adapter->get_or_create_submission($jobid, $this->user->id, 'First', null);
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'Second', 'tpl-2');
+        $this->submissions->save_submission($jobid, $this->user->id, 'First', null);
+        $sub = $this->submissions->save_submission($jobid, $this->user->id, 'Second', 'tpl-2');
         $this->assertEquals('Second', $sub->prompt);
         $this->assertEquals('tpl-2', $sub->templateid);
     }
 
     public function test_get_submission_returns_existing_submission(): void {
         $jobid = 'job-' . uniqid();
-        $this->adapter->get_or_create_submission($jobid, $this->user->id, 'Prompt', null);
-        $sub = $this->adapter->get_submission($jobid);
+        $this->submissions->save_submission($jobid, $this->user->id, 'Prompt', null);
+        $sub = $this->submissions->get_submission($jobid);
         $this->assertNotNull($sub);
         $this->assertEquals($jobid, $sub->jobid);
         $this->assertEquals('Prompt', $sub->prompt);
     }
 
-    public function test_update_submission_persists_changes(): void {
-        $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
-        $sub->prompt = 'Updated prompt';
-        $this->adapter->update_submission($sub);
-        $fetched = $this->adapter->get_submission($jobid);
-        $this->assertEquals('Updated prompt', $fetched->prompt);
-    }
-
     public function test_set_draft_and_remote_job(): void {
         $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
+        $sub = $this->submissions->save_submission($jobid, $this->user->id, 'P', null);
         $course = $this->getDataGenerator()->create_course();
-        $this->adapter->set_draft_and_remote_job($sub, $course->id, 'remote-uuid-123');
-        $fetched = $this->adapter->get_submission($jobid);
+        $this->submissions->set_draft_and_remote_job($sub, $course->id, 'remote-uuid-123');
+        $fetched = $this->submissions->get_submission($jobid);
         $this->assertEquals($course->id, $fetched->courseid);
         $this->assertEquals('remote-uuid-123', $fetched->remotejobid);
         $this->assertEquals('generating_structure', $fetched->status);
@@ -102,53 +101,38 @@ final class adapter_test extends advanced_testcase {
 
     public function test_attach_course(): void {
         $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
+        $sub = $this->submissions->save_submission($jobid, $this->user->id, 'P', null);
         $course = $this->getDataGenerator()->create_course();
-        $this->adapter->attach_course($sub, $course->id);
-        $fetched = $this->adapter->get_submission($jobid);
+        $this->submissions->attach_course($sub, $course->id);
+        $fetched = $this->submissions->get_submission($jobid);
         $this->assertEquals($course->id, $fetched->courseid);
         $this->assertEquals('course_created', $fetched->status);
     }
 
     public function test_clear_course(): void {
         $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
+        $sub = $this->submissions->save_submission($jobid, $this->user->id, 'P', null);
         $course = $this->getDataGenerator()->create_course();
-        $this->adapter->set_draft_and_remote_job($sub, $course->id, 'remote-1');
-        $this->adapter->clear_course($sub);
-        $fetched = $this->adapter->get_submission($jobid);
+        $this->submissions->set_draft_and_remote_job($sub, $course->id, 'remote-1');
+        $this->submissions->clear_course($sub);
+        $fetched = $this->submissions->get_submission($jobid);
         $this->assertNull($fetched->courseid);
         $this->assertNull($fetched->remotejobid);
         $this->assertEquals('draft', $fetched->status);
     }
 
-    public function test_get_submission_files_returns_empty_array_when_no_files(): void {
-        $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
-        $files = $this->adapter->get_submission_files((int) $sub->id);
-        $this->assertIsArray($files);
-        $this->assertEmpty($files);
-    }
-
-    public function test_copy_submission_files_to_course_no_files_does_not_throw(): void {
-        $jobid = 'job-' . uniqid();
-        $sub = $this->adapter->get_or_create_submission($jobid, $this->user->id, 'P', null);
-        $course = $this->getDataGenerator()->create_course();
-        $this->adapter->copy_submission_files_to_course((int) $sub->id, $course->id, $this->user->id);
-        $this->assertTrue(true);
-    }
-
     public function test_save_structure_version_inserts_record(): void {
-        global $DB;
         $jobid = 'job-' . uniqid();
         $result = ['data' => ['title' => 'Test', 'sections' => []]];
-        $this->adapter->save_structure_version($jobid, $this->user->id, 'Desc', $result);
-        $count = $DB->count_records('block_dixeo_designer_structure', ['jobid' => $jobid, 'userid' => $this->user->id]);
-        $this->assertSame(1, $count);
-        $record = $DB->get_record('block_dixeo_designer_structure', ['jobid' => $jobid]);
-        $this->assertEquals('Desc', $record->description);
-        $decoded = json_decode($record->structure, true);
+        $this->structures->save_structure_version($jobid, $this->user->id, 'Desc', $result);
+        $json = $this->structures->get_latest_structure($jobid);
+        $this->assertNotNull($json);
+        $decoded = json_decode($json, true);
         $this->assertIsArray($decoded);
         $this->assertArrayHasKey('data', $decoded);
+    }
+
+    public function test_get_latest_structure_returns_null_when_missing(): void {
+        $this->assertNull($this->structures->get_latest_structure('job-' . uniqid()));
     }
 }

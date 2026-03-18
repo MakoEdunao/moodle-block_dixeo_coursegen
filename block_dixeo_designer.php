@@ -80,7 +80,7 @@ class block_dixeo_designer extends block_base {
 
         // Note: do NOT include files at the top of this file.
         require_once($CFG->libdir . '/filelib.php');
-        require_once($CFG->dirroot . '/local/dixeo/lib.php');
+        require_once($CFG->dirroot . '/blocks/dixeo_designer/lib.php');
 
         // We can exit early if the current user doesn't have the capability to create courses.
         if (!has_capability('block/dixeo_designer:create', $this->context)) {
@@ -95,10 +95,9 @@ class block_dixeo_designer extends block_base {
 
         $this->content = new stdClass();
         $this->content->footer = '';
-        $jobid = local_dixeo_generate_job_id();
-        $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-        $filecontext = \local_dixeo\external\service_factory::get_designer_submission_ui_service()
-            ->get_file_context($persistence, $jobid, (int) $USER->id);
+        $jobid = block_dixeo_designer_generate_job_id();
+        $designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
+        $filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
         $context = \block_dixeo_designer\submission_render_helper::build_prompt_context(
             $jobid,
             $coursedescription,

@@ -23,18 +23,17 @@ require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/generate_c
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_structure_status.php');
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/finalize_course.php');
 require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/cancel_draft.php');
-require_once($CFG->dirroot . '/local/dixeo/classes/external/service_factory.php');
 
 use advanced_testcase;
 use block_dixeo_designer\external\generate_course;
 use block_dixeo_designer\external\get_structure_status;
 use block_dixeo_designer\external\finalize_course;
 use block_dixeo_designer\external\cancel_draft;
-use local_dixeo\external\service_factory;
-use local_dixeo\service\course_designer_service;
+use block_dixeo_designer\service\designer_service;
+use block_dixeo_designer\service\designer_service_factory;
 
 /**
- * External API tests with mocked local_dixeo course_designer_service.
+ * External API tests with mocked block designer_service.
  *
  * @package    block_dixeo_designer
  * @category   test
@@ -53,7 +52,7 @@ final class external_test extends advanced_testcase {
     /** @var string */
     private $sesskey;
 
-    /** @var \PHPUnit\Framework\MockObject\MockObject|course_designer_service */
+    /** @var \PHPUnit\Framework\MockObject\MockObject|designer_service */
     private $mockdesignerservice;
 
     protected function setUp(): void {
@@ -64,15 +63,15 @@ final class external_test extends advanced_testcase {
         $this->assign_capability();
         $this->sesskey = sesskey();
         $_POST['sesskey'] = $this->sesskey;
-        $this->mockdesignerservice = $this->getMockBuilder(course_designer_service::class)
+        $this->mockdesignerservice = $this->getMockBuilder(designer_service::class)
             ->disableOriginalConstructor()
             ->onlyMethods(['start_generation', 'get_structure_status', 'finalize_course', 'cancel_draft'])
             ->getMock();
-        service_factory::set_test_course_designer_service($this->mockdesignerservice);
+        designer_service_factory::set_test_designer_service($this->mockdesignerservice);
     }
 
     protected function tearDown(): void {
-        service_factory::reset();
+        designer_service_factory::reset();
         parent::tearDown();
     }
 

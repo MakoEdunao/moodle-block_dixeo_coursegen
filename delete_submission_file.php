@@ -32,9 +32,8 @@ header('Content-Type: application/json');
 try {
     global $USER;
 
-    $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-    $service = \local_dixeo\external\service_factory::get_designer_submission_ui_service();
-    $filecontext = $service->delete_file($persistence, $jobid, (int) $USER->id, $fileid);
+    $service = new \block_dixeo_designer\service\designer_submission_ui_service();
+    $filecontext = $service->delete_file($jobid, (int) $USER->id, $fileid);
 
     echo json_encode([
         'success' => true,

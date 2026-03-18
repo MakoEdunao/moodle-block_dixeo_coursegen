@@ -81,8 +81,7 @@ final class get_structure extends external_api {
         if (!$structure) {
             // No DB record yet (e.g. user just arrived from generator after structure generation).
             // Fall back to completed job result from the API and persist it.
-            $persistence = new \block_dixeo_designer\adapter\designer_persistence_adapter();
-            $service = \local_dixeo\external\service_factory::get_course_designer_service($persistence);
+            $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
             $status = $service->get_structure_status($params['jobid'], (int) $USER->id);
             if (!$status->completed || $status->result === null) {
                 throw new \moodle_exception('structurenotfound', 'block_dixeo_designer');
@@ -92,7 +91,8 @@ final class get_structure extends external_api {
                 $decoded = json_decode($result, true);
                 $result = is_array($decoded) ? $decoded : ['course_structure' => ['title' => '', 'sections' => []]];
             }
-            $persistence->save_structure_version($params['jobid'], (int) $USER->id, '', $result);
+            $structures = new \block_dixeo_designer\structure_repository();
+            $structures->save_structure_version($params['jobid'], (int) $USER->id, '', $result);
             $structureJson = json_encode($result);
             return [
                 'structure' => $structureJson,
