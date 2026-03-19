@@ -29,6 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Dixeo-Kursdesigner';
 $string['settings'] = 'Dixeo-Kursdesigner';
 $string['blocktitle'] = 'Dixeo-Kursdesigner';
+$string['toggle_prompt_hide'] = 'Prompt ausblenden';
+$string['toggle_prompt_show'] = 'Prompt anzeigen';
+$string['toggle_tooltip_hide'] = 'Generierungsblock ausblenden';
+$string['toggle_tooltip_show'] = 'Generierungsblock anzeigen';
 $string['designacourse'] = 'Einen Kurs gestalten';
 
 // Capabilities.
@@ -97,6 +101,7 @@ $string['section_progress'] = 'Abschnitt {$a->current} von {$a->total}';
 $string['invalidinput'] = 'Angaben erforderlich.';
 $string['error_title'] = 'Hoppla!';
 $string['error_generation_failed'] = 'Kurserstellung fehlgeschlagen: {$a}. Bitte versuchen Sie es erneut.';
+$string['designer_unknown_error'] = 'Unbekannter Fehler';
 $string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
 // File uploads.
@@ -117,6 +122,7 @@ $string['step_processing_prompt'] = 'Processing prompt';
 $string['designer_loading'] = 'Kursstruktur wird geladen...';
 $string['designer_regenerate'] = 'Neu generieren';
 $string['designer_invalid_data'] = 'Ungültige Strukturdaten';
+$string['structurenotfound'] = 'Kursstruktur nicht gefunden. Erstellen Sie zuerst eine Struktur oder versuchen Sie es später erneut.';
 $string['designer_save'] = 'Speichern';
 $string['designer_cancel'] = 'Abbrechen';
 $string['designer_reload'] = 'Neu laden';

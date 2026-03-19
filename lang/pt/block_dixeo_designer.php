@@ -29,6 +29,10 @@ defined('MOODLE_INTERNAL') || die();
 $string['pluginname'] = 'Designer de Cursos Dixeo';
 $string['settings'] = 'Designer de Cursos Dixeo';
 $string['blocktitle'] = 'Designer de Cursos Dixeo';
+$string['toggle_prompt_hide'] = 'Ocultar prompt';
+$string['toggle_prompt_show'] = 'Mostrar prompt';
+$string['toggle_tooltip_hide'] = 'Ocultar bloco de geração';
+$string['toggle_tooltip_show'] = 'Exibir bloco de geração';
 $string['designacourse'] = 'Conceber um curso';
 
 // Capabilities.
@@ -97,6 +101,7 @@ $string['section_progress'] = 'Secção {$a->current} de {$a->total}';
 $string['invalidinput'] = 'Informação necessária.';
 $string['error_title'] = 'Ups!';
 $string['error_generation_failed'] = 'Falha ao criar o curso: {$a}. Tente novamente.';
+$string['designer_unknown_error'] = 'Erro desconhecido';
 $string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
 // File uploads.
@@ -117,6 +122,7 @@ $string['step_processing_prompt'] = 'Processing prompt';
 $string['designer_loading'] = 'A carregar estrutura do curso...';
 $string['designer_regenerate'] = 'Regenerar';
 $string['designer_invalid_data'] = 'Dados de estrutura inválidos';
+$string['structurenotfound'] = 'Estrutura do curso não encontrada. Gere uma estrutura primeiro ou tente novamente mais tarde.';
 $string['designer_save'] = 'Guardar';
 $string['designer_cancel'] = 'Cancelar';
 $string['designer_reload'] = 'Recarregar';
