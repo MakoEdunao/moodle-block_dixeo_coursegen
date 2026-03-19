@@ -136,6 +136,9 @@ final class cleanup_draft_courses_task_test extends advanced_testcase {
             'timecreated' => $old,
         ]);
 
+        // Task logs via mtrace; expect output so PHPUnit does not mark the test risky.
+        $this->expectOutputRegex('/Deleted 0 draft course\(s\), 1 submission\(s\), 1 structure version\(s\)\./');
+
         $task = new cleanup_draft_courses_task();
         $task->execute();
 

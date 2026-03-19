@@ -42,6 +42,7 @@ define([
     const filesContainer = generatorForm.querySelector('#file_names');
 
     return {
+        generationRunId: 0,
         init: function() {
             this.progress = 0;
             this.adjustDescriptionHeight();
@@ -191,6 +192,9 @@ define([
         cancelDraft: function(event) {
             event.preventDefault();
             const self = this;
+            // Invalidate all in-flight async callbacks from the previous run.
+            self.generationRunId++;
+            self.clearAllProgressPolls();
             Ajax.call([{
                 methodname: 'block_dixeo_designer_cancel_draft',
                 args: {
@@ -218,6 +222,7 @@ define([
         },
         generateCourse: function(event, reviewStructure) {
             event.preventDefault();
+            const runId = ++this.generationRunId;
 
             // Remember where the user initiated generation so "Generate new course"
             // can redirect back correctly after completion.
@@ -309,6 +314,9 @@ define([
                 },
             }])[0]
             .then((startResp) => {
+                if (runId !== this.generationRunId) {
+                    return;
+                }
                 // Regenerate no-op fast-path:
                 // If backend determined prompt/template/files are identical and the
                 // latest structure is already saved, reload the designer immediately
@@ -321,9 +329,12 @@ define([
                 // Step 1 (0–20%) is driven by the remote file sync polling.
                 // Step 2 starts only after the file sync becomes synchronized/none.
                 this.setProgress(0, true);
-                this.startStep2Progress(createcourse);
+                this.startStep2Progress(createcourse, runId);
             })
             .catch(async error => {
+                if (runId !== this.generationRunId) {
+                    return;
+                }
                 this.resetProgress();
                 this.clearAllProgressPolls();
                 const errorTitle = await Str.get_string('error_title', 'block_dixeo_designer');
@@ -351,7 +362,7 @@ define([
             }
             this.step2StartMs = null;
         },
-        startStep2Progress: function(createcourse) {
+        startStep2Progress: function(createcourse, runId) {
             const self = this;
 
             /**
@@ -380,6 +391,9 @@ define([
             let submitted = false;
 
             const pollFileSync = function() {
+                if (runId !== self.generationRunId) {
+                    return;
+                }
                 Ajax.call([{
                     methodname: 'block_dixeo_designer_get_filesync_status',
                     args: {
@@ -388,6 +402,9 @@ define([
                     },
                 }])[0]
                 .then(function(data) {
+                    if (runId !== self.generationRunId) {
+                        return;
+                    }
                     if (data && data.errormessage) {
                         self.clearAllProgressPolls();
                         self.resetProgress();
@@ -437,19 +454,27 @@ define([
                         // Jump into the step-2 band immediately (step 2 is 20-40%).
                         self.setProgress(21, true);
                         startStep2Fake();
-                        self.submitStructureAndPoll(createcourse);
+                        self.submitStructureAndPoll(createcourse, runId);
                     }
                 })
-                .catch(function() {
-                    // If file sync polling fails, keep fake progress running and continue.
+                .catch(function(err) {
+                    if (runId !== self.generationRunId) {
+                        return;
+                    }
+                    self.clearAllProgressPolls();
+                    self.resetProgress();
+                    Notification.alert('', (err && err.message) ? err.message : 'Status check failed');
                 });
             };
 
             pollFileSync();
             this.filesyncPollIntervalId = setInterval(pollFileSync, 2000);
         },
-        submitStructureAndPoll: function(createcourse) {
+        submitStructureAndPoll: function(createcourse, runId) {
             const self = this;
+            if (runId !== self.generationRunId) {
+                return;
+            }
 
             if (this.filesyncPollIntervalId) {
                 clearInterval(this.filesyncPollIntervalId);
@@ -468,18 +493,27 @@ define([
                 },
             }])[0]
             .then(function() {
-                self.pollStructureCompletion(createcourse);
+                if (runId !== self.generationRunId) {
+                    return;
+                }
+                self.pollStructureCompletion(createcourse, runId);
             })
             .catch(function(err) {
+                if (runId !== self.generationRunId) {
+                    return;
+                }
                 self.clearAllProgressPolls();
                 self.resetProgress();
                 Notification.alert('', err.message || 'Could not start structure generation');
             });
         },
-        pollStructureCompletion: function(createcourse) {
+        pollStructureCompletion: function(createcourse, runId) {
             const self = this;
 
             const poll = function() {
+                if (runId !== self.generationRunId) {
+                    return;
+                }
                 Ajax.call([{
                     methodname: 'block_dixeo_designer_get_structure_status',
                     args: {
@@ -488,6 +522,9 @@ define([
                     },
                 }])[0]
                 .then(function(data) {
+                    if (runId !== self.generationRunId) {
+                        return;
+                    }
                     if (data.failed) {
                         self.clearAllProgressPolls();
                         self.resetProgress();
@@ -538,6 +575,9 @@ define([
                     }, delayMs);
                 })
                 .catch(function(err) {
+                    if (runId !== self.generationRunId) {
+                        return;
+                    }
                     self.clearAllProgressPolls();
                     self.resetProgress();
                     Notification.alert('', err.message || 'Status check failed');
@@ -967,15 +1007,20 @@ define([
                 // If it was the designer page, go to a fresh designer.php (no id).
                 const freshDesignerUrl = Config.wwwroot + '/blocks/dixeo_designer/designer.php';
                 let returnTo = null;
+                let returnToJobId = null;
                 try {
-                returnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
+                    returnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
+                    returnToJobId = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_JOBID_KEY);
                 } catch (e) {
                     returnTo = null;
+                    returnToJobId = null;
                 }
+                const currentJobId = String(this.getJobId() || '');
+                const hasMatchingStoredJob = returnTo && returnToJobId && returnToJobId === currentJobId;
                 const currentIsDesignerPage = window.location.pathname.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
                 const returnToIsDesigner = returnTo && returnTo.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
 
-                if (returnTo) {
+                if (hasMatchingStoredJob) {
                     context.generate_another_url = returnToIsDesigner ? freshDesignerUrl : returnTo;
                 } else {
                     context.generate_another_url = currentIsDesignerPage ? freshDesignerUrl : (Config.wwwroot + '/my/');
@@ -995,6 +1040,7 @@ define([
             this.unlockDesignerUI();
             this.clearAllProgressPolls();
             this.clearFinalizePoll();
+            this.resetStepLabels();
             if (this.skipRegenerateSyncOnce) {
                 // After cancelling a generation we want the user to be able to try
                 // again immediately (no change-tracking disable).
@@ -1019,6 +1065,21 @@ define([
             }
 
             this.setProgress(0, true);
+        },
+        resetStepLabels: function() {
+            const self = this;
+            Str.get_string('step_uploading_files', 'block_dixeo_designer').then(function(str) {
+                self.setStepLabel(1, str);
+            });
+            Str.get_string('step_generating_structure', 'block_dixeo_designer').then(function(str) {
+                self.setStepLabel(2, str);
+            });
+            Str.get_string('step_generating_content', 'block_dixeo_designer').then(function(str) {
+                self.setStepLabel(3, str);
+            });
+            Str.get_string('step_finalizing_details', 'block_dixeo_designer').then(function(str) {
+                self.setStepLabel(4, str);
+            });
         },
         setProgress: function(progress) {
             const force = arguments.length > 1 ? Boolean(arguments[1]) : false;

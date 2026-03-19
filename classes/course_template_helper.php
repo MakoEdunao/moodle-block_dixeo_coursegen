@@ -72,7 +72,9 @@ class course_template_helper {
      * @return array
      */
     public static function get_course_template_options(?string $selectedtemplateid = null): array {
-        $selectedtemplateid = $selectedtemplateid ?? self::get_selected_course_template();
+        if ($selectedtemplateid === null || $selectedtemplateid === '') {
+            $selectedtemplateid = self::get_selected_course_template();
+        }
 
         $remotechoices = self::get_remote_course_template_choices();
         if (empty($remotechoices)) {

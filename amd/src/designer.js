@@ -1329,18 +1329,23 @@ define([
             // Prefer the original page where generation was initiated (stored in sessionStorage).
             // If that original page was the designer, go to a fresh designer.php (no id).
             var returnTo = null;
+            var returnToJobId = null;
             try {
                 returnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
+                returnToJobId = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_JOBID_KEY);
             } catch (e) {
                 returnTo = null;
+                returnToJobId = null;
             }
 
             var freshDesignerUrl = Config.wwwroot + '/blocks/dixeo_designer/designer.php';
             var currentIsDesignerPage = window.location.pathname.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
             var returnToIsDesigner = returnTo && returnTo.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
+            var currentJobId = String(self.jobid || '');
+            var hasMatchingStoredJob = returnTo && returnToJobId && returnToJobId === currentJobId;
 
             var generateAnotherUrl;
-            if (returnTo) {
+            if (hasMatchingStoredJob) {
                 generateAnotherUrl = returnToIsDesigner ? freshDesignerUrl : returnTo;
             } else {
                 generateAnotherUrl = currentIsDesignerPage ? freshDesignerUrl : (Config.wwwroot + '/my/');
