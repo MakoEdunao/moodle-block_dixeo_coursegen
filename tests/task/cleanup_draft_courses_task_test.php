@@ -106,4 +106,75 @@ final class cleanup_draft_courses_task_test extends advanced_testcase {
 
         $this->assertTrue($DB->record_exists('course', ['id' => $course->id]));
     }
+
+    public function test_execute_cleans_abandoned_submission_and_structure_records(): void {
+        global $DB;
+
+        $old = time() - 7200;
+        $jobid = 'job-' . uniqid();
+        $userid = $this->getDataGenerator()->create_user()->id;
+
+        $submissionid = $DB->insert_record('block_dixeo_designer_submission', (object) [
+            'jobid' => $jobid,
+            'userid' => $userid,
+            'prompt' => 'Abandoned generation',
+            'templateid' => null,
+            'status' => 'generating_structure',
+            'remotejobid' => 'remote-old',
+            'courseid' => null,
+            'timecreated' => $old,
+            'timemodified' => $old,
+        ]);
+        $this->assertNotEmpty($submissionid);
+
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $userid,
+            'description' => 'Old structure',
+            'structure' => '{"course_structure":{"title":"Old"}}',
+            'version' => 'v-old',
+            'timecreated' => $old,
+        ]);
+
+        $task = new cleanup_draft_courses_task();
+        $task->execute();
+
+        $this->assertFalse($DB->record_exists('block_dixeo_designer_submission', ['jobid' => $jobid]));
+        $this->assertFalse($DB->record_exists('block_dixeo_designer_structure', ['jobid' => $jobid]));
+    }
+
+    public function test_execute_keeps_recent_submission_and_structure_records(): void {
+        global $DB;
+
+        $recent = time() - 1200;
+        $jobid = 'job-' . uniqid();
+        $userid = $this->getDataGenerator()->create_user()->id;
+
+        $DB->insert_record('block_dixeo_designer_submission', (object) [
+            'jobid' => $jobid,
+            'userid' => $userid,
+            'prompt' => 'Recent generation',
+            'templateid' => null,
+            'status' => 'generating_structure',
+            'remotejobid' => 'remote-recent',
+            'courseid' => null,
+            'timecreated' => $recent,
+            'timemodified' => $recent,
+        ]);
+
+        $DB->insert_record('block_dixeo_designer_structure', (object) [
+            'jobid' => $jobid,
+            'userid' => $userid,
+            'description' => 'Recent structure',
+            'structure' => '{"course_structure":{"title":"Recent"}}',
+            'version' => 'v-recent',
+            'timecreated' => $recent,
+        ]);
+
+        $task = new cleanup_draft_courses_task();
+        $task->execute();
+
+        $this->assertTrue($DB->record_exists('block_dixeo_designer_submission', ['jobid' => $jobid]));
+        $this->assertTrue($DB->record_exists('block_dixeo_designer_structure', ['jobid' => $jobid]));
+    }
 }

@@ -187,6 +187,35 @@ class designer_course_creation_service {
     }
 
     /**
+     * Merge data into finalize progress cache (preserves current_fill_jobid when updating section progress).
+     *
+     * @param string $jobid
+     * @param array $data Keys to merge (phase, section_index, section_total, current_fill_jobid?, cancelled?)
+     * @return void
+     */
+    private function merge_finalize_progress(string $jobid, array $data): void {
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $existing = $cache->get($jobid);
+        $merged = is_array($existing) ? array_merge($existing, $data) : $data;
+        $cache->set($jobid, $merged);
+    }
+
+    /**
+     * Whether the user requested cancel during finalize (so the materialize loop should exit).
+     *
+     * @param string|null $jobid
+     * @return bool
+     */
+    private function is_finalize_cancelled(?string $jobid): bool {
+        if ($jobid === null || $jobid === '') {
+            return false;
+        }
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $data = $cache->get($jobid);
+        return is_array($data) && !empty($data['cancelled']);
+    }
+
+    /**
      * Why: ensure the course has at least the initial synced assets before
      * module materialization starts (prevents empty module inputs).
      *
@@ -341,21 +370,28 @@ class designer_course_creation_service {
         $jobservice = \local_dixeo\external\service_factory::get_job_service();
 
         foreach (array_values($sections) as $sectionindex => $sectiondata) {
+            if ($this->is_finalize_cancelled($jobid)) {
+                return;
+            }
             $sectionnumber = $sectionindex + 1;
             if ($jobid !== null && $jobid !== '') {
-                $this->set_finalize_progress($jobid, [
+                $this->merge_finalize_progress($jobid, [
                     'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
                     'section_index' => $sectionnumber,
                     'section_total' => $sectiontotal,
                 ]);
             }
             foreach (($sectiondata['modules'] ?? []) as $module) {
+                if ($this->is_finalize_cancelled($jobid)) {
+                    return;
+                }
                 $modulename = $module['type'] ?? 'page';
                 $title = trim((string) ($module['title'] ?? ''));
                 $summary = trim((string) ($module['summary'] ?? ''));
                 $instructions = $this->build_module_instructions($module, $sectiondata);
 
                 $this->fill_single_module_from_structure(
+                    $jobid,
                     $moduleservice,
                     $jobservice,
                     $modulename,
@@ -373,8 +409,11 @@ class designer_course_creation_service {
      * Fill a single module from the course structure.
      *
      * Failure is non-fatal: exceptions/timeouts are logged with debugging() and
-     * generation continues with the next module.
+     * generation continues with the next module. If cancel was requested (cancelled
+     * flag in finalize_progress), the in-flight fill job is left for cancel_draft to
+     * cancel; this method returns without waiting.
      *
+     * @param string|null $jobid Designer job id (for progress/cancel tracking).
      * @param \local_dixeo\service\module_generation_service $moduleservice
      * @param \local_dixeo\service\job_service $jobservice
      * @param string $modulename Module type (page, label, quiz, glossary).
@@ -386,6 +425,7 @@ class designer_course_creation_service {
      * @return void
      */
     private function fill_single_module_from_structure(
+        ?string $jobid,
         \local_dixeo\service\module_generation_service $moduleservice,
         \local_dixeo\service\job_service $jobservice,
         string $modulename,
@@ -405,7 +445,20 @@ class designer_course_creation_service {
                 $summary
             );
 
+            if ($jobid !== null && $jobid !== '') {
+                $this->merge_finalize_progress($jobid, [
+                    'current_fill_jobid' => $operation->jobid,
+                ]);
+            }
+
+            if ($this->is_finalize_cancelled($jobid)) {
+                return;
+            }
+
             $waitResult = $jobservice->wait_for_job($operation->jobid, 'fill_module');
+            if ($this->is_finalize_cancelled($jobid)) {
+                return;
+            }
             if (!$waitResult->is_completed()) {
                 // Skip this module; treat it as completed to allow the rest of the course.
                 $msg = 'Dixeo designer module fill did not complete in time. ' .

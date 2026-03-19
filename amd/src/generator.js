@@ -89,6 +89,22 @@ define([
                 });
             }
         },
+        skipRegenerateSyncOnce: false,
+        enableGenerationButtons: function() {
+            const currentGenerateCourse = generatorForm
+                ? generatorForm.querySelector('#generate_course')
+                : null;
+            if (currentGenerateCourse) {
+                currentGenerateCourse.disabled = false;
+            }
+
+            const currentGenerateStructure = generatorForm
+                ? generatorForm.querySelector('#generate_course_structure')
+                : null;
+            if (currentGenerateStructure) {
+                currentGenerateStructure.disabled = false;
+            }
+        },
         regenChangeTrackingEnabled: false,
         regenInitialSignature: null,
         initRegenerateChangeTracking: function() {
@@ -158,12 +174,19 @@ define([
             });
         },
         syncRegenerateButtonState: function() {
-            if (!this.regenChangeTrackingEnabled || !generateStructure) {
+            if (!this.regenChangeTrackingEnabled) {
+                return;
+            }
+            // Re-query to avoid stale references if the DOM is replaced.
+            const currentGenerateStructure = generatorForm
+                ? generatorForm.querySelector('#generate_course_structure')
+                : null;
+            if (!currentGenerateStructure) {
                 return;
             }
             const currentSig = this.getSubmissionSignature();
             const changed = currentSig !== this.regenInitialSignature;
-            generateStructure.disabled = !changed;
+            currentGenerateStructure.disabled = !changed;
         },
         cancelDraft: function(event) {
             event.preventDefault();
@@ -177,10 +200,12 @@ define([
             }])[0]
             .then(function() {
                 self.clearAllProgressPolls();
+                self.skipRegenerateSyncOnce = true;
                 self.resetProgress();
             })
             .catch(function(err) {
                 self.clearAllProgressPolls();
+                self.skipRegenerateSyncOnce = true;
                 self.resetProgress();
                 Notification.alert('', err.message || 'Cancel failed');
             });
@@ -839,11 +864,18 @@ define([
             });
         },
         startProgress: function() {
-            if (generateCourse) {
-                generateCourse.disabled = true;
+            const currentGenerateCourse = generatorForm
+                ? generatorForm.querySelector('#generate_course')
+                : null;
+            const currentGenerateStructure = generatorForm
+                ? generatorForm.querySelector('#generate_course_structure')
+                : null;
+
+            if (currentGenerateCourse) {
+                currentGenerateCourse.disabled = true;
             }
-            if (generateStructure) {
-                generateStructure.disabled = true;
+            if (currentGenerateStructure) {
+                currentGenerateStructure.disabled = true;
             }
             promptContainer.classList.replace('d-block', 'd-none');
             generationContainer.classList.replace('d-none', 'd-block');
@@ -963,11 +995,21 @@ define([
             this.unlockDesignerUI();
             this.clearAllProgressPolls();
             this.clearFinalizePoll();
-            if (generateCourse) {
-                generateCourse.disabled = false;
+            if (this.skipRegenerateSyncOnce) {
+                // After cancelling a generation we want the user to be able to try
+                // again immediately (no change-tracking disable).
+                this.skipRegenerateSyncOnce = false;
+                this.enableGenerationButtons();
+            } else {
+                const currentGenerateCourse = generatorForm
+                    ? generatorForm.querySelector('#generate_course')
+                    : null;
+                if (currentGenerateCourse) {
+                    currentGenerateCourse.disabled = false;
+                }
+                // Keep Regenerate disabled unless prompt/template/files changed.
+                this.syncRegenerateButtonState();
             }
-            // Keep Regenerate disabled unless prompt/template/files changed.
-            this.syncRegenerateButtonState();
             promptContainer.classList.replace('d-none', 'd-block');
             generationContainer.classList.replace('d-block', 'd-none');
 

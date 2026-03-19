@@ -73,4 +73,15 @@ class structure_repository {
         ];
         $DB->insert_record(self::TABLE, $record);
     }
+
+    /**
+     * Delete all stored structure versions for a job.
+     *
+     * @param string $jobid
+     * @return int Number of deleted records.
+     */
+    public function delete_by_jobid(string $jobid): int {
+        global $DB;
+        return $DB->delete_records(self::TABLE, ['jobid' => $jobid]);
+    }
 }

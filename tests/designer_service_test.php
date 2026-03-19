@@ -81,6 +81,9 @@ final class designer_service_test extends advanced_testcase {
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
+        $mockStructures->expects($this->once())
+            ->method('delete_by_jobid')
+            ->with($jobid);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
 
@@ -130,6 +133,7 @@ final class designer_service_test extends advanced_testcase {
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
+        $mockStructures->expects($this->never())->method('delete_by_jobid');
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
         $mockCourseCreation->expects($this->never())->method('finalize_draft_course');
@@ -172,6 +176,7 @@ final class designer_service_test extends advanced_testcase {
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
+        $mockStructures->expects($this->never())->method('delete_by_jobid');
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
         $mockCourseCreation->expects($this->once())
@@ -230,6 +235,367 @@ final class designer_service_test extends advanced_testcase {
 
         $this->assertSame('remote-uuid', $result->remotejobid);
         $this->assertSame(55, (int) $result->courseid);
+    }
+
+    // --- Cancellation tests: desired rollback behaviour (DB + remote jobs). ---
+
+    public function test_cancel_draft_returns_false_when_submission_missing(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn(null);
+
+        $service = new designer_service($mockSubmissions, null, null, null, null, null, null);
+        $this->assertFalse($service->cancel_draft($jobid, $userid));
+    }
+
+    public function test_cancel_draft_returns_false_when_wrong_user(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $submission = (object) [
+            'userid' => $userid + 1,
+            'courseid' => 10,
+            'remotejobid' => null,
+            'status' => workflow_constants::SUBMISSION_STATUS_SYNCING_FILES,
+        ];
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->never())->method('clear_course');
+
+        $service = new designer_service($mockSubmissions, null, null, null, null, null, null);
+        $this->assertFalse($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Cancel during file upload: submission has courseid, status syncing_files.
+     * Desired: draft course deleted, submission cleared; full rollback so file sync disabled.
+     */
+    public function test_cancel_draft_during_file_upload_deletes_draft_clears_submission_disables_sync(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 42;
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => null,
+            'status' => workflow_constants::SUBMISSION_STATUS_SYNCING_FILES,
+        ];
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())
+            ->method('delete_draft_course')
+            ->with($courseid);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->once())
+            ->method('disable_sync')
+            ->with($courseid, $userid, true);
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, null, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Cancel during structure generation: remotejobid set, courseid set, no structure yet.
+     * Desired: draft deleted, cancel_job(remotejobid), disable_sync (full rollback), submission cleared.
+     */
+    public function test_cancel_draft_during_structure_generation_cancels_remote_job_and_disables_sync(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 100;
+        $remotejobid = 'remote-structure-uuid';
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => $remotejobid,
+            'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
+        ];
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($courseid);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->once())->method('cancel_job')->with($remotejobid)->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->once())
+            ->method('disable_sync')
+            ->with($courseid, $userid, true);
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Cancel during content generation (quick or normal): structure already saved.
+     * Desired: content-only rollback — draft deleted, cancel_job called, submission cleared;
+     * no disable_sync (structure kept in DB for reload).
+     */
+    public function test_cancel_draft_during_content_generation_structure_exists_content_only_rollback(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 200;
+        $remotejobid = 'remote-structure-uuid';
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => $remotejobid,
+            'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
+        ];
+        $savedstructure = json_encode(['course_structure' => ['title' => 'Test', 'sections' => []]]);
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($courseid);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->once())->method('cancel_job')->with($remotejobid)->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->never())->method('disable_sync');
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Cancel during finalize (module fill in progress): current_fill_jobid in cache is cancelled first.
+     */
+    public function test_cancel_draft_during_content_fill_cancels_fill_job_then_structure_job(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 201;
+        $remotejobid = 'remote-structure-uuid';
+        $filljobid = 'remote-fill-module-uuid';
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => $remotejobid,
+            'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
+        ];
+        $savedstructure = json_encode(['course_structure' => ['title' => 'Test', 'sections' => []]]);
+
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $cache->set($jobid, [
+            'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
+            'section_index' => 1,
+            'section_total' => 2,
+            'current_fill_jobid' => $filljobid,
+        ]);
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($courseid);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->exactly(2))
+            ->method('cancel_job')
+            ->withConsecutive([$this->identicalTo($filljobid)], [$this->identicalTo($remotejobid)])
+            ->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->never())->method('disable_sync');
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+
+        $this->assertFalse($cache->get($jobid), 'Cache entry should be deleted after cancel');
+    }
+
+    /**
+     * Cancel during finalizing structure: same as content generation — structure exists.
+     * Content-only rollback: no disable_sync, structure remains in DB.
+     */
+    public function test_cancel_draft_during_finalizing_structure_content_only_rollback(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 300;
+        $remotejobid = 'remote-finalize-uuid';
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => $remotejobid,
+            'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
+        ];
+        $savedstructure = json_encode(['course_structure' => ['title' => 'Final', 'sections' => []]]);
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($courseid);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->once())->method('cancel_job')->with($remotejobid)->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->never())->method('disable_sync');
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Cancel with no structure (full rollback): DB submission cleared, remote job cancelled, file sync disabled.
+     */
+    public function test_cancel_draft_no_structure_full_rollback_calls_disable_sync(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+        $courseid = 50;
+        $remotejobid = 'remote-any';
+        $submission = (object) [
+            'userid' => $userid,
+            'courseid' => $courseid,
+            'remotejobid' => $remotejobid,
+            'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
+        ];
+
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
+        $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
+
+        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($courseid);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->once())->method('cancel_job')->with($remotejobid)->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->once())->method('disable_sync')->with($courseid, $userid, true);
+
+        $service = new designer_service(
+            $mockSubmissions, null, $mockStructures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+    }
+
+    /**
+     * Integration-style: cancel during file upload leaves submission in draft with no courseid/remotejobid in DB.
+     */
+    public function test_cancel_draft_during_upload_db_state_after_rollback(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+
+        $submissions = new submission_service();
+        $structures = new structure_repository();
+        $submissions->save_submission($jobid, $userid, 'Prompt', null);
+        $sub = $submissions->get_submission($jobid);
+        $course = $this->getDataGenerator()->create_course();
+        $submissions->set_draft_and_remote_job($sub, $course->id, 'remote-1');
+        $submissions->mark_status($sub, workflow_constants::SUBMISSION_STATUS_SYNCING_FILES);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($course->id);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->once())->method('disable_sync')->with($course->id, $userid, true);
+
+        $service = new designer_service(
+            $submissions, null, $structures, $mockCourseCreation, null, null, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+
+        $after = $submissions->get_submission($jobid);
+        $this->assertNotNull($after);
+        $this->assertNull($after->courseid);
+        $this->assertNull($after->remotejobid);
+        $this->assertSame(workflow_constants::SUBMISSION_STATUS_DRAFT, $after->status);
+    }
+
+    /**
+     * Integration-style: cancel during content generation (structure exists) resets submission but structure remains.
+     */
+    public function test_cancel_draft_during_content_generation_structure_remains_in_db(): void {
+        $jobid = 'job-' . uniqid();
+        $userid = $this->user->id;
+
+        $submissions = new submission_service();
+        $structures = new structure_repository();
+        $submissions->save_submission($jobid, $userid, 'Prompt', null);
+        $sub = $submissions->get_submission($jobid);
+        $course = $this->getDataGenerator()->create_course();
+        $submissions->set_draft_and_remote_job($sub, $course->id, 'remote-2');
+
+        $structure = ['course_structure' => ['title' => 'Kept', 'sections' => []]];
+        $structures->save_structure_version($jobid, $userid, 'v1', $structure);
+
+        $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
+        $mockCourseCreation->expects($this->once())->method('delete_draft_course')->with($course->id);
+
+        $mockJobService = $this->createMock(\local_dixeo\service\job_service::class);
+        $mockJobService->expects($this->once())->method('cancel_job')->with('remote-2')->willReturn([]);
+
+        $mockFileSync = $this->createMock(\local_dixeo\service\file_sync_service::class);
+        $mockFileSync->expects($this->never())->method('disable_sync');
+
+        $service = new designer_service(
+            $submissions, null, $structures, $mockCourseCreation, null, $mockJobService, $mockFileSync
+        );
+
+        $this->assertTrue($service->cancel_draft($jobid, $userid));
+
+        $after = $submissions->get_submission($jobid);
+        $this->assertNotNull($after);
+        $this->assertNull($after->courseid);
+        $this->assertNull($after->remotejobid);
+        $this->assertSame(workflow_constants::SUBMISSION_STATUS_DRAFT, $after->status);
+
+        $json = $structures->get_latest_structure($jobid);
+        $this->assertNotNull($json);
+        $decoded = json_decode($json, true);
+        $this->assertSame('Kept', $decoded['course_structure']['title'] ?? null);
     }
 }
 

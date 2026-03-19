@@ -42,7 +42,9 @@ class designer_service_factory {
         if (self::$testinstance !== null) {
             return self::$testinstance;
         }
-        return new designer_service(null, null, null, null, self::$testremoteapi);
+        $jobservice = \local_dixeo\external\service_factory::get_job_service();
+        $filesyncservice = \local_dixeo\external\service_factory::get_file_sync_service();
+        return new designer_service(null, null, null, null, self::$testremoteapi, $jobservice, $filesyncservice);
     }
 
     /**

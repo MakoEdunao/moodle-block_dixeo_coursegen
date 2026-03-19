@@ -26,6 +26,12 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class cleanup_draft_courses_task extends \core\task\scheduled_task {
+    /** @var int Cleanup threshold in seconds. */
+    private const OLDER_THAN_SECONDS = 3600;
+
+    /** @var string */
+    private const DRAFT_PREFIX = 'dixeo_draft_';
+
 
     /**
      * Task name.
@@ -40,10 +46,38 @@ class cleanup_draft_courses_task extends \core\task\scheduled_task {
      * Delete draft courses older than 1 hour (delegates to local_dixeo).
      */
     public function execute(): void {
+        global $DB;
+
         $creation = new \block_dixeo_designer\service\designer_course_creation_service();
-        $deleted = $creation->cleanup_draft_courses_older_than(3600);
-        if ($deleted > 0) {
-            mtrace("[block_dixeo_designer] Deleted {$deleted} draft course(s).");
+        $deleted = $creation->cleanup_draft_courses_older_than(self::OLDER_THAN_SECONDS);
+
+        $olderthan = time() - self::OLDER_THAN_SECONDS;
+        $prefixparam = self::DRAFT_PREFIX . '%';
+        $submissions = $DB->get_records_sql(
+            "SELECT s.id, s.jobid
+               FROM {block_dixeo_designer_submission} s
+          LEFT JOIN {course} c ON c.id = s.courseid
+              WHERE s.timemodified < :olderthan
+                AND (
+                    s.courseid IS NULL
+                    OR c.id IS NULL
+                    OR (" . $DB->sql_like('c.idnumber', ':draftprefix', false, false) . " AND c.startdate < :olderthan2)
+                )",
+            ['olderthan' => $olderthan, 'draftprefix' => $prefixparam, 'olderthan2' => $olderthan]
+        );
+
+        $deletedsubmissions = 0;
+        $deletedstructures = 0;
+        foreach ($submissions as $submission) {
+            $deletedstructures += $DB->delete_records('block_dixeo_designer_structure', ['jobid' => $submission->jobid]);
+            $deletedsubmissions += $DB->delete_records('block_dixeo_designer_submission', ['id' => $submission->id]);
+        }
+
+        if ($deleted > 0 || $deletedsubmissions > 0 || $deletedstructures > 0) {
+            mtrace(
+                "[block_dixeo_designer] Deleted {$deleted} draft course(s), " .
+                "{$deletedsubmissions} submission(s), {$deletedstructures} structure version(s)."
+            );
         }
     }
 }

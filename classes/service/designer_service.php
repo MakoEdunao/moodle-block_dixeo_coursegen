@@ -50,6 +50,12 @@ class designer_service {
     /** @var dixeo_remote_adapter */
     private dixeo_remote_adapter $remoteapi;
 
+    /** @var \local_dixeo\service\job_service|null */
+    private $jobservice;
+
+    /** @var \local_dixeo\service\file_sync_service|null */
+    private $filesyncservice;
+
     /**
      * Why: Allow controlled dependency injection (unit tests + workflow orchestration)
      * without tightly coupling the designer workflow to specific persistence/adapters.
@@ -59,19 +65,25 @@ class designer_service {
      * @param structure_repository|null $structures
      * @param designer_course_creation_service|null $coursecreation
      * @param dixeo_remote_adapter|null $remoteapi
+     * @param \local_dixeo\service\job_service|null $jobservice
+     * @param \local_dixeo\service\file_sync_service|null $filesyncservice
      */
     public function __construct(
         ?submission_service $submissions = null,
         ?submission_file_service $files = null,
         ?structure_repository $structures = null,
         ?designer_course_creation_service $coursecreation = null,
-        ?dixeo_remote_adapter $remoteapi = null
+        ?dixeo_remote_adapter $remoteapi = null,
+        ?\local_dixeo\service\job_service $jobservice = null,
+        ?\local_dixeo\service\file_sync_service $filesyncservice = null
     ) {
         $this->submissions = $submissions ?? new submission_service();
         $this->files = $files ?? new submission_file_service();
         $this->structures = $structures ?? new structure_repository();
         $this->coursecreation = $coursecreation ?? new designer_course_creation_service();
         $this->remoteapi = $remoteapi ?? new dixeo_remote_adapter();
+        $this->jobservice = $jobservice;
+        $this->filesyncservice = $filesyncservice;
     }
 
     /**
@@ -382,12 +394,21 @@ class designer_service {
         // After a successful generation, delete the submission so revisiting
         // the designer with the same id results in a clean designer.
         $this->submissions->delete_submission($jobid, $userid);
+        $this->structures->delete_by_jobid($jobid);
 
         return $course;
     }
 
     /**
-     * Cancel the draft: delete draft course and reset submission.
+     * Cancel the draft: delete draft course, cancel remote job when applicable,
+     * disable file sync on full rollback (no structure saved), reset submission.
+     *
+     * Full rollback (during upload or structure generation, no structure yet):
+     * draft course deleted, remote structure job cancelled, file sync disabled/removed,
+     * submission reset to draft.
+     *
+     * Content-only rollback (structure already saved, during content generation or finalizing):
+     * draft course deleted, remote job cancelled, submission reset; structure kept in DB.
      *
      * @param string $jobid
      * @param int $userid
@@ -398,10 +419,52 @@ class designer_service {
         if (!$submission || (int) $submission->userid !== $userid) {
             return false;
         }
-        if (!empty($submission->courseid)) {
-            $this->coursecreation->delete_draft_course((int) $submission->courseid);
+
+        $courseid = !empty($submission->courseid) ? (int) $submission->courseid : null;
+        $remotejobid = !empty($submission->remotejobid) ? $submission->remotejobid : null;
+        $hasstructure = $this->structures->get_latest_structure($jobid) !== null;
+
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $progressdata = $cache->get($jobid);
+        $currentfilljobid = null;
+        if (is_array($progressdata) && !empty($progressdata['current_fill_jobid'])) {
+            $currentfilljobid = $progressdata['current_fill_jobid'];
         }
+
+        if ($currentfilljobid !== null && $this->jobservice !== null) {
+            try {
+                $this->jobservice->cancel_job($currentfilljobid);
+            } catch (\Throwable $e) {
+                debugging('cancel_draft: failed to cancel fill job ' . $currentfilljobid . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
+        $cache->set($jobid, array_merge(is_array($progressdata) ? $progressdata : [], ['cancelled' => true]));
+
+        if ($courseid !== null) {
+            $this->coursecreation->delete_draft_course($courseid);
+        }
+
+        if ($remotejobid !== null && $this->jobservice !== null) {
+            try {
+                $this->jobservice->cancel_job($remotejobid);
+            } catch (\Throwable $e) {
+                debugging('cancel_draft: failed to cancel remote job ' . $remotejobid . ': ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
+        if (!$hasstructure && $courseid !== null && $this->filesyncservice !== null) {
+            try {
+                $this->filesyncservice->disable_sync($courseid, $userid, true);
+            } catch (\Throwable $e) {
+                debugging('cancel_draft: failed to disable file sync: ' . $e->getMessage(), DEBUG_DEVELOPER);
+            }
+        }
+
         $this->submissions->clear_course($submission);
+
+        $cache->delete($jobid);
+
         return true;
     }
 
