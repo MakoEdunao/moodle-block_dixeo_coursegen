@@ -1012,13 +1012,81 @@ define([
         },
 
         /**
-         * When "Create course" is clicked: hide block, show progress at 40%, save structure, fire finalize, poll progress.
+         * Smooth-scroll the window to the top; resolve when scrolling settles.
+         * Uses scrollend when available, with a timeout fallback.
+         *
+         * @returns {Promise<void>}
+         */
+        scrollPageToTopSmooth: function() {
+            return new Promise(function(resolve) {
+                var y = window.scrollY || window.pageYOffset || 0;
+                if (y < 2) {
+                    resolve();
+                    return;
+                }
+                var done = false;
+                var finish = function() {
+                    if (done) {
+                        return;
+                    }
+                    done = true;
+                    window.removeEventListener('scrollend', onScrollEnd);
+                    clearInterval(poller);
+                    clearTimeout(maxTimer);
+                    resolve();
+                };
+                var onScrollEnd = function() {
+                    finish();
+                };
+                window.addEventListener('scrollend', onScrollEnd, {passive: true});
+                var poller = setInterval(function() {
+                    if ((window.scrollY || window.pageYOffset || 0) < 2) {
+                        finish();
+                    }
+                }, 40);
+                var maxTimer = setTimeout(finish, 1200);
+                try {
+                    window.scrollTo({top: 0, left: 0, behavior: 'smooth'});
+                } catch (e) {
+                    window.scrollTo(0, 0);
+                    finish();
+                }
+            });
+        },
+
+        /**
+         * If the designer block was collapsed via the toggle, expand it and wait for layout.
+         *
+         * @returns {Promise<void>}
+         */
+        ensureDesignerBlockExpanded: function() {
+            return new Promise(function(resolve) {
+                var blockContainer = document.querySelector(
+                    '.dixeo-designer-block-wrapper .block_dixeo_designer.block-container'
+                );
+                var toggleBtn = document.querySelector('.dixeo-designer-block-toggle');
+                if (blockContainer && blockContainer.classList.contains('d-none')) {
+                    if (toggleBtn) {
+                        toggleBtn.click();
+                    } else {
+                        blockContainer.classList.remove('d-none');
+                    }
+                }
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        setTimeout(resolve, 80);
+                    });
+                });
+            });
+        },
+
+        /**
+         * When "Create course" is clicked: scroll top smoothly, expand block if needed,
+         * show progress UI, then lock with backdrop (measured after layout).
          */
         startCreateCourseProgress: function() {
             var self = this;
 
-            // Avoid unwanted navigation prompts and counteract click-driven scroll jumps.
-            var scrollY = window.scrollY || 0;
             self.hasUnsavedChanges = false;
             self.suppressBeforeUnload = true;
 
@@ -1041,70 +1109,71 @@ define([
                 // Ignore storage failures.
             }
 
-            // Lock the UI during course population (same backdrop as Regenerate).
-            self.lockDesignerUI();
-
-            // Ensure only one polling loop runs, and prevent duplicate "success" rendering.
             self.finalizeProgressCompleted = false;
             self.clearFinalizePoll();
 
-            requestAnimationFrame(function() {
-                window.scrollTo(0, scrollY);
-            });
-
-            // Use the shared prompt-block generation UI (same markup as generator.js).
             var generatorForm = document.getElementById('edai_course_designer_form');
             var promptContainer = generatorForm ? generatorForm.querySelector('.prompt-container') : null;
             var generationContainer = generatorForm ? generatorForm.querySelector('.generation-container') : null;
 
-            if (promptContainer && generationContainer) {
-                promptContainer.classList.replace('d-block', 'd-none');
-                generationContainer.classList.remove('d-none');
-                generationContainer.classList.add('d-block');
-            }
-
-            // Step 1 label depends on whether there are submission files.
-            // If there are no files, we should show "Processing prompt".
-            var fileNamesEl = generatorForm ? generatorForm.querySelector('#file_names') : null;
-            var hasFiles = Boolean(
-                fileNamesEl &&
-                !fileNamesEl.classList.contains('d-none') &&
-                fileNamesEl.querySelector('.file-item')
-            );
-            if (!hasFiles) {
-                Str.get_string('step_processing_prompt', 'block_dixeo_designer').then(function(label) {
-                    self.setGenerationStepLabel(1, label);
-                });
-            }
-
-            // Start at 40% so finalization progress aligns with the progress bar phases.
-            self.setGenerationProgress(40);
-            self.updateGenerationActiveStepFromProgress();
-
-            // Start polling immediately so the progress bar and "Generating content"
-            // counters update even if saveStructure is slow/hanging.
-            self.pollDesignerFinalizeProgress();
-
-            // Silent save (no "Saved!" toaster) before finalizing the course.
-            Ajax.call([{
-                methodname: 'block_dixeo_designer_save_structure',
-                args: {
-                    job_id: self.jobid,
-                    structure: JSON.stringify(self.structure)
+            /**
+             * Reveal generation UI, position lock backdrop, then save structure and finalize course.
+             */
+            function runFinalizeFlow() {
+                if (promptContainer && generationContainer) {
+                    promptContainer.classList.replace('d-block', 'd-none');
+                    generationContainer.classList.remove('d-none');
+                    generationContainer.classList.add('d-block');
                 }
-            }])[0].then(function() {
+
+                self.lockDesignerUI();
+
+                var fileNamesEl = generatorForm ? generatorForm.querySelector('#file_names') : null;
+                var hasFiles = Boolean(
+                    fileNamesEl &&
+                    !fileNamesEl.classList.contains('d-none') &&
+                    fileNamesEl.querySelector('.file-item')
+                );
+                if (!hasFiles) {
+                    Str.get_string('step_processing_prompt', 'block_dixeo_designer').then(function(label) {
+                        self.setGenerationStepLabel(1, label);
+                    });
+                }
+
+                self.setGenerationProgress(40);
+                self.updateGenerationActiveStepFromProgress();
+
+                self.pollDesignerFinalizeProgress();
+
                 Ajax.call([{
-                    methodname: 'block_dixeo_designer_finalize_course',
+                    methodname: 'block_dixeo_designer_save_structure',
                     args: {
                         job_id: self.jobid,
-                        createcourse: true,
-                        sesskey: M.cfg.sesskey
+                        structure: JSON.stringify(self.structure)
                     }
-                }])[0].catch(function(err) {
+                }])[0].then(function() {
+                    Ajax.call([{
+                        methodname: 'block_dixeo_designer_finalize_course',
+                        args: {
+                            job_id: self.jobid,
+                            createcourse: true,
+                            sesskey: M.cfg.sesskey
+                        }
+                    }])[0].catch(function(err) {
+                        self.clearFinalizePoll();
+                        self.unlockDesignerUI();
+
+                        if (promptContainer && generationContainer) {
+                            promptContainer.classList.replace('d-none', 'd-block');
+                            generationContainer.classList.replace('d-block', 'd-none');
+                        }
+                        $('#btn-create-course').prop('disabled', false);
+                        Notification.exception(err);
+                    });
+                }).catch(function(err) {
                     self.clearFinalizePoll();
                     self.unlockDesignerUI();
 
-                    // Restore shared UI.
                     if (promptContainer && generationContainer) {
                         promptContainer.classList.replace('d-none', 'd-block');
                         generationContainer.classList.replace('d-block', 'd-none');
@@ -1112,17 +1181,17 @@ define([
                     $('#btn-create-course').prop('disabled', false);
                     Notification.exception(err);
                 });
-            }).catch(function(err) {
-                self.clearFinalizePoll();
-                self.unlockDesignerUI();
+            }
 
-                if (promptContainer && generationContainer) {
-                    promptContainer.classList.replace('d-none', 'd-block');
-                    generationContainer.classList.replace('d-block', 'd-none');
-                }
-                $('#btn-create-course').prop('disabled', false);
-                Notification.exception(err);
-            });
+            self.scrollPageToTopSmooth()
+                .then(function() {
+                    return self.ensureDesignerBlockExpanded();
+                })
+                .then(function() {
+                    requestAnimationFrame(function() {
+                        requestAnimationFrame(runFinalizeFlow);
+                    });
+                });
         },
 
         pollDesignerFinalizeProgress: function() {
@@ -1226,6 +1295,7 @@ define([
          */
         designerUiLockEl: null,
         designerUiLockUpdateHandler: null,
+        designerUiResizeObserver: null,
         lockDesignerUI: function() {
             if (this.designerUiLockEl) {
                 return;
@@ -1271,10 +1341,35 @@ define([
 
             window.addEventListener('resize', this.designerUiLockUpdateHandler);
             window.addEventListener('scroll', this.designerUiLockUpdateHandler, true);
+
+            if (typeof ResizeObserver !== 'undefined') {
+                this.designerUiResizeObserver = new ResizeObserver(function() {
+                    updateTop();
+                });
+                this.designerUiResizeObserver.observe(anchor);
+            }
+
+            var burstFrames = 0;
+            var burst = function() {
+                updateTop();
+                burstFrames++;
+                if (burstFrames < 6) {
+                    requestAnimationFrame(burst);
+                }
+            };
+            requestAnimationFrame(burst);
         },
         unlockDesignerUI: function() {
             if (!this.designerUiLockEl) {
                 return;
+            }
+            if (this.designerUiResizeObserver) {
+                try {
+                    this.designerUiResizeObserver.disconnect();
+                } catch (e) {
+                    // Ignore observer teardown issues.
+                }
+                this.designerUiResizeObserver = null;
             }
             if (this.designerUiLockUpdateHandler) {
                 window.removeEventListener('resize', this.designerUiLockUpdateHandler);
