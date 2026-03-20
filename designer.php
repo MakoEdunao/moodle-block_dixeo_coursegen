@@ -105,6 +105,7 @@ if ($hasexistingjob) {
     // Render the structure designer for an existing job.
     echo $OUTPUT->render_from_template('block_dixeo_designer/review', [
         'jobid' => $jobid,
+        'designercourseid' => !empty($submission->courseid) ? (int) $submission->courseid : 0,
         'loading' => get_string('designer_loading', 'block_dixeo_designer'),
         'save' => get_string('designer_save', 'block_dixeo_designer'),
         'cancel' => get_string('designer_cancel', 'block_dixeo_designer'),

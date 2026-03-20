@@ -59,12 +59,17 @@ define([
         hasUnsavedChanges: false,
         pendingCollapseState: null,
 
+        /** @type {number} Draft course id for WS language context (0 if not created yet). */
+        courseId: 0,
+
         /**
          * Initialize the designer
          * @param {string} jobid
+         * @param {number} [courseid] Course id for module type strings (optional)
          */
-        init: function(jobid) {
+        init: function(jobid, courseid) {
             this.jobid = jobid;
+            this.courseId = typeof courseid === 'number' ? courseid : (parseInt(courseid, 10) || 0);
             this.showLoading();
             this.setupEventHandlers();
             this.setupFooterHandlers();
@@ -85,7 +90,7 @@ define([
             var self = this;
             return Ajax.call([{
                 methodname: 'local_dixeo_get_module_types',
-                args: {}
+                args: {courseid: this.courseId || 0}
             }])[0].then(function(response) {
                 if (response.success && response.types && response.types.length > 0) {
                     MODULE_TYPE_OPTIONS = response.types.map(function(t) {
