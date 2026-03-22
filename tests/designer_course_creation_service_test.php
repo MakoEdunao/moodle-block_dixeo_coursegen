@@ -22,6 +22,7 @@ global $CFG;
 
 use advanced_testcase;
 use block_dixeo_designer\service\designer_course_creation_service;
+use block_dixeo_designer\service\submission\file_service;
 use local_dixeo\dto\operation_result;
 use local_dixeo\external\service_factory;
 use local_dixeo\service\job_service;
@@ -167,6 +168,50 @@ final class designer_course_creation_service_test extends advanced_testcase {
         $created = $service->finalize_draft_course($missingid, $result, $userid, $jobid);
 
         $this->assertNull($created);
+    }
+
+    public function test_relocate_designer_upload_resources_moves_tagged_modules_to_last_resources_section(): void {
+        global $DB;
+
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course(['numsections' => 2]);
+        $resource = $dg->create_module('resource', [
+            'course' => $course->id,
+            'section' => 1,
+            'idnumber' => file_service::CM_IDNUMBER_DESIGNER_UPLOAD,
+        ]);
+
+        $service = new file_service();
+        $service->relocate_designer_upload_resources_after_finalize((int) $course->id, 2);
+
+        $cm = $DB->get_record('course_modules', ['id' => $resource->cmid], '*', MUST_EXIST);
+        $sec = $DB->get_record('course_sections', ['id' => $cm->section], '*', MUST_EXIST);
+        $this->assertSame(3, (int) $sec->section);
+        $this->assertSame(get_string('resources', 'block_dixeo_designer'), $sec->name);
+
+        $format = course_get_format($course->id);
+        $this->assertGreaterThanOrEqual(3, $format->get_last_section_number());
+    }
+
+    public function test_relocate_designer_upload_resources_noop_when_no_tagged_modules(): void {
+        global $DB;
+
+        $dg = $this->getDataGenerator();
+        $course = $dg->create_course(['numsections' => 1]);
+        $dg->create_module('resource', [
+            'course' => $course->id,
+            'section' => 1,
+            'idnumber' => 'other_id',
+        ]);
+
+        $service = new file_service();
+        $service->relocate_designer_upload_resources_after_finalize((int) $course->id, 1);
+
+        $resourcesname = get_string('resources', 'block_dixeo_designer');
+        $this->assertSame(0, (int) $DB->count_records('course_sections', [
+            'course' => $course->id,
+            'name' => $resourcesname,
+        ]));
     }
 }
 

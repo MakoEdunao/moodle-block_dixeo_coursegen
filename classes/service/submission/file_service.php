@@ -29,6 +29,13 @@ class file_service {
     /** @var string File area for submission files. */
     public const FILEAREA = 'submissionfiles';
 
+    /**
+     * Marks course module rows for submission file resources so they can be moved after finalize.
+     *
+     * @var string
+     */
+    public const CM_IDNUMBER_DESIGNER_UPLOAD = 'dixeo_designer_upload';
+
     /** @var int Maximum size per file. */
     private const MAX_FILE_SIZE = 20971520;
 
@@ -196,6 +203,7 @@ class file_service {
                 'module' => $moduleid,
                 'instance' => $resource->id,
                 'section' => $DB->get_field('course_sections', 'id', ['course' => $courseid, 'section' => $sectionnumber], MUST_EXIST),
+                'idnumber' => self::CM_IDNUMBER_DESIGNER_UPLOAD,
                 'visible' => 1,
                 'visibleoncoursepage' => 1,
             ];
@@ -219,6 +227,61 @@ class file_service {
                 $aftereachfile($copied, $total);
             }
         }
+    }
+
+    /**
+     * After structure finalization, move all designer submission file resources to a trailing
+     * "Resources" section (section index = structure section count + 1). No-op if there are no
+     * tagged modules (no uploaded files were copied into the course).
+     *
+     * @param int $courseid Draft/final course id.
+     * @param int $structuresectioncount Number of sections from the generated course structure (not including this Resources section).
+     * @return void
+     */
+    public function relocate_designer_upload_resources_after_finalize(int $courseid, int $structuresectioncount): void {
+        global $CFG, $DB;
+
+        require_once($CFG->dirroot . '/course/lib.php');
+
+        $cmrecords = $DB->get_records_select(
+            'course_modules',
+            'course = :courseid AND idnumber = :idn',
+            ['courseid' => $courseid, 'idn' => self::CM_IDNUMBER_DESIGNER_UPLOAD],
+            'id ASC'
+        );
+        if (empty($cmrecords)) {
+            return;
+        }
+
+        $targetsectionnum = $structuresectioncount + 1;
+        course_create_sections_if_missing($courseid, [$targetsectionnum]);
+
+        $section = $DB->get_record(
+            'course_sections',
+            ['course' => $courseid, 'section' => $targetsectionnum],
+            '*',
+            MUST_EXIST
+        );
+        $section->name = get_string('resources', 'block_dixeo_designer');
+        $section->summary = '';
+        $section->summaryformat = FORMAT_HTML;
+        $DB->update_record('course_sections', $section);
+
+        rebuild_course_cache($courseid, true);
+        $format = course_get_format($courseid);
+        $lastsection = $format->get_last_section_number();
+        $needed = max($lastsection, $targetsectionnum);
+        $format->update_course_format_options(['numsections' => $needed]);
+
+        foreach ($cmrecords as $cmrec) {
+            rebuild_course_cache($courseid, true);
+            $modinfo = get_fast_modinfo($courseid);
+            $cm = $modinfo->get_cm((int) $cmrec->id);
+            $targetsectioninfo = $modinfo->get_section_info($targetsectionnum);
+            moveto_module($cm, $targetsectioninfo);
+        }
+
+        rebuild_course_cache($courseid, true);
     }
 
     /**

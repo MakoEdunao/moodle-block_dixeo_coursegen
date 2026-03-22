@@ -171,6 +171,9 @@ class designer_course_creation_service {
 
         $this->materialize_structure_modules($courseid, $sections, $jobid, $moduletotal);
 
+        $fileService = new submission\file_service();
+        $fileService->relocate_designer_upload_resources_after_finalize($courseid, $sectiontotal);
+
         // User may have cancelled during content generation: draft deleted while this request continues.
         if ($this->is_finalize_cancelled($jobid)) {
             return null;
