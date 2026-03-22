@@ -160,6 +160,16 @@ $string['designer_copy_suffix'] = ' (Copy)';
 $string['designer_change_activity_type'] = 'Change activity type';
 $string['designer_expand_all'] = 'Expand all';
 $string['designer_collapse_all'] = 'Collapse all';
+$string['designer_module_summary_label'] = 'Summary';
+$string['designer_module_instructions_label'] = 'Instructions';
+$string['designer_error_cancel_failed'] = 'Cancel failed';
+$string['designer_error_upload_failed'] = 'Upload failed';
+$string['designer_error_delete_failed'] = 'Delete failed';
+$string['designer_error_status_check_failed'] = 'Status check failed';
+$string['designer_error_structure_start_failed'] = 'Could not start structure generation';
+$string['designer_error_generation_failed_inline'] = 'Generation failed';
+$string['designer_error_finalize_failed'] = 'Finalize failed';
+$string['designer_error_save_structure_failed'] = 'Could not save structure';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'The ID of the user accessing the LTI Consumer';

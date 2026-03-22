@@ -160,6 +160,16 @@ $string['designer_copy_suffix'] = ' (Kopie)';
 $string['designer_change_activity_type'] = 'Aktivitätstyp ändern';
 $string['designer_expand_all'] = 'Alle aufklappen';
 $string['designer_collapse_all'] = 'Alle zuklappen';
+$string['designer_module_summary_label'] = 'Zusammenfassung';
+$string['designer_module_instructions_label'] = 'Anweisungen';
+$string['designer_error_cancel_failed'] = 'Abbrechen fehlgeschlagen';
+$string['designer_error_upload_failed'] = 'Hochladen fehlgeschlagen';
+$string['designer_error_delete_failed'] = 'Löschen fehlgeschlagen';
+$string['designer_error_status_check_failed'] = 'Statusabfrage fehlgeschlagen';
+$string['designer_error_structure_start_failed'] = 'Strukturgenerierung konnte nicht gestartet werden';
+$string['designer_error_generation_failed_inline'] = 'Generierung fehlgeschlagen';
+$string['designer_error_finalize_failed'] = 'Finalisierung fehlgeschlagen';
+$string['designer_error_save_structure_failed'] = 'Struktur konnte nicht gespeichert werden';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'Die ID der Nutzerin/des Nutzers beim Zugriff auf den LTI Consumer';

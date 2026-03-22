@@ -9,6 +9,7 @@
     * image - Course image (optional)
     * jobid - Job ID
     * sections - Array of sections
+    * strings - From AMD (expand_all, module_summary_label, module_instructions_label, etc.)
 }}
 <div class="course-overview">
     {{#image}}
@@ -100,13 +101,13 @@
                             {{title}}
                         </h5>
                         <div class="edit-controls"></div>
-                        <div class="module-summary-label text-muted small">Summary</div>
+                        <div class="module-summary-label text-muted small">{{strings.module_summary_label}}</div>
                         <p class="module-summary editable text-muted small"
                            data-path="sections[{{sectionIndex}}].modules[{{index}}].summary">
                             {{summary}}
                         </p>
                         <div class="edit-controls"></div>
-                        <div class="module-instructions-label text-muted small">Instructions</div>
+                        <div class="module-instructions-label text-muted small">{{strings.module_instructions_label}}</div>
                         <p class="module-instructions editable text-muted small"
                            data-path="sections[{{sectionIndex}}].modules[{{index}}].instructions">
                             {{instructions}}

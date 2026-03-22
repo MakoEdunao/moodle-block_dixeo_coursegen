@@ -160,6 +160,16 @@ $string['designer_copy_suffix'] = ' (Cópia)';
 $string['designer_change_activity_type'] = 'Alterar tipo de atividade';
 $string['designer_expand_all'] = 'Expandir tudo';
 $string['designer_collapse_all'] = 'Recolher tudo';
+$string['designer_module_summary_label'] = 'Resumo';
+$string['designer_module_instructions_label'] = 'Instruções';
+$string['designer_error_cancel_failed'] = 'Cancelamento falhou';
+$string['designer_error_upload_failed'] = 'Envio falhou';
+$string['designer_error_delete_failed'] = 'Eliminação falhou';
+$string['designer_error_status_check_failed'] = 'Falha na verificação do estado';
+$string['designer_error_structure_start_failed'] = 'Não foi possível iniciar a geração da estrutura';
+$string['designer_error_generation_failed_inline'] = 'Geração falhou';
+$string['designer_error_finalize_failed'] = 'Finalização falhou';
+$string['designer_error_save_structure_failed'] = 'Não foi possível guardar a estrutura';
 
 // Privacy.
 $string['privacy:metadata:userid'] = 'O ID do utilizador que acede ao consumidor LTI';

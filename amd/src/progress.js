@@ -219,7 +219,9 @@ define([
                         }
                         self.clearAllProgressPolls();
                         self.resetProgress();
-                        Notification.alert('', (err && err.message) ? err.message : 'Status check failed');
+                        Str.get_string('designer_error_status_check_failed', 'block_dixeo_designer').then(function(msg) {
+                            Notification.alert('', (err && err.message) ? err.message : msg);
+                        });
                     });
                 };
 
@@ -266,7 +268,9 @@ define([
                     }
                     self.clearAllProgressPolls();
                     self.resetProgress();
-                    Notification.alert('', err.message || 'Could not start structure generation');
+                    Str.get_string('designer_error_structure_start_failed', 'block_dixeo_designer').then(function(msg) {
+                        Notification.alert('', err.message || msg);
+                    });
                 });
             },
 
@@ -291,7 +295,9 @@ define([
                         if (data.failed) {
                             self.clearAllProgressPolls();
                             self.resetProgress();
-                            Notification.alert('', data.error || 'Generation failed');
+                            Str.get_string('designer_error_generation_failed_inline', 'block_dixeo_designer').then(function(msg) {
+                                Notification.alert('', data.error || msg);
+                            });
                             return;
                         }
 
@@ -313,7 +319,9 @@ define([
                                     },
                                 }])[0].catch(function(err) {
                                     self.resetProgress();
-                                    Notification.alert('', err.message || 'Finalize failed');
+                                    Str.get_string('designer_error_finalize_failed', 'block_dixeo_designer').then(function(msg) {
+                                        Notification.alert('', err.message || msg);
+                                    });
                                 });
                                 self.pollFinalizeProgress();
                             } else {
@@ -333,7 +341,12 @@ define([
                                 })
                                 .catch(function(err) {
                                     self.resetProgress();
-                                    Notification.alert('', err.message || 'Could not save structure');
+                                    Str.get_string(
+                                        'designer_error_save_structure_failed',
+                                        'block_dixeo_designer'
+                                    ).then(function(msg) {
+                                        Notification.alert('', err.message || msg);
+                                    });
                                 });
                             }
                         }, delayMs);
@@ -344,7 +357,9 @@ define([
                         }
                         self.clearAllProgressPolls();
                         self.resetProgress();
-                        Notification.alert('', err.message || 'Status check failed');
+                        Str.get_string('designer_error_status_check_failed', 'block_dixeo_designer').then(function(msg) {
+                            Notification.alert('', err.message || msg);
+                        });
                     });
                 };
 
@@ -532,8 +547,8 @@ define([
                     let returnTo = null;
                     let returnToJobId = null;
                     try {
-                    returnTo = sessionStorage.getItem(SESSION_RETURN_TO_KEY);
-                    returnToJobId = sessionStorage.getItem(SESSION_RETURN_TO_JOBID_KEY);
+                        returnTo = sessionStorage.getItem(SESSION_RETURN_TO_KEY);
+                        returnToJobId = sessionStorage.getItem(SESSION_RETURN_TO_JOBID_KEY);
                     } catch (e) {
                         returnTo = null;
                         returnToJobId = null;
@@ -550,13 +565,13 @@ define([
                     }
 
                     Template.render('block_dixeo_designer/success_message', context)
-                    .then((html) => {
-                        r.generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
-                        r.generationContainer.classList.replace('d-block', 'd-none');
-                        return;
-                    }).catch((error) => {
-                        Notification.exception(error);
-                    });
+                        .then((html) => {
+                            r.generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
+                            r.generationContainer.classList.replace('d-block', 'd-none');
+                        })
+                        .catch((error) => {
+                            Notification.exception(error);
+                        });
                 }, 3000);
             },
 

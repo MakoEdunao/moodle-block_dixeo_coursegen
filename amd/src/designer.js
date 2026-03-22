@@ -272,7 +272,9 @@ define([
                 {key: 'designer_add_activity', component: 'block_dixeo_designer'},
                 {key: 'designer_change_activity_type', component: 'block_dixeo_designer'},
                 {key: 'designer_expand_all', component: 'block_dixeo_designer'},
-                {key: 'designer_collapse_all', component: 'block_dixeo_designer'}
+                {key: 'designer_collapse_all', component: 'block_dixeo_designer'},
+                {key: 'designer_module_summary_label', component: 'block_dixeo_designer'},
+                {key: 'designer_module_instructions_label', component: 'block_dixeo_designer'}
             ]);
 
             stringsPromise.then(function(strings) {
@@ -284,7 +286,9 @@ define([
                     add_activity: strings[4],
                     change_activity_type: strings[5],
                     expand_all: strings[6],
-                    collapse_all: strings[7]
+                    collapse_all: strings[7],
+                    module_summary_label: strings[8],
+                    module_instructions_label: strings[9]
                 };
 
                 return Templates.render('block_dixeo_designer/course_structure', templateContext);

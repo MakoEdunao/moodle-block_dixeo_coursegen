@@ -305,7 +305,9 @@ define([
             })
             .catch(function(err) {
                 finishCancel();
-                Notification.alert('', err.message || 'Cancel failed');
+                Str.get_string('designer_error_cancel_failed', 'block_dixeo_designer').then(function(msg) {
+                    Notification.alert('', err.message || msg);
+                });
             });
         },
         getJobId: function() {
@@ -462,6 +464,10 @@ define([
             const totalMB = (totalBytes / (1024 * 1024)).toFixed(2);
             const self = this;
 
+            const uploadFailedMsg = await new Promise(function(resolve, reject) {
+                Str.get_string('designer_error_upload_failed', 'block_dixeo_designer').done(resolve).fail(reject);
+            });
+
             const formatMB = function(bytes) {
                 return (bytes / (1024 * 1024)).toFixed(2);
             };
@@ -527,19 +533,19 @@ define([
                                     resolve(null);
                                 }
                             } catch (err) {
-                                reject(new Error('Upload failed'));
+                                reject(new Error(uploadFailedMsg));
                             }
                         } else {
                             try {
                                 const data = JSON.parse(xhr.responseText);
-                                reject(new Error(data.message || 'Upload failed'));
+                                reject(new Error(data.message || uploadFailedMsg));
                             } catch (err) {
-                                reject(new Error('Upload failed'));
+                                reject(new Error(uploadFailedMsg));
                             }
                         }
                     };
                     xhr.onerror = function() {
-                        reject(new Error('Upload failed'));
+                        reject(new Error(uploadFailedMsg));
                     };
                     xhr.send(formData);
                 });
@@ -564,7 +570,9 @@ define([
                 self.setFileNamesLoading(false);
                 filesContainer.innerHTML = '';
                 filesContainer.classList.add('d-none');
-                Notification.alert('', error.message || 'Upload failed');
+                Str.get_string('designer_error_upload_failed', 'block_dixeo_designer').then(function(msg) {
+                    Notification.alert('', error.message || msg);
+                });
             } finally {
                 tempCourseFiles.value = '';
             }
@@ -726,7 +734,8 @@ define([
                         );
                         const data = await response.json();
                         if (!response.ok || !data.success) {
-                            throw new Error(data.message || 'Delete failed');
+                            const fallback = await Str.get_string('designer_error_delete_failed', 'block_dixeo_designer');
+                            throw new Error(data.message || fallback);
                         }
 
                         this.displayFileNames(data.context);
