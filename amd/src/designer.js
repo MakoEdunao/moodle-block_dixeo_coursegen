@@ -104,6 +104,10 @@ define([
                 $('#btn-create-course').prop('disabled', false);
                 self.finalizeProgressCompleted = false;
             });
+            document.addEventListener(DesignerProgress.ALLOW_NAVIGATION_EVENT, function() {
+                self.hasUnsavedChanges = false;
+                self.suppressBeforeUnload = true;
+            });
             this.loadModuleTypes().then(function() {
                 self.loadStructure();
             }).catch(function(err) {

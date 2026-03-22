@@ -421,6 +421,9 @@ define([
                 if (reviewStructure && startResp && startResp.noop) {
                     this.clearAllProgressPolls();
                     this.unlockDesignerUI();
+                    document.dispatchEvent(
+                        new CustomEvent(Progress.ALLOW_NAVIGATION_EVENT, {bubbles: true})
+                    );
                     window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' + this.getJobId();
                     return;
                 }

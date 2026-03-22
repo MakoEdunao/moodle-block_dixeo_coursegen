@@ -38,6 +38,12 @@ define([
     const GLOBAL_UNLOCK_UI_EVENT = 'dixeo_designer_global_unlock_ui';
 
     /**
+     * Dispatched immediately before a programmatic navigation (e.g. reload designer after structure save)
+     * so designer.js can clear beforeunload guards without waiting for unload.
+     */
+    const ALLOW_NAVIGATION_EVENT = 'dixeo_designer_allow_navigation';
+
+    /**
      * Map progress percentage to an active step.
      *
      * Step mapping: 0–20% => 1; >20–40% => 2; >=40–<80% => 3; >=80% => 4.
@@ -336,6 +342,9 @@ define([
                                     },
                                 }])[0]
                                 .then(function() {
+                                    document.dispatchEvent(
+                                        new CustomEvent(ALLOW_NAVIGATION_EVENT, {bubbles: true})
+                                    );
                                     window.location.href = Config.wwwroot +
                                         '/blocks/dixeo_designer/designer.php?id=' + self.getJobId();
                                 })
@@ -692,6 +701,7 @@ define([
         SESSION_RETURN_TO_KEY: SESSION_RETURN_TO_KEY,
         SESSION_RETURN_TO_JOBID_KEY: SESSION_RETURN_TO_JOBID_KEY,
         GLOBAL_UNLOCK_UI_EVENT: GLOBAL_UNLOCK_UI_EVENT,
+        ALLOW_NAVIGATION_EVENT: ALLOW_NAVIGATION_EVENT,
         getActiveStepFromProgress: getActiveStepFromProgress,
     };
 });
