@@ -108,10 +108,10 @@ class designer_course_creation_service {
      * @param int $courseid
      * @param array $result Structure API result (course_structure.title, course_structure.sections, etc.)
      * @param int $userid
-     * @param string|null $jobid Optional job ID for progress reporting (Section X of Y).
-     * @return \stdClass
+     * @param string|null $jobid Optional job ID for progress reporting (module X of Y).
+     * @return \stdClass|null Final course record, or null if the draft was removed (e.g. user cancelled) or missing.
      */
-    public function finalize_draft_course(int $courseid, array $result, int $userid, ?string $jobid = null): \stdClass {
+    public function finalize_draft_course(int $courseid, array $result, int $userid, ?string $jobid = null): ?\stdClass {
         global $CFG, $DB;
 
         require_once($CFG->dirroot . '/course/lib.php');
@@ -123,19 +123,27 @@ class designer_course_creation_service {
         $sections = $data['sections'] ?? [];
         $title = $data['title'] ?? get_string('blocktitle', 'block_dixeo_designer');
         $sectiontotal = count($sections);
+        $moduletotal = 0;
+        foreach (array_values($sections) as $sd) {
+            $moduletotal += count($sd['modules'] ?? []);
+        }
         $defaultformat = get_config('moodlecourse', 'format') ?: 'topics';
 
         if ($jobid !== null && $jobid !== '') {
             // UI expects generating content to start at 1/total (not 0/total).
-            $initialSectionIndex = $sectiontotal > 0 ? 1 : 0;
             $this->set_finalize_progress($jobid, [
                 'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
-                'section_index' => $initialSectionIndex,
-                'section_total' => $sectiontotal,
+                'module_index' => $moduletotal > 0 ? 1 : 0,
+                'module_total' => $moduletotal,
+                'section_index' => 0,
+                'section_total' => 0,
             ]);
         }
 
-        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $courseid], '*', IGNORE_MISSING);
+        if (!$course) {
+            return null;
+        }
         $course->fullname = $title;
         $course->shortname = $this->generate_unique_shortname($title);
         $course->summary = $data['summary'] ?? '';
@@ -151,16 +159,27 @@ class designer_course_creation_service {
             $section = $DB->get_record('course_sections', [
                 'course' => $courseid,
                 'section' => $sectionnumber,
-            ], '*', MUST_EXIST);
+            ], '*', IGNORE_MISSING);
+            if (!$section) {
+                return null;
+            }
             $section->name = $sectiondata['title'] ?? '';
             $section->summary = $sectiondata['summary'] ?? '';
             $section->summaryformat = FORMAT_HTML;
             $DB->update_record('course_sections', $section);
         }
 
-        $this->materialize_structure_modules($courseid, $sections, $jobid, $sectiontotal);
+        $this->materialize_structure_modules($courseid, $sections, $jobid, $moduletotal);
 
-        $course = $DB->get_record('course', ['id' => $courseid], '*', MUST_EXIST);
+        // User may have cancelled during content generation: draft deleted while this request continues.
+        if ($this->is_finalize_cancelled($jobid)) {
+            return null;
+        }
+
+        $course = $DB->get_record('course', ['id' => $courseid], '*', IGNORE_MISSING);
+        if (!$course) {
+            return null;
+        }
         if ($jobid !== null && $jobid !== '') {
             $this->set_finalize_progress($jobid, ['phase' => workflow_constants::FINALIZE_PHASE_FINALIZING]);
             $this->set_finalize_progress($jobid, [
@@ -174,11 +193,10 @@ class designer_course_creation_service {
     }
 
     /**
-     * Why: `get_finalize_progress` polls this cache while module materialization
-     * runs, so the UI can show which section is currently being finalized.
+     * Stores finalize phase for polling by `get_finalize_progress` while modules are materialized.
      *
      * @param string $jobid
-     * @param array $data phase, section_index?, section_total?, courseid?, coursename?
+     * @param array $data phase, module_index?, module_total?, section_index?, section_total?, courseid?, coursename?
      * @return void
      */
     private function set_finalize_progress(string $jobid, array $data): void {
@@ -187,10 +205,10 @@ class designer_course_creation_service {
     }
 
     /**
-     * Merge data into finalize progress cache (preserves current_fill_jobid when updating section progress).
+     * Merge data into finalize progress cache (preserves current_fill_jobid when updating module progress).
      *
      * @param string $jobid
-     * @param array $data Keys to merge (phase, section_index, section_total, current_fill_jobid?, cancelled?)
+     * @param array $data Keys to merge (phase, module_index, module_total, section_index?, section_total?, current_fill_jobid?, cancelled?)
      * @return void
      */
     private function merge_finalize_progress(string $jobid, array $data): void {
@@ -216,8 +234,7 @@ class designer_course_creation_service {
     }
 
     /**
-     * Why: ensure the course has at least the initial synced assets before
-     * module materialization starts (prevents empty module inputs).
+     * Ensures initial file sync completes before module materialization (avoids empty module inputs).
      *
      * Caller must copy submission files into the course before calling this.
      *
@@ -233,8 +250,7 @@ class designer_course_creation_service {
     }
 
     /**
-     * Why: trigger file sync asynchronously so the UI can poll progress while
-     * the designer continues with remote structure generation.
+     * Enables async file sync so the UI can poll progress during remote structure generation.
      *
      * Caller must copy submission files into the course before calling this.
      *
@@ -362,28 +378,30 @@ class designer_course_creation_service {
     /**
      * @param int $courseid
      * @param array $sections
-     * @param string|null $jobid For progress reporting (Section X of Y).
-     * @param int $sectiontotal Total number of sections.
+     * @param string|null $jobid For progress reporting (module X of Y across all sections).
+     * @param int $moduletotal Total modules to materialize.
      */
-    private function materialize_structure_modules(int $courseid, array $sections, ?string $jobid, int $sectiontotal): void {
+    private function materialize_structure_modules(int $courseid, array $sections, ?string $jobid, int $moduletotal): void {
         $moduleservice = \local_dixeo\external\service_factory::get_module_generation_service();
         $jobservice = \local_dixeo\external\service_factory::get_job_service();
 
+        $moduleordinal = 0;
         foreach (array_values($sections) as $sectionindex => $sectiondata) {
             if ($this->is_finalize_cancelled($jobid)) {
                 return;
             }
             $sectionnumber = $sectionindex + 1;
-            if ($jobid !== null && $jobid !== '') {
-                $this->merge_finalize_progress($jobid, [
-                    'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
-                    'section_index' => $sectionnumber,
-                    'section_total' => $sectiontotal,
-                ]);
-            }
             foreach (($sectiondata['modules'] ?? []) as $module) {
                 if ($this->is_finalize_cancelled($jobid)) {
                     return;
+                }
+                $moduleordinal++;
+                if ($jobid !== null && $jobid !== '' && $moduletotal > 0) {
+                    $this->merge_finalize_progress($jobid, [
+                        'phase' => workflow_constants::FINALIZE_PHASE_GENERATING_CONTENT,
+                        'module_index' => $moduleordinal,
+                        'module_total' => $moduletotal,
+                    ]);
                 }
                 $modulename = $module['type'] ?? 'page';
                 $title = trim((string) ($module['title'] ?? ''));

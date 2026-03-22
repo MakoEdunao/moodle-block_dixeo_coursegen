@@ -18,8 +18,8 @@ namespace block_dixeo_designer\service;
 
 defined('MOODLE_INTERNAL') || die();
 
-use block_dixeo_designer\submission_service;
-use block_dixeo_designer\submission_file_service;
+use block_dixeo_designer\service\submission\file_service as submission_file_service;
+use block_dixeo_designer\service\submission\service as submission_service;
 
 /**
  * Designer submission UI: file context, store/delete files (block-owned).
@@ -37,8 +37,7 @@ class designer_submission_ui_service {
     private submission_file_service $files;
 
     /**
-     * Why: allow unit tests and higher-level workflow services to inject
-     * persistence/file-store dependencies.
+     * Optional dependencies for unit tests and workflow services.
      *
      * @param submission_service|null $submissions
      * @param submission_file_service|null $files

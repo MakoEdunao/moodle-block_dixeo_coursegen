@@ -429,6 +429,42 @@
     padding: 5px 10px;
 }
 
+/* Cancel draft: invisible click-catcher + loading label in button while WS runs */
+.block_dixeo_designer #edai_course_designer_form.dixeo-designer-cancel-pending {
+    position: relative;
+}
+
+.block_dixeo_designer #edai_course_designer_form.dixeo-designer-cancel-pending::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    background: transparent;
+    pointer-events: auto;
+    border-radius: inherit;
+}
+
+.block_dixeo_designer #edai_course_designer_form.dixeo-designer-cancel-pending .cancel-btn {
+    position: relative;
+    z-index: 9;
+}
+
+.block_dixeo_designer #edai_course_designer_form.dixeo-designer-cancel-pending label[for="temp_course_files"],
+.block_dixeo_designer #edai_course_designer_form.dixeo-designer-cancel-pending .delete-icon {
+    pointer-events: none;
+    opacity: 0.65;
+}
+
+.block_dixeo_designer .btn-cancel-draft .btn-cancel-draft-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.block_dixeo_designer .btn-cancel-draft .btn-cancel-draft-loading .icon {
+    margin: 0;
+}
+
 .block_dixeo_designer .alert_course_generated .side-by-side {
     display: flex;
     align-items: flex-end;

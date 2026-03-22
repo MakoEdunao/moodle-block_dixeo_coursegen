@@ -8,6 +8,8 @@ This plugin generates your course on Dixeo.com and automatically configures your
 
 You can also create a [free Dixeo account](https://dixeo.com/login/signup.php) to start building courses directly.
 
+**Developers:** plugin layout (PHP namespaces, externals, AMD modules) is documented in [`classes/README.md`](classes/README.md) and [`amd/README.md`](amd/README.md). Ongoing quality work is tracked in [`docs/QUALITY.md`](docs/QUALITY.md).
+
 ---
 
 ## 🚀 Features

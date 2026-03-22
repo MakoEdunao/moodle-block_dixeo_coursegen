@@ -152,5 +152,21 @@ final class designer_course_creation_service_test extends advanced_testcase {
         $cached = $cache->get($jobid);
         $this->assertSame('done', $cached['phase']);
     }
+
+    public function test_finalize_draft_course_returns_null_when_course_missing(): void {
+        $userid = 2;
+        $jobid = 'job-' . uniqid();
+        $missingid = 999999001;
+
+        $result = [
+            'title' => 'Ghost',
+            'sections' => [],
+        ];
+
+        $service = new designer_course_creation_service();
+        $created = $service->finalize_draft_course($missingid, $result, $userid, $jobid);
+
+        $this->assertNull($created);
+    }
 }
 

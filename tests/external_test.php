@@ -19,20 +19,20 @@ namespace block_dixeo_designer;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/generate_course.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_structure_status.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/finalize_course.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/cancel_draft.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_finalize_progress.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/save_structure.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/generate_course.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/get_structure_status.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/course/finalize_course.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/cancel_draft.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/course/get_finalize_progress.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/course/save_structure.php');
 
 use advanced_testcase;
-use block_dixeo_designer\external\generate_course;
-use block_dixeo_designer\external\get_structure_status;
-use block_dixeo_designer\external\finalize_course;
-use block_dixeo_designer\external\cancel_draft;
-use block_dixeo_designer\external\get_finalize_progress;
-use block_dixeo_designer\external\save_structure;
+use block_dixeo_designer\external\course\finalize_course;
+use block_dixeo_designer\external\course\get_finalize_progress;
+use block_dixeo_designer\external\course\save_structure;
+use block_dixeo_designer\external\draft\cancel_draft;
+use block_dixeo_designer\external\draft\generate_course;
+use block_dixeo_designer\external\draft\get_structure_status;
 use block_dixeo_designer\service\designer_service;
 use block_dixeo_designer\service\designer_service_factory;
 
@@ -43,12 +43,12 @@ use block_dixeo_designer\service\designer_service_factory;
  * @category   test
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \block_dixeo_designer\external\generate_course
- * @covers     \block_dixeo_designer\external\get_structure_status
- * @covers     \block_dixeo_designer\external\finalize_course
- * @covers     \block_dixeo_designer\external\cancel_draft
- * @covers     \block_dixeo_designer\external\get_finalize_progress
- * @covers     \block_dixeo_designer\external\save_structure
+ * @covers     \block_dixeo_designer\external\draft\generate_course
+ * @covers     \block_dixeo_designer\external\draft\get_structure_status
+ * @covers     \block_dixeo_designer\external\course\finalize_course
+ * @covers     \block_dixeo_designer\external\draft\cancel_draft
+ * @covers     \block_dixeo_designer\external\course\get_finalize_progress
+ * @covers     \block_dixeo_designer\external\course\save_structure
  */
 final class external_test extends advanced_testcase {
 
@@ -214,6 +214,8 @@ final class external_test extends advanced_testcase {
         $this->assertSame('', $result['phase']);
         $this->assertSame(0, $result['section_index']);
         $this->assertSame(0, $result['section_total']);
+        $this->assertSame(0, $result['module_index']);
+        $this->assertSame(0, $result['module_total']);
         $this->assertSame(0, $result['courseid']);
         $this->assertSame('', $result['coursename']);
     }
@@ -234,6 +236,8 @@ final class external_test extends advanced_testcase {
         $this->assertSame('generating_content', $result['phase']);
         $this->assertSame(2, $result['section_index']);
         $this->assertSame(5, $result['section_total']);
+        $this->assertSame(0, $result['module_index']);
+        $this->assertSame(0, $result['module_total']);
         $this->assertSame(0, $result['courseid']);
         $this->assertSame('', $result['coursename']);
     }

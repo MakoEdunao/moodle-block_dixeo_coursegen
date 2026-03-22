@@ -20,14 +20,14 @@ defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
 
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/start_generation.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_filesync_status.php');
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/submit_structure_job.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/start_generation.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/get_filesync_status.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/draft/submit_structure_job.php');
 
 use advanced_testcase;
-use block_dixeo_designer\external\start_generation;
-use block_dixeo_designer\external\get_filesync_status;
-use block_dixeo_designer\external\submit_structure_job;
+use block_dixeo_designer\external\draft\get_filesync_status;
+use block_dixeo_designer\external\draft\start_generation;
+use block_dixeo_designer\external\draft\submit_structure_job;
 use block_dixeo_designer\service\designer_service;
 use block_dixeo_designer\service\designer_service_factory;
 
@@ -109,7 +109,13 @@ final class external_filesync_test extends advanced_testcase {
                 'progresspercent' => 15.5,
                 'filestotal' => 3,
                 'filescompleted' => 1,
+                'uploadbytes' => 5000,
+                'uploadbytestotal' => 10000,
                 'errormessage' => null,
+                'lastsynccompleted' => null,
+                'hassubmissionfiles' => true,
+                'moodleprepareactive' => false,
+                'moodlepreparepercent' => null,
             ]);
 
         $result = get_filesync_status::get_filesync_status('job-3', $this->sesskey);
@@ -118,7 +124,13 @@ final class external_filesync_test extends advanced_testcase {
         $this->assertSame(15.5, (float) $result['progresspercent']);
         $this->assertSame(3, (int) $result['filestotal']);
         $this->assertSame(1, (int) $result['filescompleted']);
+        $this->assertSame(5000, (int) $result['uploadbytes']);
+        $this->assertSame(10000, (int) $result['uploadbytestotal']);
         $this->assertNull($result['errormessage']);
+        $this->assertNull($result['lastsynccompleted']);
+        $this->assertTrue((bool) $result['hassubmissionfiles']);
+        $this->assertFalse((bool) $result['moodleprepareactive']);
+        $this->assertNull($result['moodlepreparepercent']);
     }
 
     public function test_submit_structure_job_maps_remotejobid_and_courseid(): void {

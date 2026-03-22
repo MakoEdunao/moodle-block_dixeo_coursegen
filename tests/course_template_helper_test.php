@@ -19,6 +19,7 @@ namespace block_dixeo_designer;
 defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
+use block_dixeo_designer\service\course_template_helper;
 use local_dixeo\external\service_factory;
 use local_dixeo\service\course_template_service;
 
@@ -29,7 +30,7 @@ use local_dixeo\service\course_template_service;
  * @category   test
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \block_dixeo_designer\course_template_helper
+ * @covers     \block_dixeo_designer\service\course_template_helper
  */
 final class course_template_helper_test extends advanced_testcase {
     protected function tearDown(): void {

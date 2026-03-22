@@ -31,4 +31,11 @@ $definitions = [
         'simpledata' => false,
         'ttl' => 600,
     ],
+    'prepare_progress' => [
+        'mode' => \cache_store::MODE_APPLICATION,
+        // Job ids may contain dots (e.g. uniqid); simplekeys only allows [a-zA-Z0-9_-].
+        'simplekeys' => false,
+        'simpledata' => false,
+        'ttl' => 600,
+    ],
 ];

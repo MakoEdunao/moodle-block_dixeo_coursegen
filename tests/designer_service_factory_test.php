@@ -21,7 +21,7 @@ defined('MOODLE_INTERNAL') || die();
 use advanced_testcase;
 use block_dixeo_designer\service\designer_service;
 use block_dixeo_designer\service\designer_service_factory;
-use block_dixeo_designer\service\dixeo_remote_adapter;
+use block_dixeo_designer\service\remote\dixeo_remote_adapter;
 use ReflectionClass;
 
 final class designer_service_factory_test extends advanced_testcase {

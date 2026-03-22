@@ -62,7 +62,7 @@ class dixeo_remote_adapter {
      * Poll (if needed) file sync status for a draft course.
      *
      * @param int $courseid
-     * @return object { status, progresspercent, filestotal, filescompleted, errormessage }
+     * @return object { status, progresspercent, filestotal, filescompleted, errormessage, lastsynccompleted }
      */
     public function get_file_sync_progress(int $courseid): object {
         $filesync = \local_dixeo\external\service_factory::get_file_sync_service();
@@ -70,7 +70,10 @@ class dixeo_remote_adapter {
         // Avoid remote polling when the course is already synchronized/none.
         $status = $filesync->get_status($courseid);
         $localStatus = (string) ($status->status ?? 'none');
-        if (!in_array($localStatus, ['synchronized', 'none'], true)) {
+        $uploadbytes = (int) ($status->uploadbytes ?? 0);
+        $uploadtotal = (int) ($status->uploadbytestotal ?? 0);
+        $outbounduploadactive = $localStatus === 'syncing' && $uploadtotal > 0 && $uploadbytes < $uploadtotal;
+        if (!in_array($localStatus, ['synchronized', 'none'], true) && !$outbounduploadactive) {
             $status = $filesync->poll_status($courseid);
         }
 
@@ -79,7 +82,10 @@ class dixeo_remote_adapter {
             'progresspercent' => $status->progresspercent ?? null,
             'filestotal' => $status->filestotal ?? null,
             'filescompleted' => $status->filescompleted ?? null,
+            'uploadbytes' => $status->uploadbytes ?? null,
+            'uploadbytestotal' => $status->uploadbytestotal ?? null,
             'errormessage' => $status->errormessage ?? null,
+            'lastsynccompleted' => $status->lastsynccompleted ?? null,
         ];
     }
 

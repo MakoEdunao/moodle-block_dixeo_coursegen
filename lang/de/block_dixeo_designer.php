@@ -56,7 +56,6 @@ $string['coursetemplate_none'] = 'Keine';
 $string['coursetemplate_template_alpha'] = 'Vorlage Alpha';
 $string['coursetemplate_template_beta'] = 'Vorlage Beta';
 $string['coursetemplate_template_gamma'] = 'Vorlage Gamma';
-$string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Dixeo-Kurse';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['register'] = 'Registrieren';
@@ -116,15 +115,18 @@ $string['uploaderror'] = 'Fehler beim Hochladen der Datei.';
 $string['uploading_files'] = 'Wird hochgeladen…';
 $string['step_uploading_files_count'] = 'Dateien werden verarbeitet ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'Inhalt wird generiert ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'Processing prompt';
+$string['step_processing_prompt'] = 'Aufgabenstellung wird verarbeitet...';
+$string['step_preparing_files'] = 'Dateien werden vorbereitet...';
 
 // Designer interface.
 $string['designer_loading'] = 'Kursstruktur wird geladen...';
+$string['designer_job_expired'] = 'Diese Kurserstellung ist abgelaufen. Bitte starten Sie eine neue Generierung.';
 $string['designer_regenerate'] = 'Neu generieren';
 $string['designer_invalid_data'] = 'Ungültige Strukturdaten';
 $string['structurenotfound'] = 'Kursstruktur nicht gefunden. Erstellen Sie zuerst eine Struktur oder versuchen Sie es später erneut.';
 $string['designer_save'] = 'Speichern';
 $string['designer_cancel'] = 'Abbrechen';
+$string['designer_cancelling'] = 'Wird abgebrochen…';
 $string['designer_reload'] = 'Neu laden';
 $string['designer_save_now'] = 'Jetzt speichern';
 $string['designer_autosave_in'] = 'Auto-Speicherung in:';

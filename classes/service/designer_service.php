@@ -18,10 +18,11 @@ namespace block_dixeo_designer\service;
 
 defined('MOODLE_INTERNAL') || die();
 
-use block_dixeo_designer\submission_repository;
-use block_dixeo_designer\submission_service;
-use block_dixeo_designer\submission_file_service;
-use block_dixeo_designer\structure_repository;
+use block_dixeo_designer\service\cache\prepare_progress_cache;
+use block_dixeo_designer\service\remote\dixeo_remote_adapter;
+use block_dixeo_designer\service\structure\repository as structure_repository;
+use block_dixeo_designer\service\submission\file_service as submission_file_service;
+use block_dixeo_designer\service\submission\service as submission_service;
 use block_dixeo_designer\workflow_constants;
 
 /**
@@ -57,14 +58,13 @@ class designer_service {
     private $filesyncservice;
 
     /**
-     * Why: Allow controlled dependency injection (unit tests + workflow orchestration)
-     * without tightly coupling the designer workflow to specific persistence/adapters.
+     * Constructor with optional dependencies for unit tests and workflow orchestration.
      *
      * @param submission_service|null $submissions
      * @param submission_file_service|null $files
      * @param structure_repository|null $structures
      * @param designer_course_creation_service|null $coursecreation
-     * @param dixeo_remote_adapter|null $remoteapi
+     * @param dixeo_remote_adapter|null $remoteapi Remote structure-generation API adapter.
      * @param \local_dixeo\service\job_service|null $jobservice
      * @param \local_dixeo\service\file_sync_service|null $filesyncservice
      */
@@ -132,8 +132,7 @@ class designer_service {
 
     /**
      * Prepare generation: create draft course, copy submission files into it, and trigger async file sync.
-     * Why: we only submit the remote structure generation after file sync
-     * has started/completed, so the UI can poll file-sync progress first.
+     * Remote structure generation is submitted only after file sync has started so the client can poll progress.
      *
      * @param string $jobid
      * @param int $userid
@@ -161,6 +160,8 @@ class designer_service {
         // without forcing a re-copy + re-sync.
         $submissionFiles = $this->files->get_files((int) $submission->id);
         $submissionFilesHash = $this->compute_file_manifest_hash($submissionFiles);
+
+        prepare_progress_cache::purge($jobid);
 
         if ($existingCourseId !== null) {
             $courseAiRepo = new \local_dixeo\repository\course_ai_repository();
@@ -196,18 +197,29 @@ class designer_service {
         }
 
         // Fallback to the current behavior (new draft course) when we cannot safely reuse.
+        prepare_progress_cache::begin($jobid, !empty($submissionFiles), count($submissionFiles));
+
         $course = $this->coursecreation->create_draft_course($userid);
         $this->submissions->set_draft_and_remote_job($submission, (int) $course->id, null);
 
         try {
-            $this->files->copy_files_to_course_resources((int) $submission->id, (int) $course->id, $userid);
+            // Allow concurrent get_filesync_status polls while files are copied and trigger_sync runs.
+            \core\session\manager::write_close();
+
+            $this->files->copy_files_to_course_resources((int) $submission->id, (int) $course->id, $userid,
+                function (int $copied, int $total) use ($jobid): void {
+                    prepare_progress_cache::set_copied($jobid, $copied);
+                }
+            );
             $this->coursecreation->enable_draft_file_sync((int) $course->id, $userid);
+            prepare_progress_cache::purge($jobid);
 
             return (object) [
                 'courseid' => (int) $course->id,
                 'noop' => false,
             ];
         } catch (\Throwable $e) {
+            prepare_progress_cache::purge($jobid);
             $this->coursecreation->delete_draft_course((int) $course->id);
             $this->submissions->clear_course($submission);
             throw $e;
@@ -219,21 +231,107 @@ class designer_service {
      *
      * @param string $jobid
      * @param int $userid
-     * @return object { status, progresspercent, filestotal, filescompleted, errormessage }
+     * @return object { status, progresspercent, filestotal, filescompleted, errormessage, lastsynccompleted,
+     *                  hassubmissionfiles, moodleprepareactive, moodlepreparepercent }
      */
     public function get_filesync_status(string $jobid, int $userid): object {
         $submission = $this->submissions->get_submission($jobid);
-        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
-            return (object) [
-                'status' => 'none',
-                'progresspercent' => null,
-                'filestotal' => null,
-                'filescompleted' => null,
-                'errormessage' => null,
-            ];
+        if (!$submission || (int) $submission->userid !== $userid) {
+            return $this->filesync_status_empty(false);
         }
 
-        return $this->remoteapi->get_file_sync_progress((int) $submission->courseid);
+        $hasfiles = $this->submission_has_source_files((int) $submission->id);
+        $prep = prepare_progress_cache::get($jobid);
+
+        if (empty($submission->courseid)) {
+            return $this->filesync_status_preparing($hasfiles, $prep);
+        }
+
+        $remote = $this->remoteapi->get_file_sync_progress((int) $submission->courseid);
+        return $this->filesync_status_merge_prepare_fields($hasfiles, $prep, $remote);
+    }
+
+    /**
+     * @param int $submissionid
+     * @return bool
+     */
+    private function submission_has_source_files(int $submissionid): bool {
+        return count($this->files->get_files($submissionid)) > 0;
+    }
+
+    /**
+     * @param bool $hasfiles
+     * @return object
+     */
+    private function filesync_status_empty(bool $hasfiles): object {
+        return (object) [
+            'status' => 'preparing',
+            'progresspercent' => null,
+            'filestotal' => null,
+            'filescompleted' => null,
+            'uploadbytes' => null,
+            'uploadbytestotal' => null,
+            'errormessage' => null,
+            'lastsynccompleted' => null,
+            'hassubmissionfiles' => $hasfiles,
+            'moodleprepareactive' => false,
+            'moodlepreparepercent' => null,
+        ];
+    }
+
+    /**
+     * @param bool $hasfiles
+     * @param array|null $prep
+     * @return object
+     */
+    private function filesync_status_preparing(bool $hasfiles, ?array $prep): object {
+        [$moodleactive, $moodlepct] = $this->filesync_moodle_prepare_state($hasfiles, $prep);
+        return (object) [
+            'status' => 'preparing',
+            'progresspercent' => null,
+            'filestotal' => null,
+            'filescompleted' => null,
+            'uploadbytes' => null,
+            'uploadbytestotal' => null,
+            'errormessage' => null,
+            'lastsynccompleted' => null,
+            'hassubmissionfiles' => $hasfiles,
+            'moodleprepareactive' => $moodleactive,
+            'moodlepreparepercent' => $moodlepct,
+        ];
+    }
+
+    /**
+     * @param bool $hasfiles
+     * @param array|null $prep
+     * @param object $remote
+     * @return object
+     */
+    private function filesync_status_merge_prepare_fields(bool $hasfiles, ?array $prep, object $remote): object {
+        [$moodleactive, $moodlepct] = $this->filesync_moodle_prepare_state($hasfiles, $prep);
+        $remote->hassubmissionfiles = $hasfiles;
+        $remote->moodleprepareactive = $moodleactive;
+        $remote->moodlepreparepercent = $moodlepct;
+        return $remote;
+    }
+
+    /**
+     * Moodle copy phase: active while cache says files remain to be copied into the draft course.
+     *
+     * @param bool $hasfiles
+     * @param array|null $prep
+     * @return array{0:bool,1:float|null} [active, percent 0–100 or null]
+     */
+    private function filesync_moodle_prepare_state(bool $hasfiles, ?array $prep): array {
+        if (!$hasfiles || !$prep || empty($prep['active'])) {
+            return [false, null];
+        }
+        $total = (int) ($prep['moodle_total'] ?? 0);
+        $copied = (int) ($prep['moodle_copied'] ?? 0);
+        if ($total <= 0 || $copied >= $total) {
+            return [false, null];
+        }
+        return [true, 100.0 * $copied / $total];
     }
 
     /**
@@ -376,8 +474,19 @@ class designer_service {
             return null;
         }
 
+        // Re-fetch: user may have cancelled; draft course deleted and submission cleared concurrently.
+        global $DB;
+        $submission = $this->submissions->get_submission($jobid);
+        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
+            return null;
+        }
+        $draftcourseid = (int) $submission->courseid;
+        if (!$DB->record_exists('course', ['id' => $draftcourseid])) {
+            return null;
+        }
+
         $course = $this->coursecreation->finalize_draft_course(
-            (int) $submission->courseid,
+            $draftcourseid,
             $result,
             $userid,
             $jobid
@@ -469,8 +578,7 @@ class designer_service {
     }
 
     /**
-     * Why: Push local uploaded files into the remote vector-store so subsequent
-     * structure generation can access the same inputs.
+     * Push local uploaded files into the remote vector store so structure generation can use the same inputs.
      *
      * @param int $submissionid
      * @param string $jobid

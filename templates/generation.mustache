@@ -52,7 +52,11 @@
         </div>
         <div class="cancel-btn">
             <button type="button" class="btn btn-secondary btn-cancel-draft" data-action="cancel-draft">
-                {{#str}} designer_cancel, block_dixeo_designer {{/str}}
+                <span class="btn-cancel-draft-idle">{{#str}} designer_cancel, block_dixeo_designer {{/str}}</span>
+                <span class="btn-cancel-draft-loading d-none">
+                    <i class="icon fa fa-spinner fa-spin fa-fw" role="presentation" aria-hidden="true"></i>
+                    <span class="btn-cancel-draft-loading-text">{{#str}} designer_cancelling, block_dixeo_designer {{/str}}</span>
+                </span>
             </button>
         </div>
     </div>

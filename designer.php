@@ -32,7 +32,7 @@ global $PAGE, $OUTPUT, $USER;
 
 $jobid = optional_param('id', '', PARAM_TEXT);
 $hasexistingjob = ($jobid !== '');
-$submissionservice = new \block_dixeo_designer\submission_service();
+$submissionservice = new \block_dixeo_designer\service\submission\service();
 $designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
 
 // If the job id exists but the submission was deleted after successful generation,
@@ -72,7 +72,7 @@ echo $OUTPUT->header();
 
 if ($submissionExpired) {
     echo html_writer::div(
-        'This course generation has expired. Please start a new generation.',
+        get_string('designer_job_expired', 'block_dixeo_designer'),
         'alert alert-danger mt-3'
     );
 }
@@ -81,7 +81,7 @@ $filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
 
 echo html_writer::start_div('dixeo-designer-block-wrapper');
 echo html_writer::div($OUTPUT->render_from_template('block_dixeo_designer/course_designer',
-    \block_dixeo_designer\submission_render_helper::build_prompt_context(
+    \block_dixeo_designer\service\submission\render_helper::build_prompt_context(
         $jobid,
         $coursedescription,
         $templateid,

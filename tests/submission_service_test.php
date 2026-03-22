@@ -19,20 +19,21 @@ namespace block_dixeo_designer;
 defined('MOODLE_INTERNAL') || die();
 
 use advanced_testcase;
+use block_dixeo_designer\service\submission\service;
 
 /**
- * Tests for submission_service and submission_repository.
+ * Tests for submission\service and submission\repository.
  *
  * @package    block_dixeo_designer
  * @category   test
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \block_dixeo_designer\submission_service
- * @covers     \block_dixeo_designer\submission_repository
+ * @covers     \block_dixeo_designer\service\submission\service
+ * @covers     \block_dixeo_designer\service\submission\repository
  */
 final class submission_service_test extends advanced_testcase {
 
-    /** @var submission_service */
+    /** @var service */
     private $service;
 
     /** @var \stdClass */
@@ -42,7 +43,7 @@ final class submission_service_test extends advanced_testcase {
         parent::setUp();
         $this->resetAfterTest(true);
         $this->user = $this->getDataGenerator()->create_user();
-        $this->service = new submission_service();
+        $this->service = new service();
     }
 
     public function test_get_or_create_submission_creates_new(): void {

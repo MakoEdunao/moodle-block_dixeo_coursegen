@@ -18,6 +18,8 @@ namespace block_dixeo_designer\service;
 
 defined('MOODLE_INTERNAL') || die();
 
+use block_dixeo_designer\service\remote\dixeo_remote_adapter;
+
 /**
  * Factory for designer_service (allows test double injection).
  *

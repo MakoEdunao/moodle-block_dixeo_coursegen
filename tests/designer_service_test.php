@@ -47,10 +47,11 @@ final class designer_service_test extends advanced_testcase {
     public function test_finalize_course_deletes_submission_after_success_when_createcourse_true(): void {
         $jobid = 'job-' . uniqid();
         $userid = $this->user->id;
+        $draftcourse = $this->getDataGenerator()->create_course();
 
         $submission = (object) [
             'userid' => $userid,
-            'courseid' => 123,
+            'courseid' => $draftcourse->id,
             'remotejobid' => 'remote-1',
             'prompt' => 'Prompt',
         ];
@@ -62,7 +63,7 @@ final class designer_service_test extends advanced_testcase {
             ],
         ]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')
             ->with($jobid)
             ->willReturn($submission);
@@ -76,8 +77,8 @@ final class designer_service_test extends advanced_testcase {
             ->with($jobid, $userid)
             ->willReturn(true);
 
-        $mockFiles = $this->createMock(\block_dixeo_designer\submission_file_service::class);
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockFiles = $this->createMock(\block_dixeo_designer\service\submission\file_service::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
@@ -92,7 +93,7 @@ final class designer_service_test extends advanced_testcase {
 
         $mockCourseCreation->expects($this->once())
             ->method('finalize_draft_course')
-            ->with(123, $expectedResult, $userid, $jobid)
+            ->with((int) $draftcourse->id, $expectedResult, $userid, $jobid)
             ->willReturn((object) ['id' => 77]);
 
         $service = new designer_service($mockSubmissions, $mockFiles, $mockStructures, $mockCourseCreation);
@@ -121,15 +122,15 @@ final class designer_service_test extends advanced_testcase {
             ],
         ]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')
             ->with($jobid)
             ->willReturn($submission);
         $mockSubmissions->expects($this->never())->method('attach_course');
         $mockSubmissions->expects($this->never())->method('delete_submission');
 
-        $mockFiles = $this->createMock(\block_dixeo_designer\submission_file_service::class);
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockFiles = $this->createMock(\block_dixeo_designer\service\submission\file_service::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
@@ -148,10 +149,11 @@ final class designer_service_test extends advanced_testcase {
     public function test_finalize_course_does_not_delete_submission_when_course_finalization_fails(): void {
         $jobid = 'job-' . uniqid();
         $userid = $this->user->id;
+        $draftcourse = $this->getDataGenerator()->create_course();
 
         $submission = (object) [
             'userid' => $userid,
-            'courseid' => 123,
+            'courseid' => $draftcourse->id,
             'remotejobid' => 'remote-1',
             'prompt' => 'Prompt',
         ];
@@ -163,7 +165,7 @@ final class designer_service_test extends advanced_testcase {
             ],
         ]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')
             ->with($jobid)
             ->willReturn($submission);
@@ -171,8 +173,8 @@ final class designer_service_test extends advanced_testcase {
         $mockSubmissions->expects($this->never())->method('attach_course');
         $mockSubmissions->expects($this->never())->method('delete_submission');
 
-        $mockFiles = $this->createMock(\block_dixeo_designer\submission_file_service::class);
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockFiles = $this->createMock(\block_dixeo_designer\service\submission\file_service::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')
             ->with($jobid)
             ->willReturn($structureJson);
@@ -206,7 +208,7 @@ final class designer_service_test extends advanced_testcase {
         $expectedDefaultPrompt = get_string('designer_default_file_prompt', 'block_dixeo_designer');
         $expectedInstructions = trim($submission->prompt . ' ' . $expectedDefaultPrompt);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')
             ->with($jobid)
             ->willReturn($submission);
@@ -219,11 +221,11 @@ final class designer_service_test extends advanced_testcase {
             ->method('mark_status')
             ->with($this->identicalTo($submission), workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE);
 
-        $mockFiles = $this->createMock(\block_dixeo_designer\submission_file_service::class);
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockFiles = $this->createMock(\block_dixeo_designer\service\submission\file_service::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
 
-        $mockRemoteApi = $this->createMock(\block_dixeo_designer\service\dixeo_remote_adapter::class);
+        $mockRemoteApi = $this->createMock(\block_dixeo_designer\service\remote\dixeo_remote_adapter::class);
         $mockRemoteApi->expects($this->once())
             ->method('submit_course_structure_generation')
             ->with($expectedInstructions, null, 55)
@@ -243,7 +245,7 @@ final class designer_service_test extends advanced_testcase {
         $jobid = 'job-' . uniqid();
         $userid = $this->user->id;
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn(null);
 
         $service = new designer_service($mockSubmissions, null, null, null, null, null, null);
@@ -260,7 +262,7 @@ final class designer_service_test extends advanced_testcase {
             'status' => workflow_constants::SUBMISSION_STATUS_SYNCING_FILES,
         ];
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->never())->method('clear_course');
 
@@ -283,11 +285,11 @@ final class designer_service_test extends advanced_testcase {
             'status' => workflow_constants::SUBMISSION_STATUS_SYNCING_FILES,
         ];
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -323,11 +325,11 @@ final class designer_service_test extends advanced_testcase {
             'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
         ];
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -366,11 +368,11 @@ final class designer_service_test extends advanced_testcase {
         ];
         $savedstructure = json_encode(['course_structure' => ['title' => 'Test', 'sections' => []]]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -414,11 +416,11 @@ final class designer_service_test extends advanced_testcase {
             'current_fill_jobid' => $filljobid,
         ]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -459,11 +461,11 @@ final class designer_service_test extends advanced_testcase {
         ];
         $savedstructure = json_encode(['course_structure' => ['title' => 'Final', 'sections' => []]]);
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn($savedstructure);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -497,11 +499,11 @@ final class designer_service_test extends advanced_testcase {
             'status' => workflow_constants::SUBMISSION_STATUS_GENERATING_STRUCTURE,
         ];
 
-        $mockSubmissions = $this->createMock(\block_dixeo_designer\submission_service::class);
+        $mockSubmissions = $this->createMock(\block_dixeo_designer\service\submission\service::class);
         $mockSubmissions->method('get_submission')->with($jobid)->willReturn($submission);
         $mockSubmissions->expects($this->once())->method('clear_course')->with($this->identicalTo($submission));
 
-        $mockStructures = $this->createMock(\block_dixeo_designer\structure_repository::class);
+        $mockStructures = $this->createMock(\block_dixeo_designer\service\structure\repository::class);
         $mockStructures->method('get_latest_structure')->with($jobid)->willReturn(null);
 
         $mockCourseCreation = $this->createMock(designer_course_creation_service::class);
@@ -527,8 +529,8 @@ final class designer_service_test extends advanced_testcase {
         $jobid = 'job-' . uniqid();
         $userid = $this->user->id;
 
-        $submissions = new submission_service();
-        $structures = new structure_repository();
+        $submissions = new \block_dixeo_designer\service\submission\service();
+        $structures = new \block_dixeo_designer\service\structure\repository();
         $submissions->save_submission($jobid, $userid, 'Prompt', null);
         $sub = $submissions->get_submission($jobid);
         $course = $this->getDataGenerator()->create_course();
@@ -561,8 +563,8 @@ final class designer_service_test extends advanced_testcase {
         $jobid = 'job-' . uniqid();
         $userid = $this->user->id;
 
-        $submissions = new submission_service();
-        $structures = new structure_repository();
+        $submissions = new \block_dixeo_designer\service\submission\service();
+        $structures = new \block_dixeo_designer\service\structure\repository();
         $submissions->save_submission($jobid, $userid, 'Prompt', null);
         $sub = $submissions->get_submission($jobid);
         $course = $this->getDataGenerator()->create_course();

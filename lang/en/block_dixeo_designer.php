@@ -56,7 +56,6 @@ $string['coursetemplate_none'] = 'None';
 $string['coursetemplate_template_alpha'] = 'Template Alpha';
 $string['coursetemplate_template_beta'] = 'Template Beta';
 $string['coursetemplate_template_gamma'] = 'Template Gamma';
-$string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Dixeo courses';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['register'] = 'Register';
@@ -116,15 +115,18 @@ $string['uploaderror'] = 'Error uploading file.';
 $string['uploading_files'] = 'Uploading…';
 $string['step_uploading_files_count'] = 'Processing files ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'Generating content ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'Processing prompt';
+$string['step_processing_prompt'] = 'Processing prompt...';
+$string['step_preparing_files'] = 'Preparing files...';
 
 // Designer interface.
 $string['designer_loading'] = 'Loading course structure...';
+$string['designer_job_expired'] = 'This course generation has expired. Please start a new generation.';
 $string['designer_regenerate'] = 'Regenerate';
 $string['designer_invalid_data'] = 'Invalid structure data';
 $string['structurenotfound'] = 'Course structure not found. Generate a structure first or try again later.';
 $string['designer_save'] = 'Save';
 $string['designer_cancel'] = 'Cancel';
+$string['designer_cancelling'] = 'Cancelling...';
 $string['designer_reload'] = 'Reload';
 $string['designer_save_now'] = 'Save Now';
 $string['designer_autosave_in'] = 'Auto-save in:';

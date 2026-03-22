@@ -27,7 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $functions = [
     'block_dixeo_designer_generate_course' => [
-        'classname'   => 'block_dixeo_designer\\external\\generate_course',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\generate_course',
         'methodname'  => 'generate_course',
         'classpath'   => '',
         'description' => 'Begins course design.',
@@ -37,7 +37,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_start_generation' => [
-        'classname'   => 'block_dixeo_designer\\external\\start_generation',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\start_generation',
         'methodname'  => 'start_generation',
         'classpath'   => '',
         'description' => 'Prepare generation and start async file sync.',
@@ -47,7 +47,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_get_filesync_status' => [
-        'classname'   => 'block_dixeo_designer\\external\\get_filesync_status',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\get_filesync_status',
         'methodname'  => 'get_filesync_status',
         'classpath'   => '',
         'description' => 'Poll file sync status for a draft course.',
@@ -57,7 +57,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_submit_structure_job' => [
-        'classname'   => 'block_dixeo_designer\\external\\submit_structure_job',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\submit_structure_job',
         'methodname'  => 'submit_structure_job',
         'classpath'   => '',
         'description' => 'Submit remote structure generation job after file sync.',
@@ -67,7 +67,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_get_structure' => [
-        'classname'   => 'block_dixeo_designer\\external\\get_structure',
+        'classname'   => 'block_dixeo_designer\\external\\course\\get_structure',
         'methodname'  => 'get_structure',
         'classpath'   => '',
         'description' => 'Get course design structure by job ID',
@@ -77,7 +77,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_save_structure' => [
-        'classname'   => 'block_dixeo_designer\\external\\save_structure',
+        'classname'   => 'block_dixeo_designer\\external\\course\\save_structure',
         'methodname'  => 'save_structure',
         'classpath'   => '',
         'description' => 'Save course design structure (creates new version)',
@@ -87,7 +87,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_get_versions' => [
-        'classname'   => 'block_dixeo_designer\\external\\get_versions',
+        'classname'   => 'block_dixeo_designer\\external\\course\\get_versions',
         'methodname'  => 'get_versions',
         'classpath'   => '',
         'description' => 'Get all versions for a job',
@@ -97,7 +97,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_get_structure_status' => [
-        'classname'   => 'block_dixeo_designer\\external\\get_structure_status',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\get_structure_status',
         'methodname'  => 'get_structure_status',
         'classpath'   => '',
         'description' => 'Get remote structure generation job status',
@@ -107,7 +107,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_finalize_course' => [
-        'classname'   => 'block_dixeo_designer\\external\\finalize_course',
+        'classname'   => 'block_dixeo_designer\\external\\course\\finalize_course',
         'methodname'  => 'finalize_course',
         'classpath'   => '',
         'description' => 'Finalize draft course after structure is ready',
@@ -117,7 +117,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_get_finalize_progress' => [
-        'classname'   => 'block_dixeo_designer\\external\\get_finalize_progress',
+        'classname'   => 'block_dixeo_designer\\external\\course\\get_finalize_progress',
         'methodname'  => 'get_finalize_progress',
         'classpath'   => '',
         'description' => 'Get finalize course progress (Section X of Y) for UI polling',
@@ -127,7 +127,7 @@ $functions = [
         'loginrequired' => true,
     ],
     'block_dixeo_designer_cancel_draft' => [
-        'classname'   => 'block_dixeo_designer\\external\\cancel_draft',
+        'classname'   => 'block_dixeo_designer\\external\\draft\\cancel_draft',
         'methodname'  => 'cancel_draft',
         'classpath'   => '',
         'description' => 'Cancel draft course and revert to prompt',

@@ -56,7 +56,6 @@ $string['coursetemplate_none'] = 'Nenhum';
 $string['coursetemplate_template_alpha'] = 'Modelo Alpha';
 $string['coursetemplate_template_beta'] = 'Modelo Beta';
 $string['coursetemplate_template_gamma'] = 'Modelo Gamma';
-$string['default_apikey'] = '7a853610542f7debe1a854a11d429e74';
 $string['default_categoryname'] = 'Cursos Dixeo';
 $string['default_platformurl'] = 'https://dixeo.com';
 $string['register'] = 'Registar';
@@ -116,15 +115,18 @@ $string['uploaderror'] = 'Erro ao carregar o ficheiro.';
 $string['uploading_files'] = 'A carregar…';
 $string['step_uploading_files_count'] = 'A processar ficheiros ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'A gerar conteúdo ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'Processing prompt';
+$string['step_processing_prompt'] = 'A processar a consigna...';
+$string['step_preparing_files'] = 'A preparar ficheiros...';
 
 // Designer interface.
 $string['designer_loading'] = 'A carregar estrutura do curso...';
+$string['designer_job_expired'] = 'Esta geração do curso expirou. Inicie uma nova geração.';
 $string['designer_regenerate'] = 'Regenerar';
 $string['designer_invalid_data'] = 'Dados de estrutura inválidos';
 $string['structurenotfound'] = 'Estrutura do curso não encontrada. Gere uma estrutura primeiro ou tente novamente mais tarde.';
 $string['designer_save'] = 'Guardar';
 $string['designer_cancel'] = 'Cancelar';
+$string['designer_cancelling'] = 'A cancelar…';
 $string['designer_reload'] = 'Recarregar';
 $string['designer_save_now'] = 'Guardar agora';
 $string['designer_autosave_in'] = 'Auto-guardar em:';

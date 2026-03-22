@@ -19,10 +19,10 @@ namespace block_dixeo_designer;
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
-require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/get_structure.php');
+require_once($CFG->dirroot . '/blocks/dixeo_designer/classes/external/course/get_structure.php');
 
 use advanced_testcase;
-use block_dixeo_designer\external\get_structure;
+use block_dixeo_designer\external\course\get_structure;
 
 /**
  * Tests for get_structure external (structure table access, no API mock).
@@ -31,7 +31,7 @@ use block_dixeo_designer\external\get_structure;
  * @category   test
  * @copyright  2026 Dixeo
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \block_dixeo_designer\external\get_structure
+ * @covers     \block_dixeo_designer\external\course\get_structure
  */
 final class external_get_structure_test extends advanced_testcase {
 

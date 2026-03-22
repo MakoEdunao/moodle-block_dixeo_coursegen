@@ -28,8 +28,8 @@ define([
     'core/notification',
     'core/str',
     'core/config',
-    'block_dixeo_designer/progress_utils'
-], function(Ajax, $, Template, Notification, Str, Config, ProgressUtils) {
+    'block_dixeo_designer/progress'
+], function(Ajax, $, Template, Notification, Str, Config, Progress) {
     const generatorForm = document.getElementById('edai_course_designer_form');
     const promptContainer = generatorForm.querySelector('.prompt-container');
     const promptForm = generatorForm.querySelector('#prompt-form');
@@ -41,8 +41,10 @@ define([
     const tempCourseFiles = generatorForm.querySelector('#temp_course_files');
     const filesContainer = generatorForm.querySelector('#file_names');
 
-    return {
+    return Object.assign({
         generationRunId: 0,
+        /** True after block_dixeo_designer_submit_structure_job succeeds; unlocks 20% top of step 1. */
+        structureSubmitDone: false,
         init: function() {
             this.progress = 0;
             this.adjustDescriptionHeight();
@@ -189,12 +191,81 @@ define([
             const changed = currentSig !== this.regenInitialSignature;
             currentGenerateStructure.disabled = !changed;
         },
+        /**
+         * While cancel WS runs: block interactions on the form, show spinner + "Cancelling..." in the button, disable toggle.
+         *
+         * @param {boolean} active
+         */
+        setCancelPending: function(active) {
+            const form = generatorForm;
+            if (!form) {
+                return;
+            }
+
+            const cancelBtn = form.querySelector('.btn-cancel-draft');
+            const idleEl = cancelBtn ? cancelBtn.querySelector('.btn-cancel-draft-idle') : null;
+            const loadingEl = cancelBtn ? cancelBtn.querySelector('.btn-cancel-draft-loading') : null;
+
+            if (active) {
+                form.classList.add('dixeo-designer-cancel-pending');
+                form.setAttribute('aria-busy', 'true');
+
+                form.querySelectorAll('button, input, select, textarea').forEach(function(el) {
+                    if (!el.disabled) {
+                        el.setAttribute('data-dixeo-cancel-unlock', '1');
+                        el.disabled = true;
+                    }
+                });
+
+                if (idleEl) {
+                    idleEl.classList.add('d-none');
+                }
+                if (loadingEl) {
+                    loadingEl.classList.remove('d-none');
+                }
+
+                const wrapper = form.closest('.dixeo-designer-block-wrapper');
+                const toggle = wrapper ? wrapper.querySelector('.dixeo-designer-block-toggle') : null;
+                if (toggle && !toggle.disabled) {
+                    toggle.setAttribute('data-dixeo-cancel-unlock', '1');
+                    toggle.disabled = true;
+                }
+            } else {
+                form.classList.remove('dixeo-designer-cancel-pending');
+                form.removeAttribute('aria-busy');
+
+                form.querySelectorAll('[data-dixeo-cancel-unlock="1"]').forEach(function(el) {
+                    el.disabled = false;
+                    el.removeAttribute('data-dixeo-cancel-unlock');
+                });
+
+                if (idleEl) {
+                    idleEl.classList.remove('d-none');
+                }
+                if (loadingEl) {
+                    loadingEl.classList.add('d-none');
+                }
+            }
+        },
         cancelDraft: function(event) {
             event.preventDefault();
             const self = this;
+            if (!generatorForm || generatorForm.classList.contains('dixeo-designer-cancel-pending')) {
+                return;
+            }
+
             // Invalidate all in-flight async callbacks from the previous run.
             self.generationRunId++;
             self.clearAllProgressPolls();
+            self.setCancelPending(true);
+
+            const finishCancel = function() {
+                self.clearAllProgressPolls();
+                self.skipRegenerateSyncOnce = true;
+                self.setCancelPending(false);
+                self.resetProgress();
+            };
+
             Ajax.call([{
                 methodname: 'block_dixeo_designer_cancel_draft',
                 args: {
@@ -203,14 +274,10 @@ define([
                 },
             }])[0]
             .then(function() {
-                self.clearAllProgressPolls();
-                self.skipRegenerateSyncOnce = true;
-                self.resetProgress();
+                finishCancel();
             })
             .catch(function(err) {
-                self.clearAllProgressPolls();
-                self.skipRegenerateSyncOnce = true;
-                self.resetProgress();
+                finishCancel();
                 Notification.alert('', err.message || 'Cancel failed');
             });
         },
@@ -223,18 +290,19 @@ define([
         generateCourse: function(event, reviewStructure) {
             event.preventDefault();
             const runId = ++this.generationRunId;
+            this.structureSubmitDone = false;
 
             // Remember where the user initiated generation so "Generate new course"
             // can redirect back correctly after completion.
             try {
                 sessionStorage.setItem(
-                    ProgressUtils.SESSION_RETURN_TO_KEY,
+                    Progress.SESSION_RETURN_TO_KEY,
                     window.location.href
                 );
                 // Also store the job so the designer page can decide
                 // whether the redirect value is still relevant.
                 sessionStorage.setItem(
-                    ProgressUtils.SESSION_RETURN_TO_JOBID_KEY,
+                    Progress.SESSION_RETURN_TO_JOBID_KEY,
                     String(this.getJobId())
                 );
             } catch (e) {
@@ -249,7 +317,7 @@ define([
 
             // Remote API requires instructions >= 20 characters.
             // If the user provided a non-empty description, block early in the client.
-            const minInstructionLen = ProgressUtils.MIN_INSTRUCTIONS_LEN;
+            const minInstructionLen = Progress.MIN_INSTRUCTIONS_LEN;
             if (courseDescriptionValue !== '' && courseDescriptionValue.length < minInstructionLen) {
                 Str.get_string('designer_instructions_too_short', 'block_dixeo_designer', {min: minInstructionLen})
                     .then(function(msg) {
@@ -279,14 +347,9 @@ define([
                     ? filesContainer.querySelectorAll('.file-item').length
                     : 0;
                 if (localFileCount > 0) {
-                    // Show the "current file" index starting at 1.
-                    this.setStepLabel(1, 'Processing files (1/' + localFileCount + ')');
                     const self = this;
-                    Str.get_string('step_uploading_files_count', 'block_dixeo_designer', {
-                        current: 1,
-                        total: localFileCount
-                    }).then(function(stepStr) {
-                        self.setStepLabel(1, stepStr);
+                    Str.get_string('step_preparing_files', 'block_dixeo_designer').then(function(label) {
+                        self.setStepLabel(1, label);
                     });
                 } else {
                     // If there are no files, the first step should show we are processing only the prompt.
@@ -301,10 +364,10 @@ define([
             // The local file upload stage runs independently (step 1 shows x/y progress),
             // and once that stage is considered done and the backend call returns,
             // the overall progress bar advances into the 20% step-2 band.
-            // Start at 0; step 1 will be driven by file-sync polling.
+            // Start at 0; step 1 is driven by file-sync polling in parallel with prepare_generation.
             this.setProgress(0, true);
 
-            Ajax.call([{
+            const startPromise = Ajax.call([{
                 methodname: 'block_dixeo_designer_start_generation',
                 args: {
                     job_id: this.getJobId(),
@@ -312,8 +375,13 @@ define([
                     templateid: (templateSelect && templateSelect.value !== '') ? templateSelect.value : null,
                     sesskey: M.cfg.sesskey
                 },
-            }])[0]
-            .then((startResp) => {
+            }])[0];
+
+            // Begin polling as soon as the user starts generation so the bar can advance while
+            // trigger_sync runs on the server (session must be released there via write_close).
+            this.startStep2Progress(createcourse, runId);
+
+            startPromise.then((startResp) => {
                 if (runId !== this.generationRunId) {
                     return;
                 }
@@ -322,14 +390,12 @@ define([
                 // latest structure is already saved, reload the designer immediately
                 // without polling file sync or submitting remote generation.
                 if (reviewStructure && startResp && startResp.noop) {
+                    this.clearAllProgressPolls();
                     this.unlockDesignerUI();
                     window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' + this.getJobId();
                     return;
                 }
-                // Step 1 (0–20%) is driven by the remote file sync polling.
-                // Step 2 starts only after the file sync becomes synchronized/none.
-                this.setProgress(0, true);
-                this.startStep2Progress(createcourse, runId);
+                // File-sync polling is already running; step 2 starts from the poll when sync completes.
             })
             .catch(async error => {
                 if (runId !== this.generationRunId) {
@@ -341,306 +407,8 @@ define([
                 Notification.alert(errorTitle, error.message);
             });
         },
-        filesyncPollIntervalId: null,
-        structurePollIntervalId: null,
-        step2FakeIntervalId: null,
-        step2StartMs: null,
         designerUiLockEl: null,
         designerUiLockUpdateHandler: null,
-        clearAllProgressPolls: function() {
-            if (this.filesyncPollIntervalId) {
-                clearInterval(this.filesyncPollIntervalId);
-                this.filesyncPollIntervalId = null;
-            }
-            if (this.structurePollIntervalId) {
-                clearInterval(this.structurePollIntervalId);
-                this.structurePollIntervalId = null;
-            }
-            if (this.step2FakeIntervalId) {
-                clearInterval(this.step2FakeIntervalId);
-                this.step2FakeIntervalId = null;
-            }
-            this.step2StartMs = null;
-        },
-        startStep2Progress: function(createcourse, runId) {
-            const self = this;
-
-            /**
-             * Starts the slow fake progress timer for step 2 (20% -> 37%).
-             * This keeps the UI moving while the backend prepares the
-             * remote structure generation.
-             */
-            function startStep2Fake() {
-                // Step 2 fake progress: 20% -> 37% over 90 seconds.
-                // We keep it slow so the bar feels alive while the remote
-                // structure job is being prepared.
-                self.step2StartMs = Date.now();
-                self.step2FakeIntervalId = setInterval(function() {
-                    if (self.step2StartMs === null) {
-                        return;
-                    }
-                    const elapsed = Date.now() - self.step2StartMs;
-                    const t = Math.min(1, elapsed / 90000);
-                    const fake = 20 + 17 * t;
-                    if (self.progress < fake) {
-                        self.setProgress(fake);
-                    }
-                }, 500);
-            }
-
-            let submitted = false;
-
-            const pollFileSync = function() {
-                if (runId !== self.generationRunId) {
-                    return;
-                }
-                Ajax.call([{
-                    methodname: 'block_dixeo_designer_get_filesync_status',
-                    args: {
-                        job_id: self.getJobId(),
-                        sesskey: M.cfg.sesskey
-                    },
-                }])[0]
-                .then(function(data) {
-                    if (runId !== self.generationRunId) {
-                        return;
-                    }
-                    if (data && data.errormessage) {
-                        self.clearAllProgressPolls();
-                        self.resetProgress();
-                        Notification.alert('', data.errormessage);
-                        return;
-                    }
-
-                    const pct = Number.isFinite(data.progresspercent) ? data.progresspercent : null;
-                    const total = Number.isFinite(data.filestotal) ? data.filestotal : null;
-                    const done = Number.isFinite(data.filescompleted) ? data.filescompleted : null;
-
-                    // Step 1 progress band: 0% -> 20% based on file-sync percent.
-                    if (pct !== null) {
-                        const mapped = (Math.max(0, Math.min(100, pct)) / 100) * 20;
-                        if (self.progress < mapped) {
-                            self.setProgress(mapped);
-                        }
-                    }
-
-                    // Step 1 label:
-                    // - while syncing, show "current file" index as (filescompleted + 1)
-                    //   so the UI starts at 1/total.
-                    // - otherwise show "Processing prompt" when there are no files.
-                    if (total !== null && total > 0 && done !== null) {
-                        let currentIndex = done;
-                        if (data.status === 'syncing' && done < total) {
-                            currentIndex = done + 1;
-                        }
-                        if (currentIndex < 1) {
-                            currentIndex = 1;
-                        }
-
-                        Str.get_string('step_uploading_files_count', 'block_dixeo_designer', {
-                            current: currentIndex,
-                            total: total
-                        }).then(function(stepStr) {
-                            self.setStepLabel(1, stepStr);
-                        });
-                    } else {
-                        Str.get_string('step_processing_prompt', 'block_dixeo_designer').then(function(label) {
-                            self.setStepLabel(1, label);
-                        });
-                    }
-
-                    if (!submitted && (data.status === 'synchronized' || data.status === 'none')) {
-                        submitted = true;
-                        // Jump into the step-2 band immediately (step 2 is 20-40%).
-                        self.setProgress(21, true);
-                        startStep2Fake();
-                        self.submitStructureAndPoll(createcourse, runId);
-                    }
-                })
-                .catch(function(err) {
-                    if (runId !== self.generationRunId) {
-                        return;
-                    }
-                    self.clearAllProgressPolls();
-                    self.resetProgress();
-                    Notification.alert('', (err && err.message) ? err.message : 'Status check failed');
-                });
-            };
-
-            pollFileSync();
-            this.filesyncPollIntervalId = setInterval(pollFileSync, 2000);
-        },
-        submitStructureAndPoll: function(createcourse, runId) {
-            const self = this;
-            if (runId !== self.generationRunId) {
-                return;
-            }
-
-            if (this.filesyncPollIntervalId) {
-                clearInterval(this.filesyncPollIntervalId);
-                this.filesyncPollIntervalId = null;
-            }
-
-            Str.get_string('step_generating_structure', 'block_dixeo_designer').then(function(str) {
-                self.setStepLabel(2, str);
-            });
-
-            Ajax.call([{
-                methodname: 'block_dixeo_designer_submit_structure_job',
-                args: {
-                    job_id: self.getJobId(),
-                    sesskey: M.cfg.sesskey
-                },
-            }])[0]
-            .then(function() {
-                if (runId !== self.generationRunId) {
-                    return;
-                }
-                self.pollStructureCompletion(createcourse, runId);
-            })
-            .catch(function(err) {
-                if (runId !== self.generationRunId) {
-                    return;
-                }
-                self.clearAllProgressPolls();
-                self.resetProgress();
-                Notification.alert('', err.message || 'Could not start structure generation');
-            });
-        },
-        pollStructureCompletion: function(createcourse, runId) {
-            const self = this;
-
-            const poll = function() {
-                if (runId !== self.generationRunId) {
-                    return;
-                }
-                Ajax.call([{
-                    methodname: 'block_dixeo_designer_get_structure_status',
-                    args: {
-                        job_id: self.getJobId(),
-                        sesskey: M.cfg.sesskey
-                    },
-                }])[0]
-                .then(function(data) {
-                    if (runId !== self.generationRunId) {
-                        return;
-                    }
-                    if (data.failed) {
-                        self.clearAllProgressPolls();
-                        self.resetProgress();
-                        Notification.alert('', data.error || 'Generation failed');
-                        return;
-                    }
-
-                    if (!data.completed) {
-                        return;
-                    }
-
-                    self.clearAllProgressPolls();
-                    self.setProgress(40);
-                    const delayMs = createcourse ? 500 : 1000;
-                    setTimeout(function() {
-                        if (createcourse) {
-                            Ajax.call([{
-                                methodname: 'block_dixeo_designer_finalize_course',
-                                args: {
-                                    job_id: self.getJobId(),
-                                    createcourse: true,
-                                    sesskey: M.cfg.sesskey
-                                },
-                            }])[0].catch(function(err) {
-                                self.resetProgress();
-                                Notification.alert('', err.message || 'Finalize failed');
-                            });
-                            self.pollFinalizeProgress();
-                        } else {
-                            var structureJson = (typeof data.result === 'string')
-                                ? data.result
-                                : JSON.stringify(data.result || {});
-                            Ajax.call([{
-                                methodname: 'block_dixeo_designer_save_structure',
-                                args: {
-                                    job_id: self.getJobId(),
-                                    structure: structureJson
-                                },
-                            }])[0]
-                            .then(function() {
-                                window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php?id=' + self.getJobId();
-                            })
-                            .catch(function(err) {
-                                self.resetProgress();
-                                Notification.alert('', err.message || 'Could not save structure');
-                            });
-                        }
-                    }, delayMs);
-                })
-                .catch(function(err) {
-                    if (runId !== self.generationRunId) {
-                        return;
-                    }
-                    self.clearAllProgressPolls();
-                    self.resetProgress();
-                    Notification.alert('', err.message || 'Status check failed');
-                });
-            };
-
-            poll();
-            this.structurePollIntervalId = setInterval(poll, 3000);
-        },
-        finalizePollIntervalId: null,
-        clearFinalizePoll: function() {
-            if (this.finalizePollIntervalId) {
-                clearInterval(this.finalizePollIntervalId);
-                this.finalizePollIntervalId = null;
-            }
-        },
-        pollFinalizeProgress: function() {
-            const self = this;
-            let pollInFlight = false;
-            const poll = function() {
-                if (pollInFlight) {
-                    return;
-                }
-                pollInFlight = true;
-                Ajax.call([{
-                    methodname: 'block_dixeo_designer_get_finalize_progress',
-                    args: {
-                        job_id: self.getJobId(),
-                        sesskey: M.cfg.sesskey
-                    },
-                }])[0]
-                .then(function(data) {
-                    if (data.phase === ProgressUtils.PHASE_GENERATING_CONTENT && data.section_total > 0) {
-                        const total = Number(data.section_total) || 0;
-                        const sectionIndex = Number(data.section_index) || 0;
-                        // Label should show the currently in-progress section (1-based).
-                        const current = Math.min(total, Math.max(1, sectionIndex));
-                        // Progress bar should reflect completed sections only.
-                        const completed = Math.max(0, current - 1);
-                        const pct = 40 + 40 * (completed / total);
-                        self.setProgress(pct);
-                        Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
-                            current: current,
-                            total: total
-                        }).then(function(str) {
-                            self.setStepLabel(3, str);
-                        });
-                    } else if (data.phase === ProgressUtils.PHASE_FINALIZING) {
-                        self.setProgress(80);
-                    } else if (data.phase === ProgressUtils.PHASE_DONE && data.courseid) {
-                        self.clearFinalizePoll();
-                        self.setProgress(100);
-                        self.finishProgress(data.courseid, data.coursename);
-                    }
-                })
-                .catch(function() {})
-                .then(function() {
-                    pollInFlight = false;
-                });
-            };
-            poll();
-            this.finalizePollIntervalId = setInterval(poll, 2000);
-        },
         adjustDescriptionHeight: function() {
             courseDescription.addEventListener('input', function() {
                 this.style.height = 'auto';
@@ -655,88 +423,6 @@ define([
                 }
             });
             courseDescription.dispatchEvent(new Event('input'));
-        },
-        setFileNamesLoading: function(loading, options) {
-            if (!filesContainer) {
-                return;
-            }
-            options = options || {};
-            const stepText = options.stepText || 'Uploading files (0/1)';
-            const mbLine = options.mbLine || '';
-            const progressPct = options.progressPct;
-            if (loading) {
-                filesContainer.classList.remove('d-none');
-                filesContainer.classList.add('file-names-loading');
-                let html = '<div class="file-names-loading-state">' +
-                    '<div class="file-names-loading-row">' +
-                    '<span class="fa fa-spinner fa-spin mr-2" aria-hidden="true"></span>' +
-                    '<span class="file-names-loading-text">' + stepText + '</span></div>';
-                if (mbLine) {
-                    html += '<div class="file-names-loading-row">' +
-                        '<span class="file-names-loading-mb text-muted small">' + mbLine + '</span></div>';
-                }
-                if (progressPct !== undefined && progressPct >= 0) {
-                    const pctRound = Math.round(progressPct);
-                    const pctStyle = Math.min(100, progressPct) + '%';
-                    html += '<div class="file-names-loading-row">' +
-                        '<div class="file-upload-progress" role="progressbar" aria-valuemin="0" ' +
-                        'aria-valuemax="100" aria-valuenow="' + pctRound + '">' +
-                        '<div class="file-upload-progress-bar" style="width: ' + pctStyle + ';"></div></div></div>';
-                }
-                html += '</div>';
-                filesContainer.innerHTML = html;
-            } else {
-                filesContainer.classList.remove('file-names-loading');
-            }
-        },
-        updateFileUploadProgress: function(stepText, mbLine, progressPct) {
-            if (!filesContainer || !filesContainer.classList.contains('file-names-loading')) {
-                return;
-            }
-            const textEl = filesContainer.querySelector('.file-names-loading-text');
-            if (textEl) {
-                textEl.textContent = stepText;
-            }
-            let mbEl = filesContainer.querySelector('.file-names-loading-mb');
-            if (mbLine !== undefined) {
-                if (!mbEl) {
-                    const state = filesContainer.querySelector('.file-names-loading-state');
-                    if (state) {
-                        const mbRow = document.createElement('div');
-                        mbRow.className = 'file-names-loading-row';
-                        mbEl = document.createElement('span');
-                        mbEl.className = 'file-names-loading-mb text-muted small';
-                        mbEl.textContent = mbLine;
-                        mbRow.appendChild(mbEl);
-                        state.appendChild(mbRow);
-                    }
-                } else {
-                    mbEl.textContent = mbLine;
-                }
-            }
-            let barWrap = filesContainer.querySelector('.file-upload-progress');
-            if (progressPct !== undefined && progressPct >= 0) {
-                if (!barWrap) {
-                    const state = filesContainer.querySelector('.file-names-loading-state');
-                    if (state) {
-                        const row = document.createElement('div');
-                        row.className = 'file-names-loading-row';
-                        barWrap = document.createElement('div');
-                        barWrap.className = 'file-upload-progress';
-                        barWrap.setAttribute('role', 'progressbar');
-                        barWrap.setAttribute('aria-valuemin', '0');
-                        barWrap.setAttribute('aria-valuemax', '100');
-                        barWrap.innerHTML = '<div class="file-upload-progress-bar"></div>';
-                        row.appendChild(barWrap);
-                        state.appendChild(row);
-                    }
-                }
-                barWrap.setAttribute('aria-valuenow', Math.round(progressPct));
-                const bar = barWrap.querySelector('.file-upload-progress-bar');
-                if (bar) {
-                    bar.style.width = Math.min(100, progressPct) + '%';
-                }
-            }
         },
         transferFiles: async function(newFiles) {
             if (!newFiles || newFiles.length === 0) {
@@ -753,19 +439,18 @@ define([
                 return (bytes / (1024 * 1024)).toFixed(2);
             };
 
-            // Show upload progress immediately so it is visible (do not wait for lang string).
+            const stepStr = await new Promise(function(resolve, reject) {
+                Str.get_string('step_uploading_files_count', 'block_dixeo_designer', {
+                    current: 1,
+                    total: totalFiles
+                }).done(resolve).fail(reject);
+            });
             self.setFileNamesLoading(true, {
-                stepText: 'Processing files (1/' + totalFiles + ')',
+                stepText: stepStr,
                 mbLine: '0 MB / ' + totalMB + ' MB',
                 progressPct: 0
             });
-            self.setStepLabel(1, 'Processing files (1/' + totalFiles + ')');
-            Str.get_string('step_uploading_files_count', 'block_dixeo_designer', {
-                current: 1,
-                total: totalFiles
-            }).then(function(stepStr) {
-                self.setStepLabel(1, stepStr);
-            });
+            self.setStepLabel(1, stepStr);
 
             let bytesUploaded = 0;
             let lastContext = null;
@@ -788,7 +473,7 @@ define([
                     formData.append('files[]', file);
 
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', Config.wwwroot + '/blocks/dixeo_designer/upload_submission_files.php');
+                    xhr.open('POST', Config.wwwroot + '/blocks/dixeo_designer/ajax/upload_files.php');
 
                     xhr.upload.addEventListener('progress', function(e) {
                         if (e.lengthComputable) {
@@ -903,25 +588,6 @@ define([
                 });
             });
         },
-        startProgress: function() {
-            const currentGenerateCourse = generatorForm
-                ? generatorForm.querySelector('#generate_course')
-                : null;
-            const currentGenerateStructure = generatorForm
-                ? generatorForm.querySelector('#generate_course_structure')
-                : null;
-
-            if (currentGenerateCourse) {
-                currentGenerateCourse.disabled = true;
-            }
-            if (currentGenerateStructure) {
-                currentGenerateStructure.disabled = true;
-            }
-            promptContainer.classList.replace('d-block', 'd-none');
-            generationContainer.classList.replace('d-none', 'd-block');
-            this.setProgress(0, true);
-            this.setActiveStep(1);
-        },
         lockDesignerUI: function() {
             if (this.designerUiLockEl) {
                 return;
@@ -993,150 +659,6 @@ define([
             this.designerUiLockEl = null;
             this.designerUiLockUpdateHandler = null;
         },
-        finishProgress: async function(courseid, coursename) {
-            this.setProgress(100);
-            setTimeout(() => {
-                let context = {
-                    courseid: courseid,
-                    coursename: coursename,
-                    wwwroot: Config.wwwroot
-                };
-
-                // "Generate new course" redirect:
-                // Prefer the original generation page stored in sessionStorage.
-                // If it was the designer page, go to a fresh designer.php (no id).
-                const freshDesignerUrl = Config.wwwroot + '/blocks/dixeo_designer/designer.php';
-                let returnTo = null;
-                let returnToJobId = null;
-                try {
-                    returnTo = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_KEY);
-                    returnToJobId = sessionStorage.getItem(ProgressUtils.SESSION_RETURN_TO_JOBID_KEY);
-                } catch (e) {
-                    returnTo = null;
-                    returnToJobId = null;
-                }
-                const currentJobId = String(this.getJobId() || '');
-                const hasMatchingStoredJob = returnTo && returnToJobId && returnToJobId === currentJobId;
-                const currentIsDesignerPage = window.location.pathname.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
-                const returnToIsDesigner = returnTo && returnTo.indexOf('/blocks/dixeo_designer/designer.php') !== -1;
-
-                if (hasMatchingStoredJob) {
-                    context.generate_another_url = returnToIsDesigner ? freshDesignerUrl : returnTo;
-                } else {
-                    context.generate_another_url = currentIsDesignerPage ? freshDesignerUrl : (Config.wwwroot + '/my/');
-                }
-
-                Template.render('block_dixeo_designer/success_message', context)
-                .then((html) => {
-                    generationContainer.parentElement.insertAdjacentHTML('beforeend', html);
-                    generationContainer.classList.replace('d-block', 'd-none');
-                    return;
-                }).catch((error) => {
-                    Notification.exception(error);
-                });
-            }, 3000);
-        },
-        resetProgress: function() {
-            this.unlockDesignerUI();
-            this.clearAllProgressPolls();
-            this.clearFinalizePoll();
-            this.resetStepLabels();
-            if (this.skipRegenerateSyncOnce) {
-                // After cancelling a generation we want the user to be able to try
-                // again immediately (no change-tracking disable).
-                this.skipRegenerateSyncOnce = false;
-                this.enableGenerationButtons();
-            } else {
-                const currentGenerateCourse = generatorForm
-                    ? generatorForm.querySelector('#generate_course')
-                    : null;
-                if (currentGenerateCourse) {
-                    currentGenerateCourse.disabled = false;
-                }
-                // Keep Regenerate disabled unless prompt/template/files changed.
-                this.syncRegenerateButtonState();
-            }
-            promptContainer.classList.replace('d-none', 'd-block');
-            generationContainer.classList.replace('d-block', 'd-none');
-
-            let successContainer = generatorForm.querySelector('#success_message_container');
-            if (successContainer) {
-                successContainer.remove();
-            }
-
-            this.setProgress(0, true);
-        },
-        resetStepLabels: function() {
-            const self = this;
-            Str.get_string('step_uploading_files', 'block_dixeo_designer').then(function(str) {
-                self.setStepLabel(1, str);
-            });
-            Str.get_string('step_generating_structure', 'block_dixeo_designer').then(function(str) {
-                self.setStepLabel(2, str);
-            });
-            Str.get_string('step_generating_content', 'block_dixeo_designer').then(function(str) {
-                self.setStepLabel(3, str);
-            });
-            Str.get_string('step_finalizing_details', 'block_dixeo_designer').then(function(str) {
-                self.setStepLabel(4, str);
-            });
-        },
-        setProgress: function(progress) {
-            const force = arguments.length > 1 ? Boolean(arguments[1]) : false;
-            const nextProgress = Math.min(100, Math.max(0, progress));
-
-            // Prevent progress from moving backwards during polling/animation.
-            // Resets can explicitly force the value down to 0.
-            if (!force && nextProgress < this.progress) {
-                return;
-            }
-
-            this.progress = nextProgress;
-
-            const container = generationContainer || document.querySelector('.designer-finalize-progress');
-            if (!container) {
-                return;
-            }
-            const progressBar = container.querySelector('.s-progress--bar');
-            if (progressBar) {
-                progressBar.style.width = `${this.progress}%`;
-                progressBar.setAttribute('aria-valuenow', this.progress);
-                if (this.progress >= 100) {
-                    progressBar.classList.add('done');
-                } else {
-                    progressBar.classList.remove('done');
-                }
-            }
-
-            // Tie highlighting to current progress percentage.
-            this.updateActiveStepFromProgress();
-        },
-        updateActiveStepFromProgress: function() {
-            const step = ProgressUtils.getActiveStepFromProgress(this.progress);
-            this.setActiveStep(step);
-        },
-        setActiveStep: function(step) {
-            const container = generationContainer || document.querySelector('.designer-finalize-progress');
-            if (!container) {
-                return;
-            }
-            container.querySelectorAll('.generation-step').forEach(function(el) {
-                el.classList.remove('active');
-                if (parseInt(el.getAttribute('data-step'), 10) === step) {
-                    el.classList.add('active');
-                }
-            });
-        },
-        setStepLabel: function(step, text) {
-            const container = generationContainer || document.querySelector('.designer-finalize-progress');
-            if (!container) {
-                return;
-            }
-            const el = container.querySelector('.generation-step[data-step="' + step + '"]');
-            if (el) {
-                el.textContent = text || '';
-            }
-        },
         displayFileNames: function(context) {
             if (filesContainer) {
                 // Dispose any Bootstrap tooltips on current content to prevent stuck tooltips after DOM replace.
@@ -1164,7 +686,7 @@ define([
                 deleteIcon.addEventListener('click', async() => {
                     try {
                         const response = await fetch(
-                            Config.wwwroot + '/blocks/dixeo_designer/delete_submission_file.php',
+                            Config.wwwroot + '/blocks/dixeo_designer/ajax/delete_file.php',
                             {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -1219,5 +741,10 @@ define([
             })
             .fail(Notification.exception);
         }
-    };
+    }, Progress.createGeneratorProgress({
+        generationContainer: generationContainer,
+        generatorForm: generatorForm,
+        promptContainer: promptContainer,
+        filesContainer: filesContainer
+    }));
 });

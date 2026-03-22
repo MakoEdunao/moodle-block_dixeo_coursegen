@@ -65,8 +65,9 @@ class block_dixeo_designer extends block_base {
     }
 
     /**
-     * All multiple instances of this block
-     * @return bool Returns false
+     * Whether multiple instances of this block are allowed on the same page.
+     *
+     * @return bool
      */
     public function instance_allow_multiple() {
         return false;
@@ -98,10 +99,10 @@ class block_dixeo_designer extends block_base {
         $jobid = block_dixeo_designer_generate_job_id();
         $designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
         $filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
-        $context = \block_dixeo_designer\submission_render_helper::build_prompt_context(
+        $context = \block_dixeo_designer\service\submission\render_helper::build_prompt_context(
             $jobid,
             $coursedescription,
-            \block_dixeo_designer\course_template_helper::get_selected_course_template(),
+            \block_dixeo_designer\service\course_template_helper::get_selected_course_template(),
             $filecontext,
             false
         );
