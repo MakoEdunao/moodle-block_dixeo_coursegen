@@ -65,6 +65,30 @@ define([
                 generateStructure.addEventListener('click', (event) => this.generateCourse(event, true));
             }
 
+            // Prompt/template changes affect whether generation is allowed (prompt or files required).
+            if (courseDescription) {
+                courseDescription.addEventListener('input', () => {
+                    this.syncGenerationInputAvailability();
+                });
+            }
+            if (templateSelect) {
+                templateSelect.addEventListener('change', () => {
+                    this.syncGenerationInputAvailability();
+                });
+            }
+            if (filesContainer) {
+                const inputObserver = new MutationObserver(() => {
+                    this.syncGenerationInputAvailability();
+                });
+                inputObserver.observe(filesContainer, {
+                    subtree: true,
+                    childList: true,
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
+                this.generationInputFilesObserver = inputObserver;
+            }
+
             // Regenerate fast-path UX:
             // When editing an existing job, disable the Regenerate button until the
             // prompt/template/files actually change.
@@ -74,6 +98,8 @@ define([
             if (cancelBtn) {
                 cancelBtn.addEventListener('click', (event) => this.cancelDraft(event));
             }
+
+            this.syncGenerationInputAvailability();
 
             const toggleBtn = document.querySelector('.dixeo-designer-block-toggle');
             const blockContainer = document.querySelector('.block_dixeo_designer.block-container');
@@ -93,20 +119,62 @@ define([
             }
         },
         skipRegenerateSyncOnce: false,
-        enableGenerationButtons: function() {
+        /**
+         * True when user has entered a prompt or has uploaded files (server-side list).
+         * Matches server-side check in generateCourse (description or files).
+         *
+         * @returns {boolean}
+         */
+        hasMinimumGenerationInput: function() {
+            const promptVal = courseDescription ? courseDescription.value.trim() : '';
+            if (promptVal !== '') {
+                return true;
+            }
+            return this.hasServerFiles();
+        },
+        /**
+         * Disables both generation buttons when there is no prompt and no files; otherwise applies
+         * regenerate (change-detection) rules for existing jobs.
+         */
+        syncGenerationInputAvailability: function() {
             const currentGenerateCourse = generatorForm
                 ? generatorForm.querySelector('#generate_course')
                 : null;
-            if (currentGenerateCourse) {
-                currentGenerateCourse.disabled = false;
-            }
-
             const currentGenerateStructure = generatorForm
                 ? generatorForm.querySelector('#generate_course_structure')
                 : null;
+
+            if (!this.hasMinimumGenerationInput()) {
+                if (currentGenerateCourse) {
+                    currentGenerateCourse.disabled = true;
+                }
+                if (currentGenerateStructure) {
+                    currentGenerateStructure.disabled = true;
+                }
+                return;
+            }
+
+            if (this.regenChangeTrackingEnabled) {
+                const currentSig = this.getSubmissionSignature();
+                const changed = currentSig !== this.regenInitialSignature;
+                if (currentGenerateStructure) {
+                    currentGenerateStructure.disabled = !changed;
+                }
+                if (currentGenerateCourse) {
+                    currentGenerateCourse.disabled = false;
+                }
+                return;
+            }
+
+            if (currentGenerateCourse) {
+                currentGenerateCourse.disabled = false;
+            }
             if (currentGenerateStructure) {
                 currentGenerateStructure.disabled = false;
             }
+        },
+        enableGenerationButtons: function() {
+            this.syncGenerationInputAvailability();
         },
         regenChangeTrackingEnabled: false,
         regenInitialSignature: null,
@@ -124,37 +192,8 @@ define([
             this.regenChangeTrackingEnabled = true;
             this.regenInitialSignature = this.getSubmissionSignature();
 
-            // Disable until changes are detected.
-            this.syncRegenerateButtonState();
-
-            // Prompt changes enable the button.
-            if (courseDescription) {
-                courseDescription.addEventListener('input', () => {
-                    this.syncRegenerateButtonState();
-                });
-            }
-
-            // Template changes enable the button.
-            if (templateSelect) {
-                templateSelect.addEventListener('change', () => {
-                    this.syncRegenerateButtonState();
-                });
-            }
-
-            // File list changes enable the button (upload, delete, re-render).
-            if (filesContainer) {
-                const observer = new MutationObserver(() => {
-                    this.syncRegenerateButtonState();
-                });
-                observer.observe(filesContainer, {
-                    subtree: true,
-                    childList: true,
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
-                // Store observer to disconnect later if needed.
-                this.regenFilesMutationObserver = observer;
-            }
+            // Disable until changes are detected (and require prompt or files via syncGenerationInputAvailability).
+            this.syncGenerationInputAvailability();
         },
         getSubmissionSignature: function() {
             const promptVal = courseDescription ? courseDescription.value.trim() : '';
@@ -177,19 +216,7 @@ define([
             });
         },
         syncRegenerateButtonState: function() {
-            if (!this.regenChangeTrackingEnabled) {
-                return;
-            }
-            // Re-query to avoid stale references if the DOM is replaced.
-            const currentGenerateStructure = generatorForm
-                ? generatorForm.querySelector('#generate_course_structure')
-                : null;
-            if (!currentGenerateStructure) {
-                return;
-            }
-            const currentSig = this.getSubmissionSignature();
-            const changed = currentSig !== this.regenInitialSignature;
-            currentGenerateStructure.disabled = !changed;
+            this.syncGenerationInputAvailability();
         },
         /**
          * While cancel WS runs: block interactions on the form, show spinner + "Cancelling..." in the button, disable toggle.
