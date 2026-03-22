@@ -474,6 +474,7 @@
 }
 
 .block_dixeo_designer .button_view_course {
+    padding: 5px 1rem;
     background: var(--primary);
 }
 

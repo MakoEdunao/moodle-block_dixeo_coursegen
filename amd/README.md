@@ -20,4 +20,4 @@ Pure **percent and label resolution** for a single phase should live in a dedica
 | Module | Role |
 |--------|------|
 | `filesync_progress_map` | 0–20% bar band before `submit_structure_job` (Moodle prepare → upload → indexing), from `get_filesync_status`. |
-| *(future)* e.g. `content_progress_map` | Phase-specific mapping when you add step-3 / finalize sub-steps (same pattern). |
+| `content_phase_progress` | Step 3 (40–80%): per-module segment animation (80% of segment over 10s, then hold; snap on completion). |

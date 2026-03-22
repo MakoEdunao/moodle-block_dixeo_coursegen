@@ -17,13 +17,17 @@ define([
     'core/str',
     'core/templates',
     'core/config',
-    'block_dixeo_designer/progress'
-], function($, Ajax, Notification, Str, Templates, Config, DesignerProgress) {
+    'block_dixeo_designer/progress',
+    'block_dixeo_designer/content_phase_progress'
+], function($, Ajax, Notification, Str, Templates, Config, DesignerProgress, ContentPhaseProgress) {
     'use strict';
+
+    const contentPhaseAnimator = ContentPhaseProgress.createAnimator();
 
     return {
     finalizePollIntervalId: null,
     clearFinalizePoll: function() {
+        contentPhaseAnimator.reset();
         if (this.finalizePollIntervalId) {
             clearInterval(this.finalizePollIntervalId);
             this.finalizePollIntervalId = null;
@@ -215,6 +219,7 @@ define([
 
     pollDesignerFinalizeProgress: function() {
         var self = this;
+        contentPhaseAnimator.reset();
         var pollInFlight = false;
         var poll = function() {
             if (pollInFlight) {
@@ -229,30 +234,45 @@ define([
                 }
             }])[0].then(function(data) {
                 if (data.phase === DesignerProgress.PHASE_GENERATING_CONTENT) {
-                    var total = 0;
-                    var current = 0;
-                    if (Number(data.module_total) > 0) {
-                        total = Number(data.module_total) || 0;
-                        var moduleIndex = Number(data.module_index) || 0;
-                        current = Math.min(total, Math.max(1, moduleIndex));
-                    } else if (Number(data.section_total) > 0) {
-                        total = Number(data.section_total) || 0;
-                        var sectionIndex = Number(data.section_index) || 0;
-                        current = Math.min(total, Math.max(1, sectionIndex));
-                    }
-                    if (total > 0) {
-                        var completed = Math.max(0, current - 1);
-                        var pct = 40 + 40 * (completed / total);
-                        self.setGenerationProgress(pct);
+                    var parsed = ContentPhaseProgress.parseIndexAndTotal(data);
+                    if (parsed && parsed.total > 0) {
+                        contentPhaseAnimator.onGeneratingContentPoll(data, function(pct) {
+                            self.setGenerationProgress(pct);
+                        });
                         self.updateGenerationActiveStepFromProgress();
                         Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
-                            current: current,
-                            total: total
+                            current: parsed.current,
+                            total: parsed.total
                         }).then(function(str) {
                             self.setGenerationStepLabel(3, str);
                         });
+                    } else {
+                        var total = 0;
+                        var current = 0;
+                        if (Number(data.module_total) > 0) {
+                            total = Number(data.module_total) || 0;
+                            var moduleIndex = Number(data.module_index) || 0;
+                            current = Math.min(total, Math.max(1, moduleIndex));
+                        } else if (Number(data.section_total) > 0) {
+                            total = Number(data.section_total) || 0;
+                            var sectionIndex = Number(data.section_index) || 0;
+                            current = Math.min(total, Math.max(1, sectionIndex));
+                        }
+                        if (total > 0) {
+                            var completed = Math.max(0, current - 1);
+                            var pct = 40 + 40 * (completed / total);
+                            self.setGenerationProgress(pct);
+                            self.updateGenerationActiveStepFromProgress();
+                            Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
+                                current: current,
+                                total: total
+                            }).then(function(str) {
+                                self.setGenerationStepLabel(3, str);
+                            });
+                        }
                     }
                 } else if (data.phase === DesignerProgress.PHASE_FINALIZING) {
+                    contentPhaseAnimator.reset();
                     self.setGenerationProgress(80);
                     self.updateGenerationActiveStepFromProgress();
                 } else if (data.phase === DesignerProgress.PHASE_DONE && data.courseid) {

@@ -16,8 +16,9 @@ define([
     'core/config',
     'core/notification',
     'core/templates',
-    'block_dixeo_designer/filesync_progress_map'
-], function(Ajax, Str, Config, Notification, Template, filesyncMap) {
+    'block_dixeo_designer/filesync_progress_map',
+    'block_dixeo_designer/content_phase_progress'
+], function(Ajax, Str, Config, Notification, Template, filesyncMap, ContentPhaseProgress) {
     'use strict';
 
     // Phases returned by block_dixeo_designer_get_finalize_progress().
@@ -79,6 +80,7 @@ define([
      */
     function createGeneratorProgress(refs) {
         const r = refs;
+        const contentPhaseAnimator = ContentPhaseProgress.createAnimator();
 
         return {
             progress: 0,
@@ -377,6 +379,7 @@ define([
             },
 
             clearFinalizePoll: function() {
+                contentPhaseAnimator.reset();
                 if (this.finalizePollIntervalId) {
                     clearInterval(this.finalizePollIntervalId);
                     this.finalizePollIntervalId = null;
@@ -385,6 +388,7 @@ define([
 
             pollFinalizeProgress: function() {
                 const self = this;
+                contentPhaseAnimator.reset();
                 let pollInFlight = false;
                 const poll = function() {
                     if (pollInFlight) {
@@ -400,29 +404,43 @@ define([
                     }])[0]
                     .then(function(data) {
                         if (data.phase === PHASE_GENERATING_CONTENT) {
-                            let total = 0;
-                            let current = 0;
-                            if (Number(data.module_total) > 0) {
-                                total = Number(data.module_total) || 0;
-                                const moduleIndex = Number(data.module_index) || 0;
-                                current = Math.min(total, Math.max(1, moduleIndex));
-                            } else if (Number(data.section_total) > 0) {
-                                total = Number(data.section_total) || 0;
-                                const sectionIndex = Number(data.section_index) || 0;
-                                current = Math.min(total, Math.max(1, sectionIndex));
-                            }
-                            if (total > 0) {
-                                const completed = Math.max(0, current - 1);
-                                const pct = 40 + 40 * (completed / total);
-                                self.setProgress(pct);
+                            const parsed = ContentPhaseProgress.parseIndexAndTotal(data);
+                            if (parsed && parsed.total > 0) {
+                                contentPhaseAnimator.onGeneratingContentPoll(data, function(pct, force) {
+                                    self.setProgress(pct, force);
+                                });
                                 Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
-                                    current: current,
-                                    total: total
+                                    current: parsed.current,
+                                    total: parsed.total
                                 }).then(function(str) {
                                     self.setStepLabel(3, str);
                                 });
+                            } else {
+                                let total = 0;
+                                let current = 0;
+                                if (Number(data.module_total) > 0) {
+                                    total = Number(data.module_total) || 0;
+                                    const moduleIndex = Number(data.module_index) || 0;
+                                    current = Math.min(total, Math.max(1, moduleIndex));
+                                } else if (Number(data.section_total) > 0) {
+                                    total = Number(data.section_total) || 0;
+                                    const sectionIndex = Number(data.section_index) || 0;
+                                    current = Math.min(total, Math.max(1, sectionIndex));
+                                }
+                                if (total > 0) {
+                                    const completed = Math.max(0, current - 1);
+                                    const pct = 40 + 40 * (completed / total);
+                                    self.setProgress(pct);
+                                    Str.get_string('step_generating_content_count', 'block_dixeo_designer', {
+                                        current: current,
+                                        total: total
+                                    }).then(function(str) {
+                                        self.setStepLabel(3, str);
+                                    });
+                                }
                             }
                         } else if (data.phase === PHASE_FINALIZING) {
+                            contentPhaseAnimator.reset();
                             self.setProgress(80);
                         } else if (data.phase === PHASE_DONE && data.courseid) {
                             self.clearFinalizePoll();
