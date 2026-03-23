@@ -27,10 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // General.
 $string['pluginname'] = 'Dixeo Course Designer';
-$string['settings'] = 'Dixeo Course Designer';
 $string['blocktitle'] = 'Dixeo Course Designer';
-$string['toggle_prompt_hide'] = 'Hide prompt';
-$string['toggle_prompt_show'] = 'Show prompt';
 $string['toggle_tooltip_hide'] = 'Hide generation block';
 $string['toggle_tooltip_show'] = 'Display generation block';
 $string['designacourse'] = 'Design a course';
@@ -44,28 +41,11 @@ $string['manage'] = 'Manage Dixeo Course Designer';
 $string['myaddinstance'] = 'Add a new Dixeo Course Designer block to my dashboard';
 
 // Platform settings.
-$string['apikey'] = 'Dixeo API key';
-$string['apikey_desc'] = "Enter the API key given by Dixeo to activate the course designer.";
-$string['platformurl'] = 'Dixeo platform URL';
-$string['platformurl_desc'] = 'Enter the base URL of the Dixeo platform.';
 $string['categoryname'] = 'Category for created courses';
-$string['categoryname_desc'] = 'Enter the name of the local category where courses will be created.';
 $string['coursetemplate'] = 'Pedagogical structure template';
 $string['coursetemplate_desc'] = 'Select the pedagogical structure template used by Dixeo Course Designer.';
 $string['coursetemplate_none'] = 'None';
-$string['coursetemplate_template_alpha'] = 'Template Alpha';
-$string['coursetemplate_template_beta'] = 'Template Beta';
-$string['coursetemplate_template_gamma'] = 'Template Gamma';
 $string['default_categoryname'] = 'Dixeo courses';
-$string['default_platformurl'] = 'https://dixeo.com';
-$string['register'] = 'Register';
-$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>Your platform is already registered.';
-$string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Enter the URL and API key of the Dixeo platform to register your site.';
-$string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>We couldn\'t register your platform. Please check the URL and API key.';
-$string['error_platform_not_registered'] = 'Your platform is not registered on the Dixeo platform. Please have your administrator complete your registration here: {$a}';
-$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">You need to register your platform to use the course designer.</span>
-<span class="needs-saving hidden">Save your changes first before proceeding with registration.</span>';
 
 // Course design flow.
 $string['heading'] = 'What do you want to teach today?';
@@ -76,9 +56,7 @@ $string['generate_course_tooltip'] = 'Generate course now';
 $string['generate_structure_btn'] = 'Generate';
 $string['generate_structure_tooltip'] = 'Generate course structure';
 $string['regenerate_structure_tooltip'] = 'Regenerate the course structure';
-$string['generatecoursestructure'] = 'Design the structure';
 $string['generate_another'] = 'Generate a new course';
-$string['descriptionorfilesrequired'] = 'Please enter a course description or upload files to generate the course.';
 $string['generating_course'] = 'Please wait while we prepare your course. This process may take a few minutes...';
 $string['course_generated'] = 'Your course «<b> {$a} </b>» has been generated successfully!';
 $string['view_course'] = 'View your course';
@@ -90,16 +68,12 @@ $string['designer_default_file_prompt'] = 'Generate a course structure grounded 
 $string['designer_default_module_prompt'] = 'Generate the full learning content for this module.';
 $string['designer_filesyncfailed'] = 'Uploaded files could not be synchronized before module generation: {$a}';
 $string['designer_filesynctimeout'] = 'Uploaded files did not finish synchronizing in time for module generation.';
-$string['designer_module_timeout'] = 'Module "{$a}" did not finish generating in time. The server may be busy; try again later or create the activity manually.';
 $string['step_uploading_files'] = 'Processing files';
 $string['step_generating_structure'] = 'Generating structure';
-$string['uploading_files_to_server'] = 'Uploading files to server…';
 $string['step_generating_content'] = 'Generating content';
 $string['step_finalizing_details'] = 'Finalizing details';
-$string['section_progress'] = 'Section {$a->current} of {$a->total}';
 $string['invalidinput'] = 'Information required.';
 $string['error_title'] = 'Oops!';
-$string['error_generation_failed'] = 'Course creation failed: {$a}. Please try again.';
 $string['designer_unknown_error'] = 'Unknown error';
 $string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
@@ -115,8 +89,8 @@ $string['uploaderror'] = 'Error uploading file.';
 $string['uploading_files'] = 'Uploading…';
 $string['step_uploading_files_count'] = 'Processing files ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'Generating content ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'Processing prompt...';
-$string['step_preparing_files'] = 'Preparing files...';
+$string['step_processing_prompt'] = 'Processing prompt';
+$string['step_preparing_files'] = 'Preparing files';
 
 // Designer interface.
 $string['designer_loading'] = 'Loading course structure...';
@@ -127,19 +101,12 @@ $string['structurenotfound'] = 'Course structure not found. Generate a structure
 $string['designer_save'] = 'Save';
 $string['designer_cancel'] = 'Cancel';
 $string['designer_cancelling'] = 'Cancelling...';
-$string['designer_reload'] = 'Reload';
-$string['designer_save_now'] = 'Save Now';
-$string['designer_autosave_in'] = 'Auto-save in:';
-$string['designer_version'] = 'Version:';
-$string['designer_version_loading'] = 'Loading...';
-$string['designer_disabled'] = 'Disabled';
 $string['designer_edit'] = 'Edit';
 $string['designer_duplicate'] = 'Duplicate';
 $string['designer_delete'] = 'Delete';
 $string['designer_confirm_delete'] = 'Confirm Delete';
 $string['designer_delete_module_confirm'] = 'Are you sure you want to delete this module?';
 $string['designer_delete_section_confirm'] = 'Are you sure you want to delete this section and all its modules?';
-$string['designer_reload_confirm'] = 'Reload structure from server? Unsaved changes will be lost.';
 $string['designer_unsaved_changes'] = 'You have unsaved changes. Are you sure you want to leave?';
 $string['designer_saving'] = 'Saving...';
 $string['designer_saved'] = 'Saved!';

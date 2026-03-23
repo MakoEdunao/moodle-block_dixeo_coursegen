@@ -27,10 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // General.
 $string['pluginname'] = 'Dixeo-Kursdesigner';
-$string['settings'] = 'Dixeo-Kursdesigner';
 $string['blocktitle'] = 'Dixeo-Kursdesigner';
-$string['toggle_prompt_hide'] = 'Prompt ausblenden';
-$string['toggle_prompt_show'] = 'Prompt anzeigen';
 $string['toggle_tooltip_hide'] = 'Generierungsblock ausblenden';
 $string['toggle_tooltip_show'] = 'Generierungsblock anzeigen';
 $string['designacourse'] = 'Einen Kurs gestalten';
@@ -44,28 +41,11 @@ $string['manage'] = 'Dixeo-Kursdesigner verwalten';
 $string['myaddinstance'] = 'Einen neuen Dixeo-Kursdesigner-Block zu meiner Übersicht hinzufügen';
 
 // Platform settings.
-$string['apikey'] = 'Dixeo-API-Schlüssel';
-$string['apikey_desc'] = 'Geben Sie den von Dixeo bereitgestellten API-Schlüssel ein, um die Kursgenerierung zu aktivieren.';
-$string['platformurl'] = 'Dixeo-Plattform-URL';
-$string['platformurl_desc'] = 'Geben Sie die Basis-URL der Dixeo-Plattform ein.';
 $string['categoryname'] = 'Kategorie für erstellte Kurse';
-$string['categoryname_desc'] = 'Geben Sie den Namen der lokalen Kategorie ein, in der Kurse erstellt werden.';
 $string['coursetemplate'] = 'Vorlage für die pädagogische Struktur';
 $string['coursetemplate_desc'] = 'Wählen Sie die vom Dixeo-Kursdesigner verwendete Vorlage für die pädagogische Struktur.';
 $string['coursetemplate_none'] = 'Keine';
-$string['coursetemplate_template_alpha'] = 'Vorlage Alpha';
-$string['coursetemplate_template_beta'] = 'Vorlage Beta';
-$string['coursetemplate_template_gamma'] = 'Vorlage Gamma';
 $string['default_categoryname'] = 'Dixeo-Kurse';
-$string['default_platformurl'] = 'https://dixeo.com';
-$string['register'] = 'Registrieren';
-$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>Ihre Plattform ist bereits registriert.';
-$string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Geben Sie die URL und den API-Schlüssel der Dixeo-Plattform ein, um Ihre Website zu registrieren.';
-$string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>Ihre Plattform konnte nicht registriert werden. Bitte prüfen Sie URL und API-Schlüssel.';
-$string['error_platform_not_registered'] = 'Ihre Plattform ist nicht auf der Dixeo-Plattform registriert. Bitten Sie Ihren Administrator, die Registrierung hier abzuschließen: {$a}';
-$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Sie müssen Ihre Plattform registrieren, um den Kursdesigner zu nutzen.</span>
-<span class="needs-saving hidden">Speichern Sie zuerst Ihre Änderungen, bevor Sie mit der Registrierung fortfahren.</span>';
 
 // Course design flow.
 $string['heading'] = 'Was möchten Sie heute unterrichten?';
@@ -76,9 +56,7 @@ $string['generate_course_tooltip'] = 'Kurs jetzt generieren';
 $string['generate_structure_btn'] = 'Generieren';
 $string['generate_structure_tooltip'] = 'Kursstruktur generieren';
 $string['regenerate_structure_tooltip'] = 'Kursstruktur neu generieren';
-$string['generatecoursestructure'] = 'Struktur gestalten';
 $string['generate_another'] = 'Neuen Kurs generieren';
-$string['descriptionorfilesrequired'] = 'Bitte geben Sie eine Kursbeschreibung ein oder laden Sie Dateien hoch, um den Kurs zu generieren.';
 $string['generating_course'] = 'Bitte warten Sie, wir bereiten Ihren Kurs vor. Dies kann einige Minuten dauern...';
 $string['course_generated'] = 'Ihr Kurs «<b> {$a} </b>» wurde erfolgreich erstellt!';
 $string['view_course'] = 'Kurs anzeigen';
@@ -90,16 +68,12 @@ $string['designer_default_file_prompt'] = 'Eine Kursstruktur auf Basis der hochg
 $string['designer_default_module_prompt'] = 'Den vollständigen Lerninhalt für dieses Modul generieren.';
 $string['designer_filesyncfailed'] = 'Die hochgeladenen Dateien konnten vor der Modulgenerierung nicht synchronisiert werden: {$a}';
 $string['designer_filesynctimeout'] = 'Die hochgeladenen Dateien wurden nicht rechtzeitig für die Modulgenerierung synchronisiert.';
-$string['designer_module_timeout'] = 'Das Modul „{$a}“ wurde nicht rechtzeitig generiert. Der Server könnte ausgelastet sein; versuchen Sie es später erneut oder erstellen Sie die Aktivität manuell.';
 $string['step_uploading_files'] = 'Dateien werden verarbeitet';
 $string['step_generating_structure'] = 'Struktur wird generiert';
-$string['uploading_files_to_server'] = 'Dateien werden zum Server hochgeladen…';
 $string['step_generating_content'] = 'Inhalt wird generiert';
 $string['step_finalizing_details'] = 'Details werden fertiggestellt';
-$string['section_progress'] = 'Abschnitt {$a->current} von {$a->total}';
 $string['invalidinput'] = 'Angaben erforderlich.';
 $string['error_title'] = 'Hoppla!';
-$string['error_generation_failed'] = 'Kurserstellung fehlgeschlagen: {$a}. Bitte versuchen Sie es erneut.';
 $string['designer_unknown_error'] = 'Unbekannter Fehler';
 $string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
@@ -115,8 +89,8 @@ $string['uploaderror'] = 'Fehler beim Hochladen der Datei.';
 $string['uploading_files'] = 'Wird hochgeladen…';
 $string['step_uploading_files_count'] = 'Dateien werden verarbeitet ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'Inhalt wird generiert ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'Aufgabenstellung wird verarbeitet...';
-$string['step_preparing_files'] = 'Dateien werden vorbereitet...';
+$string['step_processing_prompt'] = 'Aufgabenstellung wird verarbeitet';
+$string['step_preparing_files'] = 'Dateien werden vorbereitet';
 
 // Designer interface.
 $string['designer_loading'] = 'Kursstruktur wird geladen...';
@@ -127,19 +101,12 @@ $string['structurenotfound'] = 'Kursstruktur nicht gefunden. Erstellen Sie zuers
 $string['designer_save'] = 'Speichern';
 $string['designer_cancel'] = 'Abbrechen';
 $string['designer_cancelling'] = 'Wird abgebrochen…';
-$string['designer_reload'] = 'Neu laden';
-$string['designer_save_now'] = 'Jetzt speichern';
-$string['designer_autosave_in'] = 'Auto-Speicherung in:';
-$string['designer_version'] = 'Version:';
-$string['designer_version_loading'] = 'Wird geladen...';
-$string['designer_disabled'] = 'Deaktiviert';
 $string['designer_edit'] = 'Bearbeiten';
 $string['designer_duplicate'] = 'Duplizieren';
 $string['designer_delete'] = 'Löschen';
 $string['designer_confirm_delete'] = 'Löschen bestätigen';
 $string['designer_delete_module_confirm'] = 'Möchten Sie dieses Modul wirklich löschen?';
 $string['designer_delete_section_confirm'] = 'Möchten Sie diesen Abschnitt und alle zugehörigen Module wirklich löschen?';
-$string['designer_reload_confirm'] = 'Struktur vom Server neu laden? Nicht gespeicherte Änderungen gehen verloren.';
 $string['designer_unsaved_changes'] = 'Sie haben ungespeicherte Änderungen. Möchten Sie wirklich fortfahren?';
 $string['designer_saving'] = 'Wird gespeichert...';
 $string['designer_saved'] = 'Gespeichert!';

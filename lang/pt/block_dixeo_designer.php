@@ -27,10 +27,7 @@ defined('MOODLE_INTERNAL') || die();
 
 // General.
 $string['pluginname'] = 'Designer de Cursos Dixeo';
-$string['settings'] = 'Designer de Cursos Dixeo';
 $string['blocktitle'] = 'Designer de Cursos Dixeo';
-$string['toggle_prompt_hide'] = 'Ocultar prompt';
-$string['toggle_prompt_show'] = 'Mostrar prompt';
 $string['toggle_tooltip_hide'] = 'Ocultar bloco de geração';
 $string['toggle_tooltip_show'] = 'Exibir bloco de geração';
 $string['designacourse'] = 'Conceber um curso';
@@ -44,28 +41,11 @@ $string['manage'] = 'Gerir o Designer de Cursos Dixeo';
 $string['myaddinstance'] = 'Adicionar um novo bloco Designer de Cursos Dixeo ao meu painel';
 
 // Platform settings.
-$string['apikey'] = 'Chave API Dixeo';
-$string['apikey_desc'] = 'Introduza a chave API fornecida pela Dixeo para ativar a geração de cursos.';
-$string['platformurl'] = 'URL da plataforma Dixeo';
-$string['platformurl_desc'] = 'Introduza o URL base da plataforma Dixeo.';
 $string['categoryname'] = 'Categoria para os cursos criados';
-$string['categoryname_desc'] = 'Introduza o nome da categoria local onde os cursos serão criados.';
 $string['coursetemplate'] = 'Modelo de estrutura pedagógica';
 $string['coursetemplate_desc'] = 'Selecione o modelo de estrutura pedagógica utilizado pelo Designer de Cursos Dixeo.';
 $string['coursetemplate_none'] = 'Nenhum';
-$string['coursetemplate_template_alpha'] = 'Modelo Alpha';
-$string['coursetemplate_template_beta'] = 'Modelo Beta';
-$string['coursetemplate_template_gamma'] = 'Modelo Gamma';
 $string['default_categoryname'] = 'Cursos Dixeo';
-$string['default_platformurl'] = 'https://dixeo.com';
-$string['register'] = 'Registar';
-$string['alreadyregistered'] = '<i class="icon fa fa-check text-success fa-fw" aria-hidden="true"></i>A sua plataforma já está registada.';
-$string['enterurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw" aria-hidden="true"></i>Introduza o URL e a chave API da plataforma Dixeo para registar o seu site.';
-$string['error_invalidurlandkey'] = '<i class="icon fa fa-exclamation-triangle text-danger fa-fw" aria-hidden="true"></i>Não foi possível registar a sua plataforma. Verifique o URL e a chave API.';
-$string['error_platform_not_registered'] = 'A sua plataforma não está registada na plataforma Dixeo. Peça ao seu administrador para concluir o registo aqui: {$a}';
-$string['needsregistration'] = '<i class="icon fa fa-exclamation-triangle text-warning fa-fw m-0" aria-hidden="true"></i>
-<span class="needs-registration">Precisa de registar a sua plataforma para utilizar o designer de cursos.</span>
-<span class="needs-saving hidden">Guarde primeiro as suas alterações antes de prosseguir com o registo.</span>';
 
 // Course design flow.
 $string['heading'] = 'O que quer ensinar hoje?';
@@ -76,9 +56,7 @@ $string['generate_course_tooltip'] = 'Gerar curso agora';
 $string['generate_structure_btn'] = 'Gerar';
 $string['generate_structure_tooltip'] = 'Gerar estrutura do curso';
 $string['regenerate_structure_tooltip'] = 'Regenerar a estrutura do curso';
-$string['generatecoursestructure'] = 'Conceber a estrutura';
 $string['generate_another'] = 'Gerar um novo curso';
-$string['descriptionorfilesrequired'] = 'Introduza uma descrição do curso ou carregue ficheiros para gerar o curso.';
 $string['generating_course'] = 'Aguarde enquanto preparamos o seu curso. Este processo pode demorar alguns minutos...';
 $string['course_generated'] = 'O seu curso «<b> {$a} </b>» foi gerado com sucesso!';
 $string['view_course'] = 'Ver o seu curso';
@@ -90,16 +68,12 @@ $string['designer_default_file_prompt'] = 'Gerar uma estrutura de curso baseada 
 $string['designer_default_module_prompt'] = 'Gerar o conteúdo de aprendizagem completo para este módulo.';
 $string['designer_filesyncfailed'] = 'Os ficheiros carregados não puderam ser sincronizados antes da geração do módulo: {$a}';
 $string['designer_filesynctimeout'] = 'Os ficheiros carregados não terminaram de sincronizar a tempo para a geração do módulo.';
-$string['designer_module_timeout'] = 'O módulo «{$a}» não terminou de ser gerado a tempo. O servidor pode estar ocupado; tente novamente mais tarde ou crie a atividade manualmente.';
 $string['step_uploading_files'] = 'A processar ficheiros';
 $string['step_generating_structure'] = 'A gerar estrutura';
-$string['uploading_files_to_server'] = 'A enviar ficheiros para o servidor…';
 $string['step_generating_content'] = 'A gerar conteúdo';
 $string['step_finalizing_details'] = 'A finalizar detalhes';
-$string['section_progress'] = 'Secção {$a->current} de {$a->total}';
 $string['invalidinput'] = 'Informação necessária.';
 $string['error_title'] = 'Ups!';
-$string['error_generation_failed'] = 'Falha ao criar o curso: {$a}. Tente novamente.';
 $string['designer_unknown_error'] = 'Erro desconhecido';
 $string['designer_instructions_too_short'] = 'Instructions must be at least {$a->min} characters.';
 
@@ -115,8 +89,8 @@ $string['uploaderror'] = 'Erro ao carregar o ficheiro.';
 $string['uploading_files'] = 'A carregar…';
 $string['step_uploading_files_count'] = 'A processar ficheiros ({$a->current}/{$a->total})';
 $string['step_generating_content_count'] = 'A gerar conteúdo ({$a->current}/{$a->total})';
-$string['step_processing_prompt'] = 'A processar a consigna...';
-$string['step_preparing_files'] = 'A preparar ficheiros...';
+$string['step_processing_prompt'] = 'A processar a consigna';
+$string['step_preparing_files'] = 'A preparar ficheiros';
 
 // Designer interface.
 $string['designer_loading'] = 'A carregar estrutura do curso...';
@@ -127,19 +101,12 @@ $string['structurenotfound'] = 'Estrutura do curso não encontrada. Gere uma est
 $string['designer_save'] = 'Guardar';
 $string['designer_cancel'] = 'Cancelar';
 $string['designer_cancelling'] = 'A cancelar…';
-$string['designer_reload'] = 'Recarregar';
-$string['designer_save_now'] = 'Guardar agora';
-$string['designer_autosave_in'] = 'Auto-guardar em:';
-$string['designer_version'] = 'Versão:';
-$string['designer_version_loading'] = 'A carregar...';
-$string['designer_disabled'] = 'Desativado';
 $string['designer_edit'] = 'Editar';
 $string['designer_duplicate'] = 'Duplicar';
 $string['designer_delete'] = 'Eliminar';
 $string['designer_confirm_delete'] = 'Confirmar eliminação';
 $string['designer_delete_module_confirm'] = 'Tem a certeza de que deseja eliminar este módulo?';
 $string['designer_delete_section_confirm'] = 'Tem a certeza de que deseja eliminar esta secção e todos os seus módulos?';
-$string['designer_reload_confirm'] = 'Recarregar estrutura do servidor? As alterações não guardadas serão perdidas.';
 $string['designer_unsaved_changes'] = 'Tem alterações não guardadas. Tem a certeza de que deseja sair?';
 $string['designer_saving'] = 'A guardar...';
 $string['designer_saved'] = 'Guardado!';
