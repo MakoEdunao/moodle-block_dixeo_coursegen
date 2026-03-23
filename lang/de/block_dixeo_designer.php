@@ -94,7 +94,6 @@ $string['step_preparing_files'] = 'Dateien werden vorbereitet';
 
 // Designer interface.
 $string['designer_loading'] = 'Kursstruktur wird geladen...';
-$string['designer_job_expired'] = 'Diese Kurserstellung ist abgelaufen. Bitte starten Sie eine neue Generierung.';
 $string['designer_regenerate'] = 'Neu generieren';
 $string['designer_invalid_data'] = 'Ungültige Strukturdaten';
 $string['structurenotfound'] = 'Kursstruktur nicht gefunden. Erstellen Sie zuerst eine Struktur oder versuchen Sie es später erneut.';

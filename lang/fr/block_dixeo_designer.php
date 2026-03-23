@@ -90,7 +90,6 @@ $string['designer_filesynctimeout'] = 'Les fichiers téléchargés n\'ont pas fi
 
 // Designer strings
 $string['designer_loading'] = 'Chargement de la structure du cours...';
-$string['designer_job_expired'] = 'Cette génération de cours a expiré. Veuillez en lancer une nouvelle.';
 $string['designer_regenerate'] = 'Régénérer';
 $string['designer_invalid_data'] = 'Données de structure invalides';
 $string['structurenotfound'] = 'Structure du cours introuvable. Générez d’abord une structure ou réessayez plus tard.';

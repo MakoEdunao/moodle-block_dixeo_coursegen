@@ -75,6 +75,13 @@ final class finalize_course extends external_api {
 
         $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
         $course = $service->finalize_course($job_id, (int) $USER->id, $createcourse);
+        if ($createcourse && (!$course || empty($course->id))) {
+            $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+            $progress = $cache->get($job_id);
+            if (!(is_array($progress) && !empty($progress['cancelled']))) {
+                throw new \moodle_exception('designer_error_finalize_failed', 'block_dixeo_designer');
+            }
+        }
 
         return finalize_course_result::from_course($course)->to_array();
     }

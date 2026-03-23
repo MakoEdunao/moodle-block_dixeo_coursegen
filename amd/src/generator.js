@@ -94,10 +94,9 @@ define([
             // prompt/template/files actually change.
             this.initRegenerateChangeTracking();
 
-            const cancelBtn = generationContainer.querySelector('.btn-cancel-draft');
-            if (cancelBtn) {
+            document.querySelectorAll('.btn-cancel-draft').forEach((cancelBtn) => {
                 cancelBtn.addEventListener('click', (event) => this.cancelDraft(event));
-            }
+            });
 
             this.syncGenerationInputAvailability();
 
@@ -229,9 +228,7 @@ define([
                 return;
             }
 
-            const cancelBtn = form.querySelector('.btn-cancel-draft');
-            const idleEl = cancelBtn ? cancelBtn.querySelector('.btn-cancel-draft-idle') : null;
-            const loadingEl = cancelBtn ? cancelBtn.querySelector('.btn-cancel-draft-loading') : null;
+            const cancelButtons = Array.from(document.querySelectorAll('.btn-cancel-draft'));
 
             if (active) {
                 form.classList.add('dixeo-designer-cancel-pending');
@@ -244,12 +241,20 @@ define([
                     }
                 });
 
-                if (idleEl) {
-                    idleEl.classList.add('d-none');
-                }
-                if (loadingEl) {
-                    loadingEl.classList.remove('d-none');
-                }
+                cancelButtons.forEach(function(btn) {
+                    const idleEl = btn.querySelector('.btn-cancel-draft-idle');
+                    const loadingEl = btn.querySelector('.btn-cancel-draft-loading');
+                    if (!btn.disabled) {
+                        btn.setAttribute('data-dixeo-cancel-unlock', '1');
+                        btn.disabled = true;
+                    }
+                    if (idleEl) {
+                        idleEl.classList.add('d-none');
+                    }
+                    if (loadingEl) {
+                        loadingEl.classList.remove('d-none');
+                    }
+                });
 
                 const wrapper = form.closest('.dixeo-designer-block-wrapper');
                 const toggle = wrapper ? wrapper.querySelector('.dixeo-designer-block-toggle') : null;
@@ -266,17 +271,27 @@ define([
                     el.removeAttribute('data-dixeo-cancel-unlock');
                 });
 
-                if (idleEl) {
-                    idleEl.classList.remove('d-none');
-                }
-                if (loadingEl) {
-                    loadingEl.classList.add('d-none');
-                }
+                cancelButtons.forEach(function(btn) {
+                    const idleEl = btn.querySelector('.btn-cancel-draft-idle');
+                    const loadingEl = btn.querySelector('.btn-cancel-draft-loading');
+                    if (idleEl) {
+                        idleEl.classList.remove('d-none');
+                    }
+                    if (loadingEl) {
+                        loadingEl.classList.add('d-none');
+                    }
+                });
             }
         },
         cancelDraft: function(event) {
             event.preventDefault();
             const self = this;
+            const isFooterCancel = Boolean(
+                event &&
+                event.currentTarget &&
+                event.currentTarget.closest &&
+                event.currentTarget.closest('.editor-toolbar-footer')
+            );
             if (!generatorForm || generatorForm.classList.contains('dixeo-designer-cancel-pending')) {
                 return;
             }
@@ -297,11 +312,18 @@ define([
                 methodname: 'block_dixeo_designer_cancel_draft',
                 args: {
                     job_id: this.getJobId(),
-                    sesskey: M.cfg.sesskey
+                    sesskey: M.cfg.sesskey,
+                    delete_structure: isFooterCancel
                 },
             }])[0]
             .then(function() {
                 finishCancel();
+                if (isFooterCancel) {
+                    document.dispatchEvent(
+                        new CustomEvent(Progress.ALLOW_NAVIGATION_EVENT, {bubbles: true})
+                    );
+                    window.location.href = Config.wwwroot + '/blocks/dixeo_designer/designer.php';
+                }
             })
             .catch(function(err) {
                 finishCancel();

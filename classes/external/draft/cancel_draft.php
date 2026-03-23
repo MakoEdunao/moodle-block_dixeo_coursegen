@@ -40,6 +40,7 @@ final class cancel_draft extends external_api {
         return new external_function_parameters([
             'job_id' => new external_value(PARAM_TEXT, 'Job id', VALUE_REQUIRED),
             'sesskey' => new external_value(PARAM_RAW, 'Session key', VALUE_REQUIRED),
+            'delete_structure' => new external_value(PARAM_BOOL, 'Force deleting saved structure', VALUE_DEFAULT, false),
         ]);
     }
 
@@ -48,14 +49,16 @@ final class cancel_draft extends external_api {
      *
      * @param string $job_id Job identifier.
      * @param string $sesskey Session key.
+     * @param bool $delete_structure Force deleting saved structure (footer cancel).
      * @return array { success: bool }
      */
-    public static function cancel_draft(string $job_id, string $sesskey): array {
+    public static function cancel_draft(string $job_id, string $sesskey, bool $delete_structure = false): array {
         global $USER;
 
         self::validate_parameters(self::cancel_draft_parameters(), [
             'job_id' => $job_id,
             'sesskey' => $sesskey,
+            'delete_structure' => $delete_structure,
         ]);
 
         $context = \context_system::instance();
@@ -64,7 +67,7 @@ final class cancel_draft extends external_api {
         require_sesskey();
 
         $service = \block_dixeo_designer\service\designer_service_factory::get_designer_service();
-        $ok = $service->cancel_draft($job_id, (int) $USER->id);
+        $ok = $service->cancel_draft($job_id, (int) $USER->id, $delete_structure);
 
         return cancel_draft_result::from_bool($ok)->to_array();
     }

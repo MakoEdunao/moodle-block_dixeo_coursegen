@@ -48,9 +48,15 @@
     <div class="editor-toolbar-footer bg-light border-top p-2">
         <div class="container-fluid editor-toolbar-footer-inner">
             <div class="editor-cancel">
-                <a href="{{config.wwwroot}}" class="btn btn-outline-secondary btn-sm" title="{{cancel}}">
-                    <i class="fa fa-times" aria-hidden="true"></i><span class="btn-label">{{cancel}}</span>
-                </a>
+                <button type="button" class="btn btn-outline-secondary btn-sm btn-cancel-draft" title="{{cancel}}" data-action="cancel-draft">
+                    <span class="btn-cancel-draft-idle">
+                        <i class="fa fa-times" aria-hidden="true"></i><span class="btn-label">{{cancel}}</span>
+                    </span>
+                    <span class="btn-cancel-draft-loading d-none">
+                        <i class="icon fa fa-spinner fa-spin fa-fw" role="presentation" aria-hidden="true"></i>
+                        <span class="btn-cancel-draft-loading-text">{{cancelling}}</span>
+                    </span>
+                </button>
             </div>
             <div class="editor-undo-redo">
                 <button id="btn-undo" class="btn btn-secondary btn-sm mx-1" disabled title="{{undo}}">

@@ -180,12 +180,46 @@ final class external_test extends advanced_testcase {
         $this->assertSame('', $result['coursename']);
     }
 
+    public function test_finalize_course_throws_when_createcourse_and_service_returns_null(): void {
+        $this->mockdesignerservice->method('finalize_course')
+            ->with('job-1', $this->user->id, true)
+            ->willReturn(null);
+
+        $this->expectException(\moodle_exception::class);
+        finalize_course::finalize_course('job-1', true, $this->sesskey);
+    }
+
+    public function test_finalize_course_returns_empty_when_createcourse_true_and_cancelled_flag_is_set(): void {
+        $jobid = 'job-cancelled-' . uniqid();
+        $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+        $cache->set($jobid, ['cancelled' => true]);
+
+        $this->mockdesignerservice->method('finalize_course')
+            ->with($jobid, $this->user->id, true)
+            ->willReturn(null);
+
+        $result = finalize_course::finalize_course($jobid, true, $this->sesskey);
+
+        $this->assertSame(0, $result['courseid']);
+        $this->assertSame('', $result['coursename']);
+    }
+
     public function test_cancel_draft_returns_success_from_service(): void {
         $this->mockdesignerservice->method('cancel_draft')
-            ->with('job-1', $this->user->id)
+            ->with('job-1', $this->user->id, false)
             ->willReturn(true);
 
         $result = cancel_draft::cancel_draft('job-1', $this->sesskey);
+
+        $this->assertTrue($result['success']);
+    }
+
+    public function test_cancel_draft_passes_delete_structure_true_for_footer_hard_reset(): void {
+        $this->mockdesignerservice->method('cancel_draft')
+            ->with('job-1', $this->user->id, true)
+            ->willReturn(true);
+
+        $result = cancel_draft::cancel_draft('job-1', $this->sesskey, true);
 
         $this->assertTrue($result['success']);
     }

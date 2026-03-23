@@ -94,7 +94,6 @@ $string['step_preparing_files'] = 'A preparar ficheiros';
 
 // Designer interface.
 $string['designer_loading'] = 'A carregar estrutura do curso...';
-$string['designer_job_expired'] = 'Esta geração do curso expirou. Inicie uma nova geração.';
 $string['designer_regenerate'] = 'Regenerar';
 $string['designer_invalid_data'] = 'Dados de estrutura inválidos';
 $string['structurenotfound'] = 'Estrutura do curso não encontrada. Gere uma estrutura primeiro ou tente novamente mais tarde.';

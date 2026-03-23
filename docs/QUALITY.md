@@ -7,6 +7,7 @@ Internal checklist for `block_dixeo_designer` (architecture already aligned: `ex
 - PHPUnit for externals (mocked), `designer_service`, factory, course creation, submission, structure repo, template helper, cleanup task, **`render_helper`**, **`prepare_progress_cache`**.
 - `classes/README.md`, `amd/README.md`, `ajax/README.md` describe layout.
 - **i18n:** Module “Summary” / “Instructions” labels use `block_dixeo_designer` strings; client-side error fallbacks (upload/cancel/delete/status/generation/finalize/save) use lang strings. Success banner logo `alt` is hardcoded (`Dixeo`) in the template to avoid an extra string fetch. Mustache templates use `{{#str}}` or context from PHP/JS — no remaining user-facing literals in templates except dynamic data (titles, file names). **Remaining English-only UI:** `MODULE_TYPE_OPTIONS` fallback in `amd/src/designer.js` when `local_dixeo_get_module_types` fails or returns empty (labels are normally supplied by the API).
+- Cancel/finalize workflow now distinguishes progress-preserving block cancel vs footer hard reset, and self-heal finalize recreates draft prerequisites (resource copy + sync ready + vector-store sync) before module fill.
 
 ## Actionable next steps (prioritised)
 

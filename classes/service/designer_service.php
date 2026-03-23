@@ -164,6 +164,14 @@ class designer_service {
         prepare_progress_cache::purge($jobid);
 
         if ($existingCourseId !== null) {
+            global $DB;
+            if (!$DB->record_exists('course', ['id' => $existingCourseId])) {
+                // Corrupted/missing draft course reference: force clean draft recreation.
+                $existingCourseId = null;
+            }
+        }
+
+        if ($existingCourseId !== null) {
             $courseAiRepo = new \local_dixeo\repository\course_ai_repository();
             $courseAi = $courseAiRepo->get_by_courseid($existingCourseId);
 
@@ -449,7 +457,7 @@ class designer_service {
      */
     public function finalize_course(string $jobid, int $userid, bool $createcourse): ?\stdClass {
         $submission = $this->submissions->get_submission($jobid);
-        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
+        if (!$submission || (int) $submission->userid !== $userid) {
             return null;
         }
 
@@ -458,6 +466,11 @@ class designer_service {
             $result = json_decode($structureJson, true);
             $result = is_array($result) ? $result : [];
         } else {
+            $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
+            $progress = $cache->get($jobid);
+            if (is_array($progress) && !empty($progress['cancelled'])) {
+                return null;
+            }
             $jobstatus = $this->remoteapi->get_job_status($submission->remotejobid);
             if (!$jobstatus->is_completed() || empty($jobstatus->result)) {
                 return null;
@@ -474,15 +487,28 @@ class designer_service {
             return null;
         }
 
-        // Re-fetch: user may have cancelled; draft course deleted and submission cleared concurrently.
+        // Re-fetch: user may have cancelled; submission state may have changed concurrently.
         global $DB;
         $submission = $this->submissions->get_submission($jobid);
-        if (!$submission || (int) $submission->userid !== $userid || empty($submission->courseid)) {
+        if (!$submission || (int) $submission->userid !== $userid) {
             return null;
         }
-        $draftcourseid = (int) $submission->courseid;
-        if (!$DB->record_exists('course', ['id' => $draftcourseid])) {
-            return null;
+
+        $draftcourseid = !empty($submission->courseid) ? (int) $submission->courseid : 0;
+        $draftcourseexists = $draftcourseid > 0 && $DB->record_exists('course', ['id' => $draftcourseid]);
+
+        // Self-heal: when structure exists but draft is missing/corrupted, recreate draft and continue.
+        if (!$draftcourseexists) {
+            $draftcourse = $this->coursecreation->create_draft_course($userid);
+            $draftcourseid = (int) $draftcourse->id;
+            $this->submissions->set_draft_and_remote_job($submission, $draftcourseid, $submission->remotejobid ?? null);
+
+            // Self-heal preflight must recreate the same prerequisites as generation:
+            // copy uploaded files into course resources, wait for sync readiness,
+            // then sync files to remote vector store before module filling.
+            $this->files->copy_files_to_course_resources((int) $submission->id, $draftcourseid, $userid);
+            $this->coursecreation->enable_draft_file_sync_and_wait($draftcourseid, $userid);
+            $this->sync_submission_files_to_remote((int) $submission->id, $jobid);
         }
 
         $course = $this->coursecreation->finalize_draft_course(
@@ -515,21 +541,23 @@ class designer_service {
     }
 
     /**
-     * Cancel the draft: delete draft course, cancel remote job when applicable,
-     * disable file sync on full rollback (no structure saved), reset submission.
+     * Cancel the current draft workflow and clean submission state.
      *
-     * Full rollback (during upload or structure generation, no structure yet):
-     * draft course deleted, remote structure job cancelled, file sync disabled/removed,
-     * submission reset to draft.
-     *
-     * Content-only rollback (structure already saved, during content generation or finalizing):
-     * draft course deleted, remote job cancelled, submission reset; structure kept in DB.
+     * Early/block cancel (no saved structure) performs rollback: draft resources are deleted,
+     * file sync is disabled, structure rows are removed, and submission row is deleted.
+     * Late/block cancel (saved structure exists) preserves draft + structure + submission to
+     * allow fast resume from existing progress.
+     * Footer cancel is a hard reset: draft + structure + submission are deleted and file sync
+     * is disabled regardless of whether structure exists.
+     * The finalize-progress cache keeps a cancelled flag so in-flight finalize
+     * requests can observe cancellation and stop safely.
      *
      * @param string $jobid
      * @param int $userid
+     * @param bool $deletestructure Force deleting saved structure versions.
      * @return bool
      */
-    public function cancel_draft(string $jobid, int $userid): bool {
+    public function cancel_draft(string $jobid, int $userid, bool $deletestructure = false): bool {
         $submission = $this->submissions->get_submission($jobid);
         if (!$submission || (int) $submission->userid !== $userid) {
             return false;
@@ -538,6 +566,10 @@ class designer_service {
         $courseid = !empty($submission->courseid) ? (int) $submission->courseid : null;
         $remotejobid = !empty($submission->remotejobid) ? $submission->remotejobid : null;
         $hasstructure = $this->structures->get_latest_structure($jobid) !== null;
+        $islateblockcancel = !$deletestructure && $hasstructure;
+        $shoulddeletedraftcourse = !$islateblockcancel;
+        $shoulddisablefilesync = $deletestructure || !$hasstructure;
+        $shoulddeletesubmission = $deletestructure || !$hasstructure;
 
         $cache = \cache::make('block_dixeo_designer', 'finalize_progress');
         $progressdata = $cache->get($jobid);
@@ -556,7 +588,7 @@ class designer_service {
 
         $cache->set($jobid, array_merge(is_array($progressdata) ? $progressdata : [], ['cancelled' => true]));
 
-        if ($courseid !== null) {
+        if ($courseid !== null && $shoulddeletedraftcourse) {
             $this->coursecreation->delete_draft_course($courseid);
         }
 
@@ -568,7 +600,7 @@ class designer_service {
             }
         }
 
-        if (!$hasstructure && $courseid !== null && $this->filesyncservice !== null) {
+        if ($shoulddisablefilesync && $courseid !== null && $this->filesyncservice !== null) {
             try {
                 $this->filesyncservice->disable_sync($courseid, $userid, true);
             } catch (\Throwable $e) {
@@ -576,9 +608,12 @@ class designer_service {
             }
         }
 
-        $this->submissions->clear_course($submission);
-
-        $cache->delete($jobid);
+        if ($deletestructure || !$hasstructure) {
+            $this->structures->delete_by_jobid($jobid);
+        }
+        if ($shoulddeletesubmission) {
+            $this->submissions->delete_submission($jobid, $userid);
+        }
 
         return true;
     }

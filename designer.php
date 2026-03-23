@@ -35,9 +35,7 @@ $hasexistingjob = ($jobid !== '');
 $submissionservice = new \block_dixeo_designer\service\submission\service();
 $designeruiservice = new \block_dixeo_designer\service\designer_submission_ui_service();
 
-// If the job id exists but the submission was deleted after successful generation,
-// show a clean designer and an error message (no review UI).
-$submissionExpired = false;
+// If the job id is invalid (submission no longer exists), redirect to clean designer URL.
 $submission = null;
 
 if (!$hasexistingjob) {
@@ -45,9 +43,7 @@ if (!$hasexistingjob) {
 } else {
     $submission = $submissionservice->get_submission($jobid);
     if ($submission === null) {
-        $submissionExpired = true;
-        $hasexistingjob = false;
-        $jobid = block_dixeo_designer_generate_job_id();
+        redirect(new moodle_url('/blocks/dixeo_designer/designer.php'));
     }
 }
 
@@ -69,13 +65,6 @@ $PAGE->set_title(get_string('pluginname', 'block_dixeo_designer'));
 $PAGE->set_heading(''); // Empty heading (no page title)
 
 echo $OUTPUT->header();
-
-if ($submissionExpired) {
-    echo html_writer::div(
-        get_string('designer_job_expired', 'block_dixeo_designer'),
-        'alert alert-danger mt-3'
-    );
-}
 
 $filecontext = $designeruiservice->get_file_context($jobid, (int) $USER->id);
 
@@ -109,6 +98,7 @@ if ($hasexistingjob) {
         'loading' => get_string('designer_loading', 'block_dixeo_designer'),
         'save' => get_string('designer_save', 'block_dixeo_designer'),
         'cancel' => get_string('designer_cancel', 'block_dixeo_designer'),
+        'cancelling' => get_string('designer_cancelling', 'block_dixeo_designer'),
         'undo' => get_string('designer_undo', 'block_dixeo_designer'),
         'redo' => get_string('designer_redo', 'block_dixeo_designer'),
         'create_course' => get_string('create_course', 'block_dixeo_designer'),

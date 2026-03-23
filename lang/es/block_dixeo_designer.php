@@ -90,7 +90,6 @@ $string['designer_filesynctimeout'] = 'Los archivos subidos no terminaron de sin
 
 // Designer strings
 $string['designer_loading'] = 'Cargando estructura del curso...';
-$string['designer_job_expired'] = 'Esta generación del curso ha caducado. Inicie una nueva generación.';
 $string['designer_regenerate'] = 'Regenerar';
 $string['designer_invalid_data'] = 'Datos de estructura no válidos';
 $string['structurenotfound'] = 'No se encontró la estructura del curso. Genera una estructura primero o inténtalo de nuevo más tarde.';
