@@ -134,6 +134,7 @@ define([
 
         self.finalizeProgressCompleted = false;
         self.clearFinalizePoll();
+        self.setDesignerEditingLocked(true);
 
         var generatorForm = document.getElementById('edai_course_designer_form');
         var promptContainer = generatorForm ? generatorForm.querySelector('.prompt-container') : null;
@@ -185,6 +186,7 @@ define([
                 }])[0].catch(function(err) {
                     self.clearFinalizePoll();
                     self.unlockDesignerUI();
+                    self.setDesignerEditingLocked(false);
 
                     if (promptContainer && generationContainer) {
                         promptContainer.classList.replace('d-none', 'd-block');
@@ -196,6 +198,7 @@ define([
             }).catch(function(err) {
                 self.clearFinalizePoll();
                 self.unlockDesignerUI();
+                self.setDesignerEditingLocked(false);
 
                 if (promptContainer && generationContainer) {
                     promptContainer.classList.replace('d-none', 'd-block');
@@ -285,7 +288,6 @@ define([
                     self.setGenerationProgress(100);
                     self.updateGenerationActiveStepFromProgress();
                     self.finishProgress(data.courseid, data.coursename);
-                    $('#btn-create-course').prop('disabled', false);
                     self.unlockDesignerUI();
                 }
             }).catch(function() {}).then(function() {

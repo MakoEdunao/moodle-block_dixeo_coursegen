@@ -76,6 +76,8 @@ define([
         currentlyEditing: null,
         hasUnsavedChanges: false,
         pendingCollapseState: null,
+        /** Whether inline editor/actions are locked during create-course generation. */
+        designerEditingLocked: false,
 
         /** @type {number} Draft course id for WS language context (0 if not created yet). */
         courseId: 0,
@@ -101,6 +103,7 @@ define([
             document.addEventListener(DesignerProgress.GLOBAL_UNLOCK_UI_EVENT, function() {
                 self.clearFinalizePoll();
                 self.unlockDesignerUI();
+                self.setDesignerEditingLocked(false);
                 $('#btn-create-course').prop('disabled', false);
                 self.finalizeProgressCompleted = false;
             });
@@ -114,6 +117,38 @@ define([
                 Notification.exception(err);
                 self.showLoading();
             });
+        },
+
+        /**
+         * Enable/disable designer editing controls while generation is running.
+         *
+         * @param {boolean} locked
+         */
+        setDesignerEditingLocked: function(locked) {
+            this.designerEditingLocked = Boolean(locked);
+            var isLocked = this.designerEditingLocked;
+
+            var page = document.getElementById('page-blocks-dixeo_designer-designer');
+            if (page) {
+                page.classList.toggle('dixeo-designer-editing-locked', isLocked);
+            }
+
+            // If we are locking while a field is in editing mode, close it immediately.
+            if (isLocked && this.currentlyEditing) {
+                this.cancelEdit(this.currentlyEditing);
+            }
+
+            // Disable native drag start while locked.
+            $('.section-item, .module-item').attr('draggable', isLocked ? 'false' : 'true');
+            if (isLocked && typeof this.removeDropIndicators === 'function') {
+                this.removeDropIndicators();
+            }
+
+            // Keep footer controls in sync (undo/redo/create). Create is already disabled by click path.
+            $('#btn-undo, #btn-redo').prop('disabled', isLocked);
+            if (!isLocked) {
+                $('#btn-create-course').prop('disabled', false);
+            }
         },
 
         /**
@@ -443,18 +478,27 @@ define([
 
             // Copy button
             $('.btn-copy-item').off('click').on('click', function(e) {
+                if (self.designerEditingLocked) {
+                    return;
+                }
                 e.stopPropagation();
                 self.duplicateItem($(this));
             });
 
             // Delete button
             $('.btn-delete-item').off('click').on('click', function(e) {
+                if (self.designerEditingLocked) {
+                    return;
+                }
                 e.stopPropagation();
                 self.deleteItem($(this));
             });
 
             // Add section button
             $('.btn-add-section').off('click').on('click', function(e) {
+                if (self.designerEditingLocked) {
+                    return;
+                }
                 e.stopPropagation();
                 var sectionIndex = parseInt($(this).data('section-index'));
                 self.addSection(sectionIndex);
@@ -462,6 +506,9 @@ define([
 
             // Add module/activity button
             $('.btn-add-module').off('click').on('click', function(e) {
+                if (self.designerEditingLocked) {
+                    return;
+                }
                 e.stopPropagation();
                 var sectionIndex = parseInt($(this).data('section-index'));
                 var moduleIndex = parseInt($(this).data('module-index'));

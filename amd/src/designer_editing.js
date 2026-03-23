@@ -23,6 +23,9 @@ define([
         var self = this;
 
         $('.editable').off('click').on('click', function() {
+            if (self.designerEditingLocked) {
+                return;
+            }
             if (self.currentlyEditing) {
                 return;
             }

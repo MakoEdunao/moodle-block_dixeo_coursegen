@@ -31,6 +31,10 @@ define(['jquery'], function($) {
         $('.section-item').attr('draggable', 'true');
 
         $('.section-item').on('dragstart', function(e) {
+            if (self.designerEditingLocked) {
+                e.preventDefault();
+                return;
+            }
             e.originalEvent.dataTransfer.effectAllowed = 'move';
             e.originalEvent.dataTransfer.setData('type', 'section');
             e.originalEvent.dataTransfer.setData('index', $(this).data('section-idx'));
@@ -43,6 +47,9 @@ define(['jquery'], function($) {
         });
 
         $('.section-item').on('dragover', function(e) {
+            if (self.designerEditingLocked) {
+                return;
+            }
             e.preventDefault();
             e.originalEvent.dataTransfer.dropEffect = 'move';
             if ($(this).hasClass('dragging')) {
@@ -73,6 +80,10 @@ define(['jquery'], function($) {
         });
 
         $('.section-item').on('drop', function(e) {
+            if (self.designerEditingLocked) {
+                e.preventDefault();
+                return;
+            }
             e.preventDefault();
             var type = e.originalEvent.dataTransfer.getData('type');
             var fromIndex = parseInt(e.originalEvent.dataTransfer.getData('index'));
@@ -97,6 +108,10 @@ define(['jquery'], function($) {
         $('.module-item').attr('draggable', 'true');
 
         $('.module-item').on('dragstart', function(e) {
+            if (self.designerEditingLocked) {
+                e.preventDefault();
+                return;
+            }
             e.stopPropagation();
             e.originalEvent.dataTransfer.effectAllowed = 'move';
             e.originalEvent.dataTransfer.setData('type', 'module');
@@ -111,6 +126,9 @@ define(['jquery'], function($) {
         });
 
         $('.module-item').on('dragover', function(e) {
+            if (self.designerEditingLocked) {
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             e.originalEvent.dataTransfer.dropEffect = 'move';
@@ -144,6 +162,10 @@ define(['jquery'], function($) {
         });
 
         $('.module-item').on('drop', function(e) {
+            if (self.designerEditingLocked) {
+                e.preventDefault();
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             var type = e.originalEvent.dataTransfer.getData('type');
@@ -171,6 +193,9 @@ define(['jquery'], function($) {
 
         // Allow dropping modules at end of section (empty area of list)
         $('.modules-list').on('dragover', function(e) {
+            if (self.designerEditingLocked) {
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             e.originalEvent.dataTransfer.dropEffect = 'move';
@@ -188,6 +213,10 @@ define(['jquery'], function($) {
         });
 
         $('.modules-list').on('drop', function(e) {
+            if (self.designerEditingLocked) {
+                e.preventDefault();
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             var type = e.originalEvent.dataTransfer.getData('type');
